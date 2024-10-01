@@ -24,5 +24,5 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2024-10-01',
-  modules: ['@nuxtjs/tailwindcss', '@pinia/nuxt'],
+  modules: ['@nuxtjs/tailwindcss', '@pinia/nuxt', '@nuxtjs/color-mode'],
 });
