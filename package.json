@@ -11,10 +11,12 @@
   },
   "dependencies": {
     "nuxt": "^3.13.0",
+    "pinia": "^2.2.4",
     "vue": "latest",
     "vue-router": "latest"
   },
   "devDependencies": {
-    "@nuxtjs/tailwindcss": "^6.12.1"
+    "@nuxtjs/tailwindcss": "^6.12.1",
+    "@pinia/nuxt": "^0.5.5"
   }
 }
