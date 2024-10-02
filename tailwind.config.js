@@ -1,6 +1,10 @@
 export default {
     theme: {
-        extend: {},
+        extend: {
+            fontFamily: {
+                mono: ['UbuntuMono', 'monospace'],
+            },
+        },
     },
     plugins: [],
 }

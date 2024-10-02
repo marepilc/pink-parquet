@@ -5,7 +5,7 @@ const route = useRoute()
 <template>
     <AppContainer>
         <template v-slot:table>
-            <div>table</div>
+            <div class="font-mono">table EUR Europa 1 | 13:40</div>
         </template>
         <template v-slot:info>
             <div class="h-44">info</div>

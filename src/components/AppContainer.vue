@@ -49,6 +49,6 @@ const dataStore = useDataStore()
 
 <style scoped>
 .frame {
-    @apply rounded-md border border-stone-700 bg-stone-50/90 p-2 dark:bg-stone-950/90;
+    @apply rounded-md border border-stone-700 bg-stone-50/90 p-2 dark:border-pink-800 dark:bg-stone-950/90;
 }
 </style>
