@@ -1,22 +1,26 @@
 <script setup lang="ts">
 import type { UnlistenFn } from '@tauri-apps/api/event'
 import { getCurrentWebview } from '@tauri-apps/api/webview'
+import { extractPath } from '~/utils/path'
 
 const colorMode = useColorMode()
-const config = ref<{ theme: 'light' | 'dark' } | null>(null)
+
+const dataStore = useDataStore()
+const configStore = useConfigStore()
 
 const unlisten = ref<UnlistenFn | null>(null)
 
 onMounted(async () => {
-    config.value = await useLoadConfig()
-    colorMode.preference = config.value?.theme || 'light'
+    await configStore.loadConfig()
+    colorMode.preference = configStore.theme
 
     unlisten.value = await getCurrentWebview().onDragDropEvent((event) => {
         if (event.payload.type === 'enter') {
-            console.log('enter', event.payload)
+            dataStore.updateDraggedFilePath(extractPath(event.payload.paths))
         } else if (event.payload.type === 'drop') {
-            console.log('drop', event.payload)
+            dataStore.loadParquet(extractPath(event.payload.paths))
         } else if (event.payload.type === 'leave') {
+            dataStore.updateDraggedFilePath(null)
         }
     })
 })

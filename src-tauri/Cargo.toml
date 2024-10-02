@@ -24,3 +24,4 @@ log = "0.4"
 tauri = { version = "2.0.0-rc.16", features = [] }
 tauri-plugin-log = "2.0.0-rc"
 tauri-plugin-fs = "2.0.0-rc"
+polars = { version = "0.43.1", features = ["lazy", "parquet", "dtype-full"] }

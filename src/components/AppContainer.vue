@@ -1,4 +1,6 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+const dataStore = useDataStore()
+</script>
 
 <template>
     <!-- Background Layer (always present) -->
@@ -12,7 +14,10 @@
 
         <!-- Conditional Content (v-if/v-else) -->
         <div class="relative flex h-full flex-col p-2">
-            <div v-if="false" class="flex h-full flex-col gap-2">
+            <div
+                v-if="dataStore.isFileOpen && !dataStore.draggedFilePath"
+                class="flex h-full flex-col gap-2"
+            >
                 <div class="frame flex min-h-0 grow flex-col">
                     <slot name="table"></slot>
                 </div>
@@ -31,11 +36,11 @@
                 >
                     <div
                         class="h-32 w-32 text-pink-700"
-                        :class="{ 'animate-bounce': false }"
+                        :class="{ 'animate-bounce': dataStore.draggedFilePath }"
                     >
                         <IconParquetFile />
                     </div>
-                    <p>{{ false }}</p>
+                    <p>{{ dataStore.draggedFilePath }}</p>
                 </div>
             </div>
         </div>
@@ -44,6 +49,6 @@
 
 <style scoped>
 .frame {
-    @apply rounded-md border border-stone-700 bg-stone-50/90 p-2;
+    @apply rounded-md border border-stone-700 bg-stone-50/90 p-2 dark:bg-stone-950/90;
 }
 </style>
