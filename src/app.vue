@@ -32,8 +32,10 @@ onUnmounted(() => {
 })
 </script>
 <template>
-    <div>
-        <NuxtRouteAnnouncer />
-    </div>
-    <NuxtPage />
+    <NuxtLayout>
+        <div>
+            <NuxtRouteAnnouncer />
+        </div>
+        <NuxtPage />
+    </NuxtLayout>
 </template>

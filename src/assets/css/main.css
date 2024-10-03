@@ -40,5 +40,13 @@
 }
 
 body {
-    @apply text-stone-950 dark:text-stone-50 bg-stone-50 dark:bg-stone-950;
+    @apply text-stone-950 dark:text-stone-100 bg-stone-50 dark:bg-stone-950;
+}
+
+.frame {
+    @apply rounded-md border border-stone-700 bg-stone-50/90 p-2 dark:border-pink-800 dark:bg-stone-950/90 transition-colors duration-500;
+}
+
+.btn-primary {
+    @apply rounded-md bg-pink-700 px-4 py-2 font-semibold text-stone-50 transition-colors duration-500 hover:bg-pink-900 dark:bg-pink-700 dark:hover:bg-pink-900
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const route = useRoute()
+import AppFooter from '~/components/AppStatus.vue'
 </script>
 
 <template>
@@ -11,9 +11,7 @@ const route = useRoute()
             <div class="h-44">info</div>
         </template>
         <template v-slot:status>
-            <div>
-                <NuxtLink to="/settings">Settings</NuxtLink>
-            </div>
+            <AppFooter />
         </template>
     </AppContainer>
 </template>
