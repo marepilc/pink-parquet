@@ -39,14 +39,49 @@
     font-style: italic;
 }
 
-body {
-    @apply text-stone-950 dark:text-stone-100 bg-stone-50 dark:bg-stone-950;
+@layer base {
+    body {
+        @apply text-stone-950 dark:text-stone-100 bg-stone-50 dark:bg-stone-950;
+    }
 }
 
-.frame {
-    @apply rounded-md border border-stone-700 bg-stone-50/90 p-2 dark:border-pink-800 dark:bg-stone-950/90 transition-colors duration-500;
+@layer components {
+    .frame {
+        @apply rounded-md border border-stone-700 bg-stone-50/90 p-2 dark:border-pink-800 dark:bg-stone-950/90 transition-colors duration-500;
+    }
+
+    .btn-primary {
+        @apply rounded-md bg-pink-700 px-4 py-2 font-semibold text-stone-50 transition-colors duration-500 hover:bg-pink-900 dark:bg-pink-700 dark:hover:bg-pink-900
+    }
+
 }
 
-.btn-primary {
-    @apply rounded-md bg-pink-700 px-4 py-2 font-semibold text-stone-50 transition-colors duration-500 hover:bg-pink-900 dark:bg-pink-700 dark:hover:bg-pink-900
+@layer utilities {
+    .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+    }
+
+    .scrollbar-hide {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+
+    .scrollbar-custom::-webkit-scrollbar {
+        width: 8px; /* Custom scrollbar width */
+        height: 8px; /* Custom scrollbar height */
+    }
+
+    .scrollbar-custom::-webkit-scrollbar-track {
+        background: #d6d3d1; /* Track color */
+    }
+
+    .scrollbar-custom::-webkit-scrollbar-thumb {
+        background-color: #db2777; /* Thumb color */
+        border-radius: 1px; /* Rounded corners */
+        border: 1px solid #9d174d; /* Adds padding around thumb */
+    }
+
+    .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+        background-color: #ec4899; /* Thumb color on hover */
+    }
 }

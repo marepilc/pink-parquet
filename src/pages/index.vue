@@ -5,7 +5,7 @@ import AppFooter from '~/components/AppStatus.vue'
 <template>
     <AppContainer>
         <template v-slot:table>
-            <div class="font-mono">table EUR Europa 1 | 13:40</div>
+            <AppTable />
         </template>
         <template v-slot:info>
             <div class="h-44">info</div>
