@@ -40,7 +40,11 @@ function toggleTheme() {
                 label="Dark Mode"
                 @change="toggleTheme"
             />
-            <button class="btn-primary" @click="$router.push('/')">
+            <button
+                type="button"
+                class="btn-primary"
+                @click="$router.push('/')"
+            >
                 Close
             </button>
         </div>

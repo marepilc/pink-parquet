@@ -14,7 +14,9 @@ const dataStore = useDataStore()
             <div class="flex items-start gap-2">
                 <div class="flex flex-col gap-2">
                     <div class="frame">
-                        <div class="h-5 w-5"></div>
+                        <div class="h-5 w-5">
+                            <IconInfo />
+                        </div>
                     </div>
                     <div class="frame">
                         <div class="h-5 w-5"></div>
@@ -27,9 +29,13 @@ const dataStore = useDataStore()
             </div>
             <div class="flex items-center gap-2">
                 <div class="frame">
-                    <NuxtLink to="/settings" class="hover:text-pink-700">
+                    <button
+                        type="button"
+                        @click="$router.push('/settings')"
+                        class="m-0 flex h-5 w-5 items-center justify-center border-none bg-transparent p-0 hover:text-pink-700"
+                    >
                         <IconSettings class="h-5 w-5" />
-                    </NuxtLink>
+                    </button>
                 </div>
                 <div class="frame min-w-0 grow">
                     <slot name="status"></slot>
