@@ -38,11 +38,15 @@ export const useDataStore = defineStore({
     },
     actions: {
         async loadParquet(filePath: string) {
+            const sorting =
+                this.sorting && this.sorting.length > 0 ? this.sorting : null
             try {
-                const data = await invoke<ParquetData>('get_data', { filePath })
-                console.log(data)
+                const data = await invoke<ParquetData>('get_data', {
+                    filePath,
+                    sorting,
+                })
                 if (this.isFileOpen) {
-                    this.resetContent()
+                    this.resetContent(false)
                 }
                 this.updateOpenState(true, filePath, data.shape)
                 this.updateColumns(
@@ -52,7 +56,9 @@ export const useDataStore = defineStore({
                     }))
                 )
                 this.addRows(data.rows)
-                this.updateDraggedFilePath(null)
+                if (!sorting) {
+                    this.updateDraggedFilePath(null)
+                }
             } catch (e) {
                 console.error(e)
             }
@@ -109,8 +115,20 @@ export const useDataStore = defineStore({
         updateDraggedFilePath(filePath: string | null) {
             this.draggedFilePath = filePath
         },
-        updateRowsLoadingState(isLoading: boolean) {
-            this.rowsLoadingInProgress = isLoading
+        updateSorting(sortingRequest: Sorting) {
+            const index = this.sorting.findIndex(
+                (s) => s.column === sortingRequest.column
+            )
+            if (index === -1) {
+                this.sorting.push(sortingRequest)
+            } else if (
+                this.sorting[index].ascending !== sortingRequest.ascending
+            ) {
+                this.sorting[index].ascending = !this.sorting[index].ascending
+            } else {
+                // Remove sorting if the same column is clicked twice
+                this.sorting.splice(index, 1)
+            }
         },
     },
 })

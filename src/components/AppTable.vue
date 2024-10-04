@@ -1,15 +1,32 @@
 <script setup lang="ts">
+import type { Sorting } from '~/types/app-types'
+
 const dataStore = useDataStore()
 const tableStore = useTableStore()
 
 async function onScroll(e: Event) {
     const target = e.target as HTMLElement
-    // check if the scroll is at the bottom
     if (target.scrollHeight - target.scrollTop === target.clientHeight) {
         if (!dataStore.allRowsLoaded) {
             await dataStore.getMoreRows()
         }
     }
+}
+
+async function handleSorting(sorting: Sorting) {
+    // scroll to top
+    const scrollable = document.querySelector('.scrollbar-custom')
+    if (scrollable) {
+        scrollable.scrollTo({ top: 0, behavior: 'instant' })
+    }
+    dataStore.updateSorting(sorting)
+    if (dataStore.sorting.length > 0) {
+        await dataStore.loadParquet(dataStore.filePath)
+    }
+}
+
+function selectColumn(ixCol: number) {
+    tableStore.selectColumn(ixCol)
 }
 </script>
 
