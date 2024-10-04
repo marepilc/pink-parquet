@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import AppStatus from '~/components/AppStatus.vue'
+import AppInfo from '~/components/AppInfo.vue'
 </script>
 
 <template>
@@ -8,7 +9,7 @@ import AppStatus from '~/components/AppStatus.vue'
             <AppTable />
         </template>
         <template v-slot:info>
-            <div class="h-44">info</div>
+            <AppInfo />
         </template>
         <template v-slot:status>
             <AppStatus />

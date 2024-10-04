@@ -40,8 +40,9 @@ function toggleTheme() {
                 label="Dark Mode"
                 @change="toggleTheme"
             />
-            <!--            -->
-            <NuxtLink class="btn-primary" to="/">Close</NuxtLink>
+            <button class="btn-primary" @click="$router.push('/')">
+                Close
+            </button>
         </div>
     </div>
 </template>

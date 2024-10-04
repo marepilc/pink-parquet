@@ -1,4 +1,4 @@
-import type { Column, Shape, Sorting } from '~/types/app-types'
+import type { Column, Shape, Sorting, FileMetadata } from '~/types/app-types'
 import { invoke } from '@tauri-apps/api/core'
 import { dtypeCleaner } from '~/utils/dtype-cleaner'
 
@@ -7,6 +7,7 @@ export const useDataStore = defineStore({
     state: () => ({
         isFileOpen: false,
         filePath: '',
+        fileMetadata: null as FileMetadata | null,
         draggedFilePath: null as string | null,
         columns: [] as Column[],
         rows: shallowRef<string[][]>([]),
@@ -45,11 +46,11 @@ export const useDataStore = defineStore({
                     filePath,
                     sorting,
                 })
-                console.log(data)
-                if (this.isFileOpen) {
-                    this.resetContent(false)
-                }
+
+                this.resetContent(false)
+
                 this.updateOpenState(true, filePath, data.shape)
+                this.updateFileMetadata(data.metadata)
                 this.updateColumns(
                     data.columns.map((col) => ({
                         ...col,
@@ -95,6 +96,18 @@ export const useDataStore = defineStore({
             this.noOfRows = shape[0]
             this.noOfColumns = shape[1]
         },
+        updateFileMetadata(metadata: FileMetadata | null) {
+            if (metadata === null) {
+                this.fileMetadata = metadata
+            } else {
+                this.fileMetadata = {
+                    fileName: metadata.file_name,
+                    createdAt: metadata.created_at,
+                    modifiedAt: metadata.modified_at,
+                    size: metadata.file_size as number,
+                }
+            }
+        },
         updateColumns(columns: Column[]) {
             this.columns = columns
         },
@@ -109,6 +122,7 @@ export const useDataStore = defineStore({
             this.noOfColumns = 0
             this.rowsLoadingCounter = 0
             this.rowsLoadingInProgress = false
+            this.fileMetadata = null
             if (resetSorting) {
                 this.sorting = []
             }

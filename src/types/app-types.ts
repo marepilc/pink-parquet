@@ -15,3 +15,10 @@ export interface TableData {
     columns: Array<{ name: string; dtype: string }>
     rows: string[][]
 }
+
+export interface FileMetadata {
+    fileName: string
+    createdAt: string
+    modifiedAt: string
+    size: number
+}

@@ -11,8 +11,19 @@ const dataStore = useDataStore()
             <div class="frame flex min-h-0 grow flex-col">
                 <slot name="table"></slot>
             </div>
-            <div class="frame">
-                <slot name="info"></slot>
+            <div class="flex items-start gap-2">
+                <div class="flex flex-col gap-2">
+                    <div class="frame">
+                        <div class="h-5 w-5"></div>
+                    </div>
+                    <div class="frame">
+                        <div class="h-5 w-5"></div>
+                    </div>
+                </div>
+
+                <div class="frame grow">
+                    <slot name="info"></slot>
+                </div>
             </div>
             <div class="flex items-center gap-2">
                 <div class="frame">

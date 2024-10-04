@@ -98,7 +98,10 @@ function selectColumn(ixCol: number) {
                     <th
                         v-for="(column, ixCol) in dataStore.columns"
                         :key="ixCol"
-                        class="relative max-w-64 overflow-hidden text-ellipsis whitespace-nowrap border-r border-stone-300 bg-stone-200 px-3 py-1.5"
+                        class="relative max-w-64 overflow-hidden text-ellipsis whitespace-nowrap border-r border-stone-300 px-3 py-1.5"
+                        :class="{
+                            'bg-pink-300': tableStore.selectedColumn === column,
+                        }"
                         scope="col"
                     >
                         <div
