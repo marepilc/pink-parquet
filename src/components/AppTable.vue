@@ -1,6 +1,16 @@
 <script setup lang="ts">
 const dataStore = useDataStore()
 const tableStore = useTableStore()
+
+async function onScroll(e: Event) {
+    const target = e.target as HTMLElement
+    // check if the scroll is at the bottom
+    if (target.scrollHeight - target.scrollTop === target.clientHeight) {
+        if (!dataStore.allRowsLoaded) {
+            await dataStore.getMoreRows()
+        }
+    }
+}
 </script>
 
 <template>

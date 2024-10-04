@@ -9,7 +9,7 @@ export const useDataStore = defineStore({
         filePath: '',
         draggedFilePath: null as string | null,
         columns: [] as Column[],
-        rows: [] as string[][],
+        rows: shallowRef<string[][]>([]),
         noOfRows: 0,
         noOfColumns: 0,
         rowsLoadingCounter: 0,
@@ -58,6 +58,8 @@ export const useDataStore = defineStore({
             }
         },
         async getMoreRows() {
+            if (this.rowsLoadingInProgress) return
+            this.rowsLoadingInProgress = true
             try {
                 const sorting =
                     this.sorting && this.sorting.length > 0
@@ -90,7 +92,7 @@ export const useDataStore = defineStore({
             this.columns = columns
         },
         addRows(rows: string[][]) {
-            this.rows.push(...rows)
+            this.rows = [...this.rows, ...rows]
             this.rowsLoadingCounter++
         },
         resetContent(resetSorting = true) {
@@ -106,6 +108,9 @@ export const useDataStore = defineStore({
         },
         updateDraggedFilePath(filePath: string | null) {
             this.draggedFilePath = filePath
+        },
+        updateRowsLoadingState(isLoading: boolean) {
+            this.rowsLoadingInProgress = isLoading
         },
     },
 })

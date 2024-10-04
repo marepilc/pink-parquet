@@ -40,6 +40,10 @@
 }
 
 @layer base {
+    html {
+        font-family: Optima, Candara, 'Noto Sans', source-sans-pro, sans-serif;
+    }
+
     body {
         @apply text-stone-950 dark:text-stone-100 bg-stone-50 dark:bg-stone-950;
     }
