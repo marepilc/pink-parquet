@@ -98,7 +98,7 @@ pub fn process_dataframe(lf: LazyFrame, file_path: &str) -> Result<DataFrameInfo
         .collect();
 
     // Get the first n rows (for example, the first 100 rows)
-    let n = shape.0.min(100);
+    let n = shape.0.min(1_000);
     let df_head = df.head(Some(n));
     let rows = dataframe_to_rows(&df_head);
 

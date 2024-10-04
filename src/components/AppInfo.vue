@@ -6,7 +6,12 @@ const dataStore = useDataStore()
 
 <template>
     <div class="flex min-h-44 flex-col">
-        <h2 class="text-xl font-bold">{{ dataStore.fileMetadata.fileName }}</h2>
+        <h2
+            class="overflow-hidden text-ellipsis whitespace-nowrap text-xl font-bold"
+        >
+            {{ dataStore.fileMetadata.fileName }}
+        </h2>
+
         <div>
             <span class="font-semibold">{{ dataStore.noOfColumns }}</span>
             columns

@@ -23,7 +23,7 @@ const dataStore = useDataStore()
                     </div>
                 </div>
 
-                <div class="frame grow">
+                <div class="frame min-w-0 grow">
                     <slot name="info"></slot>
                 </div>
             </div>
