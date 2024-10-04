@@ -45,7 +45,7 @@
     }
 
     body {
-        @apply text-stone-950 dark:text-stone-100 bg-stone-50 dark:bg-stone-950;
+        @apply text-stone-950 dark:text-stone-100 bg-stone-50 dark:bg-stone-950 selection:bg-pink-700 selection:text-stone-50;
     }
 }
 
