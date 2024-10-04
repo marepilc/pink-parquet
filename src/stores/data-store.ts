@@ -45,6 +45,7 @@ export const useDataStore = defineStore({
                     filePath,
                     sorting,
                 })
+                console.log(data)
                 if (this.isFileOpen) {
                     this.resetContent(false)
                 }

@@ -1,3 +1,6 @@
+use std::fs;
+use std::path::Path;
+use chrono::{DateTime, Utc};
 use polars::prelude::*;
 use serde::{Deserialize, Serialize};
 use crate::data_loader::collect_dataframe;
@@ -13,6 +16,15 @@ pub struct DataFrameInfo {
     pub shape: (usize, usize),
     pub columns: Vec<ColumnInfo>,
     pub rows: Vec<Vec<String>>,
+    pub metadata: Option<MetadataInfo>,
+}
+
+#[derive(Serialize)]
+pub struct MetadataInfo {
+    pub file_name: String,
+    pub created_at: Option<DateTime<Utc>>,
+    pub modified_at: Option<DateTime<Utc>>,
+    pub file_size: u64,
 }
 
 #[derive(Deserialize)]
@@ -73,7 +85,7 @@ pub fn dataframe_to_rows(df: &DataFrame) -> Vec<Vec<String>> {
 
 
 // Function to process the DataFrame and return its info
-pub fn process_dataframe(lf: LazyFrame) -> Result<DataFrameInfo, String> {
+pub fn process_dataframe(lf: LazyFrame, file_path: &str) -> Result<DataFrameInfo, String> {
     let df = collect_dataframe_safe(lf)?;
     let shape = df.shape();
     let columns: Vec<ColumnInfo> = df
@@ -88,13 +100,37 @@ pub fn process_dataframe(lf: LazyFrame) -> Result<DataFrameInfo, String> {
     // Get the first n rows (for example, the first 100 rows)
     let n = shape.0.min(100);
     let df_head = df.head(Some(n));
-
     let rows = dataframe_to_rows(&df_head);
+
+    let metadata = get_file_metadata(file_path).ok();
 
     Ok(DataFrameInfo {
         shape,
         columns,
         rows,
+        metadata,
     })
 }
 
+pub fn get_file_metadata(file_path: &str) -> Result<MetadataInfo, String> {
+    match fs::metadata(file_path) {
+        Ok(metadata) => {
+            let file_name = Path::new(file_path)
+                .file_name()
+                .and_then(|name| name.to_str())
+                .unwrap_or("Unknown")
+                .to_string();
+            let created_at = metadata.created().ok().map(|time| DateTime::<Utc>::from(time));
+            let modified_at = metadata.modified().ok().map(|time| DateTime::<Utc>::from(time));
+            let file_size = metadata.len(); // Change file_size to direct u64 value
+
+            Ok(MetadataInfo {
+                file_name,
+                created_at,
+                modified_at,
+                file_size,
+            })
+        }
+        Err(e) => Err(format!("Failed to get file metadata: {}", e)),
+    }
+}

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AppFooter from '~/components/AppStatus.vue'
+import AppStatus from '~/components/AppStatus.vue'
 </script>
 
 <template>
@@ -11,7 +11,7 @@ import AppFooter from '~/components/AppStatus.vue'
             <div class="h-44">info</div>
         </template>
         <template v-slot:status>
-            <AppFooter />
+            <AppStatus />
         </template>
     </AppContainer>
 </template>

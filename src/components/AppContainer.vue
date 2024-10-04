@@ -20,7 +20,7 @@ const dataStore = useDataStore()
                         <IconSettings class="h-5 w-5" />
                     </NuxtLink>
                 </div>
-                <div class="frame grow">
+                <div class="frame min-w-0 grow">
                     <slot name="status"></slot>
                 </div>
             </div>

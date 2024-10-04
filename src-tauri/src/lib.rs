@@ -16,14 +16,14 @@ fn get_data(file_path: &str, sorting: Option<Vec<Sorting>>) -> Result<DataFrameI
             Ok(df) => df,
             Err(e) => return Err(format!("Failed to sort DataFrame: {}", e)),
         };
-        let df_info = match process_dataframe(df) {
+        let df_info = match process_dataframe(df, file_path) {
             Ok(df_info) => df_info,
             Err(e) => return Err(format!("Failed to process DataFrame: {}", e)),
         };
         return Ok(df_info);
     }
 
-    let df_info = match process_dataframe(lf) {
+    let df_info = match process_dataframe(lf, file_path) {
         Ok(df_info) => df_info,
         Err(e) => return Err(format!("Failed to process DataFrame: {}", e)),
     };
