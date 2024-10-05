@@ -2,26 +2,28 @@ mod data_loader;
 
 use tauri::command;
 use data_loader::{open_parquet, process_dataframe, DataFrameInfo, dataframe_to_rows, collect_dataframe_safe};
-use data_loader::dataframe_processor::{sort_columns, Sorting};
+use data_loader::dataframe_processor::{sort_columns, Sorting, filter_columns, Filtering};
 use std::collections::HashMap;
 
 #[command]
-fn get_data(file_path: &str, sorting: Option<Vec<Sorting>>) -> Result<DataFrameInfo, String> {
-    let lf = match open_parquet(file_path) {
+fn get_data(file_path: &str, sorting: Option<Vec<Sorting>>, filtering: Option<Vec<Filtering>>) -> Result<DataFrameInfo, String> {
+    let mut lf = match open_parquet(file_path) {
         Ok(df) => df,
         Err(e) => return Err(format!("Failed to read Parquet file: {}", e)),
     };
 
+    if let Some(filtering_info) = filtering {
+        lf = match filter_columns(lf, filtering_info) {
+            Ok(df) => df,
+            Err(e) => return Err(format!("Failed to filter DataFrame: {}", e)),
+        };
+    }
+
     if let Some(sorting_info) = sorting {
-        let df = match sort_columns(lf, sorting_info) {
+        lf = match sort_columns(lf, sorting_info) {
             Ok(df) => df,
             Err(e) => return Err(format!("Failed to sort DataFrame: {}", e)),
         };
-        let df_info = match process_dataframe(df, file_path) {
-            Ok(df_info) => df_info,
-            Err(e) => return Err(format!("Failed to process DataFrame: {}", e)),
-        };
-        return Ok(df_info);
     }
 
     let df_info = match process_dataframe(lf, file_path) {
@@ -29,24 +31,31 @@ fn get_data(file_path: &str, sorting: Option<Vec<Sorting>>) -> Result<DataFrameI
         Err(e) => return Err(format!("Failed to process DataFrame: {}", e)),
     };
 
-    Ok(df_info)  // Tauri will automatically serialize this to JSON
+    Ok(df_info)
 }
 
 #[command]
-fn get_more_rows(file_path: &str, offset: usize, limit: usize, sorting: Option<Vec<Sorting>>) -> Result<Vec<Vec<String>>, String> {
-    let lf = match open_parquet(file_path) {
+fn get_more_rows(file_path: &str, offset: usize, limit: usize, sorting: Option<Vec<Sorting>>, filtering: Option<Vec<Filtering>>) -> Result<Vec<Vec<String>>, String> {
+    let mut lf = match open_parquet(file_path) {
         Ok(df) => df,
         Err(e) => return Err(format!("Failed to read Parquet file: {}", e)),
     };
-    let sorted_lf = if let Some(sorting_info) = sorting {
-        match sort_columns(lf, sorting_info) {
+
+    if let Some(filtering_info) = filtering {
+        lf = match filter_columns(lf, filtering_info) {
+            Ok(df) => df,
+            Err(e) => return Err(format!("Failed to filter DataFrame: {}", e)),
+        };
+    }
+
+    if let Some(sorting_info) = sorting {
+        lf = match sort_columns(lf, sorting_info) {
             Ok(df) => df,
             Err(e) => return Err(format!("Failed to sort DataFrame: {}", e)),
-        }
-    } else {
-        lf // No sorting, just use the original DataFrame
-    };
-    let df = collect_dataframe_safe(sorted_lf)?;
+        };
+    }
+
+    let df = collect_dataframe_safe(lf)?;
     let df_slice = df.slice(offset as i64, limit);
     let rows = dataframe_to_rows(&df_slice);
     Ok(rows)

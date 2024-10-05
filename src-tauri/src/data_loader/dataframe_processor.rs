@@ -3,6 +3,7 @@ use std::path::Path;
 use chrono::{DateTime, Utc};
 use polars::prelude::*;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use crate::data_loader::collect_dataframe;
 
 #[derive(Serialize)]
@@ -31,6 +32,13 @@ pub struct MetadataInfo {
 pub struct Sorting {
     pub column: String,
     pub ascending: bool,
+}
+
+#[derive(Deserialize)]
+pub struct Filtering {
+    pub column: String,
+    pub condition: String,
+    pub value: Value,
 }
 
 pub fn collect_dataframe_safe(lf: LazyFrame) -> Result<DataFrame, String> {
@@ -134,3 +142,79 @@ pub fn get_file_metadata(file_path: &str) -> Result<MetadataInfo, String> {
         Err(e) => Err(format!("Failed to get file metadata: {}", e)),
     }
 }
+
+pub fn filter_columns(lf: LazyFrame, filtering_info: Vec<Filtering>) -> Result<LazyFrame, String> {
+    let mut filtered_lf = lf;
+
+    for filter in filtering_info {
+        match filter.condition.as_str() {
+            "<" => {
+                if let Value::Number(num) = &filter.value {
+                    if let Some(f) = num.as_f64() {
+                        filtered_lf = filtered_lf.filter(col(&filter.column).lt(lit(f)));
+                    } else {
+                        return Err("Invalid number value for filter".to_string());
+                    }
+                } else {
+                    return Err("Invalid value type for filter".to_string());
+                }
+            }
+            ">" => {
+                if let Value::Number(num) = &filter.value {
+                    if let Some(f) = num.as_f64() {
+                        filtered_lf = filtered_lf.filter(col(&filter.column).gt(lit(f)));
+                    } else {
+                        return Err("Invalid number value for filter".to_string());
+                    }
+                } else {
+                    return Err("Invalid value type for filter".to_string());
+                }
+            }
+            "==" => {
+                if let Value::Number(num) = &filter.value {
+                    if let Some(f) = num.as_f64() {
+                        filtered_lf = filtered_lf.filter(col(&filter.column).eq(lit(f)));
+                    } else {
+                        return Err("Invalid number value for filter".to_string());
+                    }
+                } else if let Value::String(val) = &filter.value {
+                    filtered_lf = filtered_lf.filter(col(&filter.column).eq(lit(val.as_str())));
+                } else {
+                    return Err("Invalid value type for equality filter".to_string());
+                }
+            }
+            "between" => {
+                if let Value::Array(values) = &filter.value {
+                    if values.len() == 2 {
+                        if let (Some(lower), Some(upper)) = (values[0].as_f64(), values[1].as_f64()) {
+                            filtered_lf = filtered_lf.filter(
+                                col(&filter.column)
+                                    .gt_eq(lit(lower))
+                                    .and(col(&filter.column).lt_eq(lit(upper))),
+                            );
+                        } else {
+                            return Err("Invalid number values for between filter".to_string());
+                        }
+                    } else {
+                        return Err("Invalid value count for between filter".to_string());
+                    }
+                } else {
+                    return Err("Invalid value type for between filter".to_string());
+                }
+            }
+            "equals" => {
+                if let Value::String(val) = &filter.value {
+                    filtered_lf = filtered_lf.filter(
+                        col(&filter.column).eq(lit(val.as_str())),
+                    );
+                } else {
+                    return Err("Invalid value type for equality filter".to_string());
+                }
+            }
+            _ => return Err(format!("Unknown filter condition: {}", filter.condition)),
+        }
+    }
+
+    Ok(filtered_lf)
+}
+
