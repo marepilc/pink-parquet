@@ -1,4 +1,4 @@
-import type { Column, Shape, Sorting, FileMetadata } from '~/types/app-types'
+import type { Column, FileMetadata, Shape, Sorting } from '~/types/app-types'
 import { invoke } from '@tauri-apps/api/core'
 import { dtypeCleaner } from '~/utils/dtype-cleaner'
 
@@ -10,6 +10,7 @@ export const useDataStore = defineStore({
         fileMetadata: null as FileMetadata | null,
         draggedFilePath: null as string | null,
         columns: [] as Column[],
+        columnsInfo: {} as { [key: string]: {} },
         rows: shallowRef<string[][]>([]),
         noOfRows: 0,
         noOfColumns: 0,
@@ -61,8 +62,7 @@ export const useDataStore = defineStore({
                     // ],
                 })
 
-                const info = await invoke('get_statistics', { filePath })
-                console.log('info', info)
+                this.columnsInfo = await invoke('get_statistics', { filePath })
 
                 this.resetContent(false)
 
