@@ -45,6 +45,20 @@ export const useDataStore = defineStore({
                 const data = await invoke<ParquetData>('get_data', {
                     filePath,
                     sorting,
+                    // filtering: [
+                    //     {
+                    //         column: 'date',
+                    //         condition: 'between',
+                    //         value: [
+                    //             new Date('2024-01-13')
+                    //                 .toISOString()
+                    //                 .slice(0, -1),
+                    //             new Date('2024-01-13')
+                    //                 .toISOString()
+                    //                 .slice(0, -1),
+                    //         ],
+                    //     },
+                    // ],
                 })
 
                 const info = await invoke('get_statistics', { filePath })

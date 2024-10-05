@@ -12,6 +12,10 @@ fn get_data(file_path: &str, sorting: Option<Vec<Sorting>>, filtering: Option<Ve
         Err(e) => return Err(format!("Failed to read Parquet file: {}", e)),
     };
 
+    // Get shape before filtering
+    let df = collect_dataframe_safe(lf.clone())?;
+    let shape = df.shape();
+
     if let Some(filtering_info) = filtering {
         lf = match filter_columns(lf, filtering_info) {
             Ok(df) => df,
@@ -26,10 +30,13 @@ fn get_data(file_path: &str, sorting: Option<Vec<Sorting>>, filtering: Option<Ve
         };
     }
 
-    let df_info = match process_dataframe(lf, file_path) {
+    let mut df_info = match process_dataframe(lf, file_path) {
         Ok(df_info) => df_info,
         Err(e) => return Err(format!("Failed to process DataFrame: {}", e)),
     };
+
+    // Update shape after filtering
+    df_info.shape = shape;
 
     Ok(df_info)
 }
