@@ -47,6 +47,9 @@ export const useDataStore = defineStore({
                     sorting,
                 })
 
+                const info = await invoke('get_statistics', { filePath })
+                console.log('info', info)
+
                 this.resetContent(false)
 
                 this.updateOpenState(true, filePath, data.shape)
@@ -79,6 +82,7 @@ export const useDataStore = defineStore({
                     limit: 1_000,
                     sorting: sorting,
                 })
+
                 if (Array.isArray(data)) {
                     this.addRows(data)
                 } else {
