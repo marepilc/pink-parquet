@@ -91,7 +91,7 @@ const tableFontClass = computed(() => {
         @scroll="onScroll"
     >
         <table
-            class="w-full table-fixed cursor-default text-left text-stone-950"
+            class="w-full table-fixed cursor-default text-left text-stone-950 dark:text-stone-50"
             :style="{ width: `${totalTableWidth}px` }"
         >
             <!-- Colgroup for column definitions -->
@@ -106,14 +106,17 @@ const tableFontClass = computed(() => {
                 />
             </colgroup>
 
-            <thead class="sticky-header sticky top-0 z-10 bg-stone-200">
+            <thead
+                class="sticky-header sticky top-0 z-10 bg-stone-200 dark:bg-stone-800"
+            >
                 <tr>
                     <th
                         v-for="(column, ixCol) in dataStore.columns"
                         :key="ixCol"
-                        class="relative max-w-64 overflow-hidden text-ellipsis whitespace-nowrap border-r border-stone-300 px-3 py-1.5"
+                        class="relative max-w-64 overflow-hidden text-ellipsis whitespace-nowrap border-r border-stone-300 px-3 py-1.5 dark:border-stone-600"
                         :class="{
-                            'bg-pink-300': tableStore.selectedColumn === column,
+                            'bg-pink-300 dark:bg-pink-950':
+                                tableStore.selectedColumn === column,
                         }"
                         scope="col"
                     >
@@ -128,7 +131,7 @@ const tableFontClass = computed(() => {
                                     {{ column.name }}
                                 </div>
                                 <div
-                                    class="flex items-center gap-2 text-xs text-stone-700"
+                                    class="flex items-center gap-2 text-xs text-stone-700 dark:text-stone-400"
                                 >
                                     <DtypeIcon
                                         class="h-5 w-5 flex-shrink-0 text-pink-700"
@@ -201,12 +204,12 @@ const tableFontClass = computed(() => {
                 <tr
                     v-for="(row, ixRow) in dataStore.rows"
                     :key="ixRow"
-                    class="whitespace-nowrap px-2 py-1 odd:bg-stone-50/65 even:bg-stone-200/65"
+                    class="whitespace-nowrap px-2 py-1 odd:bg-stone-50/65 even:bg-stone-200/65 dark:odd:bg-stone-800/65 dark:even:bg-stone-600/65"
                 >
                     <td
                         v-for="(cell, ixCell) in row"
                         :key="ixCell"
-                        class="max-w-40 overflow-hidden text-ellipsis border-b border-r border-stone-300 px-3 py-1.5"
+                        class="max-w-40 overflow-hidden text-ellipsis border-b border-r border-stone-300 px-3 py-1.5 dark:border-stone-600"
                     >
                         {{ cell }}
                     </td>
