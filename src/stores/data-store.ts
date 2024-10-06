@@ -20,7 +20,7 @@ export const useDataStore = defineStore({
     }),
     getters: {
         allRowsLoaded: (state) => {
-            return state.rowsLoadingCounter * 1_000 >= state.noOfRows
+            return state.rowsLoadingCounter * 250 >= state.noOfRows
         },
         indexInSorting: (state) => {
             return (srt: Sorting) => {
@@ -92,8 +92,8 @@ export const useDataStore = defineStore({
                         : null
                 const data = await invoke('get_more_rows', {
                     filePath: this.filePath,
-                    offset: 1_000 * this.rowsLoadingCounter,
-                    limit: 1_000,
+                    offset: 250 * this.rowsLoadingCounter,
+                    limit: 250,
                     sorting: sorting,
                 })
 

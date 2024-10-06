@@ -69,6 +69,12 @@ async function handleSorting(sorting: Sorting) {
     await dataStore.loadParquet(dataStore.filePath)
 }
 
+async function handleFiltering() {
+    tableStore.deselectColumn()
+    // scroll to top
+    const scrollable = document.querySelector('.scrollbar-custom')
+}
+
 function selectColumn(ixCol: number) {
     tableStore.selectColumn(ixCol)
 }
@@ -125,10 +131,30 @@ const tableFontClass = computed(() => {
                             @click="selectColumn(ixCol)"
                         >
                             <div class="flex min-w-8 flex-col">
-                                <div
-                                    class="overflow-hidden text-ellipsis whitespace-nowrap"
-                                >
-                                    {{ column.name }}
+                                <div class="flex items-center gap-1">
+                                    <UPopover @click.stop>
+                                        <UButton
+                                            size="2xs"
+                                            class="text-stone-400 hover:text-pink-700"
+                                            square
+                                            icon="material-symbols:filter-alt"
+                                            variant="link"
+                                            @click="handleFiltering"
+                                        />
+                                        <template #panel>
+                                            <div class="p-4">
+                                                <div class="h-20 w-48">
+                                                    <button>dddd</button>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </UPopover>
+
+                                    <div
+                                        class="overflow-hidden text-ellipsis whitespace-nowrap"
+                                    >
+                                        {{ column.name }}
+                                    </div>
                                 </div>
                                 <div
                                     class="flex items-center gap-2 text-xs text-stone-700 dark:text-stone-400"
