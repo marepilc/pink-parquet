@@ -58,6 +58,7 @@ async function onScroll(e: Event) {
 }
 
 async function handleSorting(sorting: Sorting) {
+    tableStore.deselectColumn()
     // scroll to top
     const scrollable = document.querySelector('.scrollbar-custom')
     if (scrollable) {

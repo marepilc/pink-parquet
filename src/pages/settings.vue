@@ -40,13 +40,13 @@ function toggleTheme() {
                 label="Dark Mode"
                 @change="toggleTheme"
             />
-            <button
-                type="button"
-                class="btn-primary"
+            <UButton
+                class="mb-4 self-center"
                 @click="$router.push('/')"
-            >
-                Close
-            </button>
+                variant="solid"
+                icon="material-symbols:sync-saved-locally-outline"
+                label="Close"
+            ></UButton>
         </div>
     </div>
 </template>

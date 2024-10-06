@@ -25,6 +25,9 @@ onMounted(async () => {
     })
 })
 
+const config = useAppConfig()
+console.log('asdas', config.ui)
+
 onUnmounted(() => {
     if (unlisten.value) {
         unlisten.value()

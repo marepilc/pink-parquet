@@ -13,5 +13,8 @@ export const useTableStore = defineStore({
                 this.selectedColumn = dataStore.columns[ix]
             }
         },
+        deselectColumn() {
+            this.selectedColumn = null
+        },
     },
 })
