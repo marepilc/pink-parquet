@@ -3,6 +3,7 @@ import type { Sorting } from '~/types/app-types'
 
 const dataStore = useDataStore()
 const tableStore = useTableStore()
+const configStore = useConfigStore()
 
 const columnWidths = ref<number[]>([])
 
@@ -71,6 +72,17 @@ async function handleSorting(sorting: Sorting) {
 function selectColumn(ixCol: number) {
     tableStore.selectColumn(ixCol)
 }
+
+const tableFontClass = computed(() => {
+    switch (configStore.tableFont) {
+        case 'Ubuntu Mono':
+            return 'font-ubuntu'
+        case 'Departure Mono':
+            return 'font-departure'
+        default:
+            return 'font-ubuntu'
+    }
+})
 </script>
 
 <template>
@@ -185,7 +197,7 @@ function selectColumn(ixCol: number) {
                 </tr>
             </thead>
 
-            <tbody class="font-mono" :key="dataStore.rowsLoadingCounter">
+            <tbody :class="tableFontClass" :key="dataStore.rowsLoadingCounter">
                 <tr
                     v-for="(row, ixRow) in dataStore.rows"
                     :key="ixRow"

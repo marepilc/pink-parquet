@@ -25,12 +25,22 @@ onMounted(async () => {
     })
 })
 
-const config = useAppConfig()
-console.log('asdas', config.ui)
-
 onUnmounted(() => {
     if (unlisten.value) {
         unlisten.value()
+    }
+})
+
+const uiFontClass = computed(() => {
+    switch (configStore.uiFont) {
+        case 'System UI':
+            return 'font-system'
+        case 'Humanist':
+            return 'font-humanist'
+        case 'Industrial':
+            return 'font-industrial'
+        default:
+            return 'font-system'
     }
 })
 </script>
@@ -39,6 +49,6 @@ onUnmounted(() => {
         <div>
             <NuxtRouteAnnouncer />
         </div>
-        <NuxtPage />
+        <NuxtPage :class="uiFontClass" />
     </NuxtLayout>
 </template>

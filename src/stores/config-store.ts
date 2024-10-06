@@ -10,6 +10,8 @@ export const useConfigStore = defineStore({
     id: 'configStore',
     state: () => ({
         theme: 'light',
+        uiFont: 'System UI',
+        tableFont: 'Ubuntu Mono',
     }),
     actions: {
         async loadConfig() {
@@ -24,6 +26,8 @@ export const useConfigStore = defineStore({
                         baseDir: BaseDirectory.AppConfig,
                     })
                     this.theme = JSON.parse(config).theme
+                    this.uiFont = JSON.parse(config).uiFont
+                    this.tableFont = JSON.parse(config).tableFont
                 } else {
                     // create the config file
                     await mkdir('', {
@@ -32,7 +36,7 @@ export const useConfigStore = defineStore({
                     })
                     await writeTextFile(
                         'config.json',
-                        JSON.stringify(defaultConfig),
+                        JSON.stringify(this.$state),
                         {
                             baseDir: BaseDirectory.AppConfig,
                         }
@@ -57,6 +61,14 @@ export const useConfigStore = defineStore({
         },
         toggleTheme() {
             this.theme = this.theme === 'light' ? 'dark' : 'light'
+            this.saveConfig()
+        },
+        setUIFont(font: string) {
+            this.uiFont = font
+            this.saveConfig()
+        },
+        setTableFont(font: string) {
+            this.tableFont = font
             this.saveConfig()
         },
     },

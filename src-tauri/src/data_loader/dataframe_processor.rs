@@ -3,7 +3,7 @@ use std::path::Path;
 use polars::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use chrono::{NaiveDate, NaiveDateTime, DateTime, Utc};
+use chrono::{NaiveDateTime, DateTime, Utc};
 use crate::data_loader::collect_dataframe;
 
 #[derive(Serialize)]
