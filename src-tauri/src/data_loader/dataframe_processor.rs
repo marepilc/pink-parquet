@@ -183,6 +183,40 @@ pub fn filter_columns(lf: LazyFrame, filtering_info: Vec<Filtering>) -> Result<L
                     return Err("Invalid value type for filter".to_string());
                 }
             }
+            "<=" => {
+                if let Value::Number(num) = &filter.value {
+                    if let Some(f) = num.as_f64() {
+                        filtered_lf = filtered_lf.filter(col(&filter.column).lt_eq(lit(f)));
+                    } else {
+                        return Err("Invalid number value for filter".to_string());
+                    }
+                } else if let Value::String(date_str) = &filter.value {
+                    if let Ok(date) = NaiveDateTime::parse_from_str(date_str, "%Y-%m-%dT%H:%M:%S%.f") {
+                        filtered_lf = filtered_lf.filter(col(&filter.column).lt_eq(lit(date)));
+                    } else {
+                        return Err("Invalid date value for filter".to_string());
+                    }
+                } else {
+                    return Err("Invalid value type for filter".to_string());
+                }
+            }
+            ">=" => {
+                if let Value::Number(num) = &filter.value {
+                    if let Some(f) = num.as_f64() {
+                        filtered_lf = filtered_lf.filter(col(&filter.column).gt_eq(lit(f)));
+                    } else {
+                        return Err("Invalid number value for filter".to_string());
+                    }
+                } else if let Value::String(date_str) = &filter.value {
+                    if let Ok(date) = NaiveDateTime::parse_from_str(date_str, "%Y-%m-%dT%H:%M:%S%.f") {
+                        filtered_lf = filtered_lf.filter(col(&filter.column).gt_eq(lit(date)));
+                    } else {
+                        return Err("Invalid date value for filter".to_string());
+                    }
+                } else {
+                    return Err("Invalid value type for filter".to_string());
+                }
+            }
             "==" => {
                 if let Value::Number(num) = &filter.value {
                     if let Some(f) = num.as_f64() {
@@ -193,6 +227,23 @@ pub fn filter_columns(lf: LazyFrame, filtering_info: Vec<Filtering>) -> Result<L
                 } else if let Value::String(date_str) = &filter.value {
                     if let Ok(date) = NaiveDateTime::parse_from_str(date_str, "%Y-%m-%dT%H:%M:%S%.f") {
                         filtered_lf = filtered_lf.filter(col(&filter.column).eq(lit(date)));
+                    } else {
+                        return Err("Invalid date value for filter".to_string());
+                    }
+                } else {
+                    return Err("Invalid value type for equality filter".to_string());
+                }
+            }
+            "!=" => {
+                if let Value::Number(num) = &filter.value {
+                    if let Some(f) = num.as_f64() {
+                        filtered_lf = filtered_lf.filter(col(&filter.column).neq(lit(f)));
+                    } else {
+                        return Err("Invalid number value for filter".to_string());
+                    }
+                } else if let Value::String(date_str) = &filter.value {
+                    if let Ok(date) = NaiveDateTime::parse_from_str(date_str, "%Y-%m-%dT%H:%M:%S%.f") {
+                        filtered_lf = filtered_lf.filter(col(&filter.column).neq(lit(date)));
                     } else {
                         return Err("Invalid date value for filter".to_string());
                     }
@@ -234,6 +285,19 @@ pub fn filter_columns(lf: LazyFrame, filtering_info: Vec<Filtering>) -> Result<L
                 } else if let Value::String(date_str) = &filter.value {
                     if let Ok(date) = NaiveDateTime::parse_from_str(date_str, "%Y-%m-%dT%H:%M:%S%.f") {
                         filtered_lf = filtered_lf.filter(col(&filter.column).eq(lit(date)));
+                    } else {
+                        return Err("Invalid date value for equality filter".to_string());
+                    }
+                } else {
+                    return Err("Invalid value type for equality filter".to_string());
+                }
+            }
+            "different" => {
+                if let Value::String(val) = &filter.value {
+                    filtered_lf = filtered_lf.filter(col(&filter.column).neq(lit(val.as_str())));
+                } else if let Value::String(date_str) = &filter.value {
+                    if let Ok(date) = NaiveDateTime::parse_from_str(date_str, "%Y-%m-%dT%H:%M:%S%.f") {
+                        filtered_lf = filtered_lf.filter(col(&filter.column).neq(lit(date)));
                     } else {
                         return Err("Invalid date value for equality filter".to_string());
                     }

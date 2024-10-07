@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Sorting } from '~/types/app-types'
+import FilterPanel from '~/components/FilterPanel.vue'
 
 const dataStore = useDataStore()
 const tableStore = useTableStore()
@@ -70,9 +71,9 @@ async function handleSorting(sorting: Sorting) {
 }
 
 async function handleFiltering() {
-    tableStore.deselectColumn()
+    // tableStore.deselectColumn()
     // scroll to top
-    const scrollable = document.querySelector('.scrollbar-custom')
+    // const scrollable = document.querySelector('.scrollbar-custom')
 }
 
 function selectColumn(ixCol: number) {
@@ -89,6 +90,8 @@ const tableFontClass = computed(() => {
             return 'font-ubuntu'
     }
 })
+
+const filterPanelOpen = ref(false)
 </script>
 
 <template>
@@ -143,8 +146,13 @@ const tableFontClass = computed(() => {
                                         />
                                         <template #panel>
                                             <div class="p-4">
-                                                <div class="h-20 w-48">
-                                                    <button>dddd</button>
+                                                <div class="min-h-20">
+                                                    <FilterPanel
+                                                        @close="
+                                                            filterPanelOpen = false
+                                                        "
+                                                        :dtype="column.dtype"
+                                                    />
                                                 </div>
                                             </div>
                                         </template>

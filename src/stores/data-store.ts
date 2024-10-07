@@ -1,4 +1,10 @@
-import type { Column, FileMetadata, Shape, Sorting } from '~/types/app-types'
+import type {
+    Column,
+    FileMetadata,
+    Filtering,
+    Shape,
+    Sorting,
+} from '~/types/app-types'
 import { invoke } from '@tauri-apps/api/core'
 import { dtypeCleaner } from '~/utils/dtype-cleaner'
 
@@ -17,6 +23,7 @@ export const useDataStore = defineStore({
         rowsLoadingCounter: 0,
         rowsLoadingInProgress: false,
         sorting: [] as Sorting[],
+        filtering: [] as Filtering[],
     }),
     getters: {
         allRowsLoaded: (state) => {
@@ -42,10 +49,15 @@ export const useDataStore = defineStore({
         async loadParquet(filePath: string) {
             const sorting =
                 this.sorting && this.sorting.length > 0 ? this.sorting : null
+            const filtering =
+                this.filtering && this.filtering.length > 0
+                    ? this.filtering
+                    : null
             try {
                 const data = await invoke<ParquetData>('get_data', {
                     filePath,
                     sorting,
+                    filtering,
                     // filtering: [
                     //     {
                     //         column: 'date',
@@ -90,11 +102,16 @@ export const useDataStore = defineStore({
                     this.sorting && this.sorting.length > 0
                         ? this.sorting
                         : null
+                const filtering =
+                    this.filtering && this.filtering.length > 0
+                        ? this.filtering
+                        : null
                 const data = await invoke('get_more_rows', {
                     filePath: this.filePath,
                     offset: 250 * this.rowsLoadingCounter,
                     limit: 250,
                     sorting: sorting,
+                    filtering: filtering,
                 })
 
                 if (Array.isArray(data)) {

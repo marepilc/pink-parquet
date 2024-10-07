@@ -10,6 +10,12 @@ export interface Sorting {
     ascending: boolean
 }
 
+export interface Filtering {
+    column: string
+    condition: Condition
+    value: string | number | [string, string]
+}
+
 export interface TableData {
     shape: [number, number]
     columns: Array<{ name: string; dtype: string }>
@@ -21,4 +27,16 @@ export interface FileMetadata {
     createdAt: string
     modifiedAt: string
     size: number
+}
+
+export enum Condition {
+    eq = '==',
+    neq = '!=',
+    gt = '>',
+    ge = '>=',
+    lt = '<',
+    le = '<=',
+    between = 'between',
+    equals = 'equals',
+    different = 'different',
 }
