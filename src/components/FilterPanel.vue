@@ -2,6 +2,7 @@
 import { Condition } from '~/types/app-types'
 
 const props = defineProps<{
+    columnName: string
     dtype: string
 }>()
 
@@ -9,6 +10,16 @@ const dataStore = useDataStore()
 
 const selectCondition = ref<Condition | null>(null)
 const value = ref<string | number | [string, string]>('')
+
+onMounted(() => {
+    dataStore.filtering.forEach((filter) => {
+        if (filter.column === props.columnName) {
+            selectCondition.value = filter.condition
+            value.value = filter.value
+            console.log('filter', filter)
+        }
+    })
+})
 
 const emit = defineEmits(['close'])
 

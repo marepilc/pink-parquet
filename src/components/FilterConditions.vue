@@ -6,7 +6,7 @@ const props = defineProps<{
     dtype: string
 }>()
 
-const selectCondition = ref<Condition | null>(null)
+const selectCondition = ref<Condition | null>(props.modelValue)
 
 const emit = defineEmits(['update:modelValue'])
 
@@ -25,7 +25,7 @@ function updateCondition(condition: Condition) {
     <div class="flex gap-1">
         <UButton
             :class="{
-                'bg-pink-200 text-pink-700': selectCondition === Condition.lt,
+                'bg-pink-200 text-pink-700': modelValue === Condition.lt,
             }"
             size="xs"
             color="gray"
@@ -37,7 +37,7 @@ function updateCondition(condition: Condition) {
         </UButton>
         <UButton
             :class="{
-                'bg-pink-200 text-pink-700': selectCondition === Condition.le,
+                'bg-pink-200 text-pink-700': modelValue === Condition.le,
             }"
             size="xs"
             color="gray"
@@ -49,7 +49,7 @@ function updateCondition(condition: Condition) {
         </UButton>
         <UButton
             :class="{
-                'bg-pink-200 text-pink-700': selectCondition === Condition.eq,
+                'bg-pink-200 text-pink-700': modelValue === Condition.eq,
             }"
             size="xs"
             color="gray"
@@ -61,7 +61,7 @@ function updateCondition(condition: Condition) {
         </UButton>
         <UButton
             :class="{
-                'bg-pink-200 text-pink-700': selectCondition === Condition.neq,
+                'bg-pink-200 text-pink-700': modelValue === Condition.neq,
             }"
             size="xs"
             color="gray"
@@ -73,7 +73,7 @@ function updateCondition(condition: Condition) {
         </UButton>
         <UButton
             :class="{
-                'bg-pink-200 text-pink-700': selectCondition === Condition.ge,
+                'bg-pink-200 text-pink-700': modelValue === Condition.ge,
             }"
             size="xs"
             color="gray"
@@ -85,7 +85,7 @@ function updateCondition(condition: Condition) {
         </UButton>
         <UButton
             :class="{
-                'bg-pink-200 text-pink-700': selectCondition === Condition.gt,
+                'bg-pink-200 text-pink-700': modelValue === Condition.gt,
             }"
             size="xs"
             color="gray"
@@ -97,8 +97,7 @@ function updateCondition(condition: Condition) {
         </UButton>
         <UButton
             :class="{
-                'bg-pink-200 text-pink-700':
-                    selectCondition === Condition.between,
+                'bg-pink-200 text-pink-700': modelValue === Condition.between,
             }"
             size="xs"
             color="gray"

@@ -148,6 +148,9 @@ const filterPanelOpen = ref(false)
                                             <div class="p-4">
                                                 <div class="min-h-20">
                                                     <FilterPanel
+                                                        :columnName="
+                                                            column.name
+                                                        "
                                                         @close="
                                                             filterPanelOpen = false
                                                         "
