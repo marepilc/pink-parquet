@@ -22,91 +22,33 @@ function updateCondition(condition: Condition) {
 </script>
 
 <template>
-    <div class="flex gap-1">
-        <UButton
-            :class="{
-                'bg-pink-200 text-pink-700': selectCondition === Condition.lt,
-            }"
-            size="xs"
-            color="gray"
-            square
-            variant="outline"
-            @click="updateCondition(Condition.lt)"
-        >
-            <IconLt class="h-4 w-4" />
-        </UButton>
-        <UButton
-            :class="{
-                'bg-pink-200 text-pink-700': selectCondition === Condition.le,
-            }"
-            size="xs"
-            color="gray"
-            square
-            variant="outline"
-            @click="updateCondition(Condition.le)"
-        >
-            <IconLe class="h-4 w-4" />
-        </UButton>
-        <UButton
-            :class="{
-                'bg-pink-200 text-pink-700': selectCondition === Condition.eq,
-            }"
-            size="xs"
-            color="gray"
-            square
-            variant="outline"
-            @click="updateCondition(Condition.eq)"
-        >
-            <IconEq class="h-4 w-4" />
-        </UButton>
-        <UButton
-            :class="{
-                'bg-pink-200 text-pink-700': selectCondition === Condition.neq,
-            }"
-            size="xs"
-            color="gray"
-            square
-            variant="outline"
-            @click="updateCondition(Condition.neq)"
-        >
-            <IconNeq class="h-4 w-4" />
-        </UButton>
-        <UButton
-            :class="{
-                'bg-pink-200 text-pink-700': selectCondition === Condition.ge,
-            }"
-            size="xs"
-            color="gray"
-            square
-            variant="outline"
-            @click="updateCondition(Condition.ge)"
-        >
-            <IconGe class="h-4 w-4" />
-        </UButton>
-        <UButton
-            :class="{
-                'bg-pink-200 text-pink-700': selectCondition === Condition.gt,
-            }"
-            size="xs"
-            color="gray"
-            square
-            variant="outline"
-            @click="updateCondition(Condition.gt)"
-        >
-            <IconGt class="h-4 w-4" />
-        </UButton>
-        <UButton
-            :class="{
-                'bg-pink-200 text-pink-700':
-                    selectCondition === Condition.between,
-            }"
-            size="xs"
-            color="gray"
-            square
-            variant="outline"
-            @click="updateCondition(Condition.between)"
-        >
-            <IconBetween class="h-4 w-4" />
-        </UButton>
-    </div>
+    <SelectButton
+        :modelValue="selectCondition"
+        :options="[
+            Condition.lt,
+            Condition.le,
+            Condition.eq,
+            Condition.neq,
+            Condition.ge,
+            Condition.gt,
+            Condition.between,
+        ]"
+        @update:modelValue="updateCondition"
+    >
+        <template #option="slotProps">
+            <IconLt v-if="slotProps.option === Condition.lt" class="h-4 w-4" />
+            <IconLe v-if="slotProps.option === Condition.le" class="h-4 w-4" />
+            <IconEq v-if="slotProps.option === Condition.eq" class="h-4 w-4" />
+            <IconNeq
+                v-if="slotProps.option === Condition.neq"
+                class="h-4 w-4"
+            />
+            <IconGe v-if="slotProps.option === Condition.ge" class="h-4 w-4" />
+            <IconGt v-if="slotProps.option === Condition.gt" class="h-4 w-4" />
+            <IconBetween
+                v-if="slotProps.option === Condition.between"
+                class="h-4 w-4"
+            />
+        </template>
+    </SelectButton>
 </template>

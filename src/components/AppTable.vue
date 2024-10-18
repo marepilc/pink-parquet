@@ -91,8 +91,6 @@ const tableFontClass = computed(() => {
     }
 })
 
-const filterPanelOpen = ref(false)
-
 const op = ref()
 const columnFilterIx = ref(null)
 const filterBtnClicked = (event, ix) => {
@@ -107,6 +105,11 @@ const filterBtnClicked = (event, ix) => {
         })
     }
 }
+const closeFilterPanel = () => {
+    columnFilterIx.value = null
+    op.value.hide()
+}
+const date = ref(new Date())
 </script>
 
 <template>
@@ -115,7 +118,12 @@ const filterBtnClicked = (event, ix) => {
         @scroll="onScroll"
     >
         <Popover ref="op">
-            <div class="flex items-center gap-2">hkjhjkhjk</div>
+            <div v-if="columnFilterIx !== null" class="flex items-center gap-2">
+                <FilterPanel
+                    :colIx="columnFilterIx"
+                    @close="closeFilterPanel"
+                />
+            </div>
         </Popover>
         <table
             class="w-full table-fixed cursor-default text-left text-stone-950 dark:text-stone-50"
