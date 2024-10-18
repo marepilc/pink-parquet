@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Condition } from '~/types/app-types'
+import DatePicker from '~/components/DatePicker.vue'
 
 const props = defineProps<{
     dtype: string
@@ -33,6 +34,8 @@ async function clearFiltering() {
     await dataStore.loadParquet(dataStore.filePath)
     emit('close')
 }
+
+const dateValue = ref(new Date())
 </script>
 
 <template>

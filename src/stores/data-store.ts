@@ -180,5 +180,15 @@ export const useDataStore = defineStore({
                 this.sorting.splice(index, 1)
             }
         },
+        updateFiltering(filteringRequest: Filtering) {
+            const index = this.filtering.findIndex(
+                (f) => f.column === filteringRequest.column
+            )
+            if (index === -1) {
+                this.filtering.push(filteringRequest)
+            } else {
+                this.filtering.splice(index, 1)
+            }
+        },
     },
 })

@@ -6,7 +6,7 @@ export default defineNuxtConfig({
     ssr: false,
 
     srcDir: 'src',
-    css: ['~/assets/css/main.css'],
+    css: ['~/assets/css/main.css', '~/assets/css/variables.css'],
 
     // Enables the development server to be discoverable by other devices when running on iOS physical devices
     devServer: { host: process.env.TAURI_DEV_HOST || 'localhost' },
@@ -27,8 +27,21 @@ export default defineNuxtConfig({
     compatibilityDate: '2024-10-01',
     modules: [
         '@pinia/nuxt',
-        '@nuxt/ui',
+        // '@nuxt/ui',
         '@nuxtjs/tailwindcss',
         '@nuxtjs/color-mode',
+        '@primevue/nuxt-module',
     ],
+    primevue: {
+        options: {
+            theme: 'none',
+        },
+    },
+    postcss: {
+        plugins: {
+            'postcss-import': {},
+            tailwindcss: {},
+            autoprefixer: {},
+        },
+    },
 })

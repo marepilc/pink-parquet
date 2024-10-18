@@ -92,13 +92,31 @@ const tableFontClass = computed(() => {
 })
 
 const filterPanelOpen = ref(false)
+
+const op = ref()
+const columnFilterIx = ref(null)
+const filterBtnClicked = (event, ix) => {
+    console.log(op.value.visible)
+    op.value.hide()
+    if (columnFilterIx.value === ix) {
+        columnFilterIx.value = null
+    } else {
+        columnFilterIx.value = ix
+        nextTick(() => {
+            op.value.show(event)
+        })
+    }
+}
 </script>
 
 <template>
     <div
-        class="scrollbar-custom relative h-full overflow-auto"
+        class="scrollbar-custom relative h-full w-full overflow-auto"
         @scroll="onScroll"
     >
+        <Popover ref="op">
+            <div class="flex items-center gap-2">hkjhjkhjk</div>
+        </Popover>
         <table
             class="w-full table-fixed cursor-default text-left text-stone-950 dark:text-stone-50"
             :style="{ width: `${totalTableWidth}px` }"
@@ -135,28 +153,48 @@ const filterPanelOpen = ref(false)
                         >
                             <div class="flex min-w-8 flex-col">
                                 <div class="flex items-center gap-1">
-                                    <UPopover @click.stop>
-                                        <UButton
-                                            size="2xs"
-                                            class="text-stone-400 hover:text-pink-700"
-                                            square
-                                            icon="material-symbols:filter-alt"
-                                            variant="link"
-                                            @click="handleFiltering"
-                                        />
-                                        <template #panel>
-                                            <div class="p-4">
-                                                <div class="min-h-20">
-                                                    <FilterPanel
-                                                        @close="
-                                                            filterPanelOpen = false
-                                                        "
-                                                        :dtype="column.dtype"
-                                                    />
-                                                </div>
-                                            </div>
+                                    <Button
+                                        class="h-4 w-4"
+                                        @click.stop="
+                                            filterBtnClicked($event, ixCol)
+                                        "
+                                        text
+                                    >
+                                        <template #icon>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                class="h-3 w-3"
+                                            >
+                                                <path
+                                                    fill="currentColor"
+                                                    d="M11 20q-.425 0-.712-.288T10 19v-6L4.2 5.6q-.375-.5-.112-1.05T5 4h14q.65 0 .913.55T19.8 5.6L14 13v6q0 .425-.288.713T13 20z"
+                                                />
+                                            </svg>
                                         </template>
-                                    </UPopover>
+                                    </Button>
+                                    <!--                                    <UPopover @click.stop>-->
+                                    <!--                                        <UButton-->
+                                    <!--                                            size="2xs"-->
+                                    <!--                                            class="text-stone-400 hover:text-pink-700"-->
+                                    <!--                                            square-->
+                                    <!--                                            icon="material-symbols:filter-alt"-->
+                                    <!--                                            variant="link"-->
+                                    <!--                                            @click="handleFiltering"-->
+                                    <!--                                        />-->
+                                    <!--                                        <template #panel>-->
+                                    <!--                                            <div class="p-4">-->
+                                    <!--                                                <div class="min-h-20">-->
+                                    <!--                                                    <FilterPanel-->
+                                    <!--                                                        @close="-->
+                                    <!--                                                            filterPanelOpen = false-->
+                                    <!--                                                        "-->
+                                    <!--                                                        :dtype="column.dtype"-->
+                                    <!--                                                    />-->
+                                    <!--                                                </div>-->
+                                    <!--                                            </div>-->
+                                    <!--                                        </template>-->
+                                    <!--                                    </UPopover>-->
 
                                     <div
                                         class="overflow-hidden text-ellipsis whitespace-nowrap"
