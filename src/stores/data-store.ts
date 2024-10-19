@@ -70,13 +70,6 @@ export const useDataStore = defineStore({
                     filePath,
                     sorting,
                     filtering,
-                    // filtering: [
-                    //     {
-                    //         column: 'categorical_col',
-                    //         condition: 'equals',
-                    //         value: 'cat',
-                    //     },
-                    // ],
                 })
 
                 this.columnsInfo = await invoke('get_statistics', { filePath })
@@ -155,7 +148,7 @@ export const useDataStore = defineStore({
             this.rows = [...this.rows, ...rows]
             this.rowsLoadingCounter++
         },
-        resetContent(resetSorting = true) {
+        resetContent(resetSortingAndFiltering = true) {
             this.columns = []
             this.rows = []
             this.noOfRows = 0
@@ -163,8 +156,9 @@ export const useDataStore = defineStore({
             this.rowsLoadingCounter = 0
             this.rowsLoadingInProgress = false
             this.fileMetadata = null
-            if (resetSorting) {
+            if (resetSortingAndFiltering) {
                 this.sorting = []
+                this.filtering = []
             }
         },
         updateDraggedFilePath(filePath: string | null) {
@@ -185,6 +179,9 @@ export const useDataStore = defineStore({
                 this.sorting.splice(index, 1)
             }
         },
+        clearSorting() {
+            this.sorting = []
+        },
         updateFiltering(filteringRequest: Filtering) {
             const index = this.filtering.findIndex(
                 (f) => f.column === filteringRequest.column
@@ -194,6 +191,9 @@ export const useDataStore = defineStore({
             } else {
                 this.filtering[index] = filteringRequest
             }
+        },
+        clearFiltering() {
+            this.filtering = []
         },
         removeFilterByColumn(columnName: string) {
             const index = this.filtering.findIndex(

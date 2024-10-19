@@ -138,7 +138,7 @@ onMounted(() => {
     }
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['filter', 'clear'])
 
 async function filterData() {
     if (selectCondition.value) {
@@ -147,17 +147,17 @@ async function filterData() {
             condition: selectCondition.value,
             value: formattedValue.value,
         })
-        await dataStore.loadParquet(dataStore.filePath)
+        // await dataStore.loadParquet(dataStore.filePath)
     }
     //emit close event
-    emit('close')
+    emit('filter')
 }
 
 async function clearFiltering() {
     const columnName = dataStore.columns[props.colIx].name
     dataStore.removeFilterByColumn(columnName)
-    await dataStore.loadParquet(dataStore.filePath)
-    emit('close')
+    // await dataStore.loadParquet(dataStore.filePath)
+    emit('clear')
 }
 
 const canBeFiltered = computed(() => {

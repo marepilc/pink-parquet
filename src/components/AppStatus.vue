@@ -8,9 +8,9 @@ const closeFile = () => {
 </script>
 
 <template>
-    <div class="flex w-full items-center justify-between">
+    <div class="flex w-full items-center justify-between overflow-hidden">
         <div
-            class="min-w-0 overflow-hidden text-ellipsis whitespace-nowrap pr-6 text-sm italic"
+            class="min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap pr-6 text-sm italic"
         >
             {{ dataStore.filePath }}
         </div>

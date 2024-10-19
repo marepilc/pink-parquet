@@ -18,6 +18,8 @@ onMounted(async () => {
         if (event.payload.type === 'enter') {
             dataStore.updateDraggedFilePath(extractPath(event.payload.paths))
         } else if (event.payload.type === 'drop') {
+            dataStore.updateOpenState(false, '', [0, 0])
+            dataStore.resetContent()
             dataStore.loadParquet(extractPath(event.payload.paths))
         } else if (event.payload.type === 'leave') {
             dataStore.updateDraggedFilePath(null)

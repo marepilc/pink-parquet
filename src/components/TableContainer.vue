@@ -12,16 +12,15 @@ const dataStore = useDataStore()
         <PpPanel>
             <slot name="info"></slot>
         </PpPanel>
-        <PpPanel>
-            <div class="frame">
-                <button
-                    type="button"
-                    @click="$router.push('/settings')"
-                    class="m-0 flex h-5 w-5 items-center justify-center border-none bg-transparent p-0 hover:text-pink-700"
-                >
-                    <IconSettings class="h-5 w-5" />
-                </button>
-            </div>
+        <PpPanel class="flex w-full items-center justify-between gap-3">
+            <Button
+                class="h-8 w-8 p-1"
+                type="button"
+                @click="$router.push('/settings')"
+            >
+                <IconSettings class="h-5 w-5" />
+            </Button>
+
             <slot name="status"></slot>
         </PpPanel>
     </div>

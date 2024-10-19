@@ -49,7 +49,7 @@
     /*    font-family: Optima, Candara, 'Noto Sans', source-sans-pro, sans-serif;*/
     /*}*/
     body {
-        @apply text-surface-900 dark:text-surface-0 bg-surface-50 dark:bg-surface-950 transition-colors duration-500;
+        @apply text-surface-900 dark:text-surface-0 bg-surface-50 dark:bg-surface-950 transition-colors duration-500 selection:bg-primary-400;
     }
 }
 
