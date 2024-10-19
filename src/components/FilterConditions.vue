@@ -16,7 +16,7 @@ onMounted(() => {
         emit('update:modelValue', Condition.eq)
         return
     }
-    if (props.dtype === 'String') {
+    if (props.dtype === 'String' || props.dtype === 'Categorical') {
         selectCondition.value = Condition.equals
         emit('update:modelValue', Condition.equals)
         return
@@ -41,7 +41,7 @@ function updateCondition(condition: Condition) {
 }
 
 const fixedCondition = computed(() => {
-    return ['Boolean', 'String'].includes(props.dtype)
+    return ['Boolean', 'String', 'Categorical'].includes(props.dtype)
 })
 </script>
 

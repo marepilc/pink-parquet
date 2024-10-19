@@ -154,7 +154,8 @@ async function filterData() {
 }
 
 async function clearFiltering() {
-    dataStore.filtering = []
+    const columnName = dataStore.columns[props.colIx].name
+    dataStore.removeFilterByColumn(columnName)
     await dataStore.loadParquet(dataStore.filePath)
     emit('close')
 }

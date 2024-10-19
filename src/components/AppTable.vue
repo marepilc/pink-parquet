@@ -172,6 +172,9 @@ const date = ref(new Date())
                                                 ? 'text-primary'
                                                 : 'text-surface-500'
                                         "
+                                        :disabled="
+                                            tableStore.filterDisabled(column)
+                                        "
                                         text
                                     >
                                         <template #icon>

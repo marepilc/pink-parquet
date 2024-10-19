@@ -72,9 +72,9 @@ export const useDataStore = defineStore({
                     filtering,
                     // filtering: [
                     //     {
-                    //         column: 'string_col',
+                    //         column: 'categorical_col',
                     //         condition: 'equals',
-                    //         value: 'foo',
+                    //         value: 'cat',
                     //     },
                     // ],
                 })
@@ -193,6 +193,14 @@ export const useDataStore = defineStore({
                 this.filtering.push(filteringRequest)
             } else {
                 this.filtering[index] = filteringRequest
+            }
+        },
+        removeFilterByColumn(columnName: string) {
+            const index = this.filtering.findIndex(
+                (f) => f.column === columnName
+            )
+            if (index !== -1) {
+                this.filtering.splice(index, 1)
             }
         },
     },
