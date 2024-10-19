@@ -21,5 +21,5 @@
 }
 
 .p-selectbutton.p-invalid {
-    @apply outline outline-offset-0 outline-red-400 dark:outline-red-300
+    @apply outline outline-offset-0 outline-red-400 dark:outline-red-300 bg-primary-300
 }

@@ -8,6 +8,13 @@ const props = defineProps<{
 
 const selectCondition = ref<Condition | null>(null)
 
+watch(
+    () => props.modelValue,
+    (newValue) => {
+        selectCondition.value = newValue
+    }
+)
+
 const emit = defineEmits(['update:modelValue'])
 
 function updateCondition(condition: Condition) {

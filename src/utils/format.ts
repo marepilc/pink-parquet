@@ -1,16 +1,47 @@
+// Helper function to pad a number with leading zeros
+function padNumber(num: number, length: number): string {
+    return String(num).padStart(length, '0')
+}
+
+// Centralized date formatting function
+function formatDateToParts(date: Date): {
+    year: string
+    month: string
+    day: string
+    hours: string
+    minutes: string
+    seconds: string
+    milliseconds: string
+} {
+    const year = String(date.getFullYear())
+    const month = padNumber(date.getMonth() + 1, 2) // Months are 0-based
+    const day = padNumber(date.getDate(), 2)
+    const hours = padNumber(date.getHours(), 2)
+    const minutes = padNumber(date.getMinutes(), 2)
+    const seconds = padNumber(date.getSeconds(), 2)
+    const milliseconds = padNumber(date.getMilliseconds(), 3)
+
+    return { year, month, day, hours, minutes, seconds, milliseconds }
+}
+
+// Formats an ISO string to 'YYYY-MM-DD HH:mm'
 export function formatToLocalDateTime(isoString: string): string {
     const date = new Date(isoString)
     if (isNaN(date.getTime())) {
         throw new Error('Invalid date string')
     }
 
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0') // Months are 0-based
-    const day = String(date.getDate()).padStart(2, '0')
-    const hours = String(date.getHours()).padStart(2, '0')
-    const minutes = String(date.getMinutes()).padStart(2, '0')
+    const { year, month, day, hours, minutes } = formatDateToParts(date)
 
     return `${year}-${month}-${day} ${hours}:${minutes}`
+}
+
+// Formats a Date object to 'YYYY-MM-DDTHH:mm:ss.SSS'
+export function formatDate(date: Date): string {
+    const { year, month, day, hours, minutes, seconds, milliseconds } =
+        formatDateToParts(date)
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}`
 }
 
 export function bytesForHuman(bytes: number): string {

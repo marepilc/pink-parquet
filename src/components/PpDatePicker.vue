@@ -342,7 +342,7 @@ onBeforeUnmount(() => {
         <div
             v-if="pickerOpen"
             ref="pickerRef"
-            class="min-w-60 scale-95 transform rounded-md border border-surface-300 bg-form-light opacity-0 shadow-md transition-all duration-300 ease-out dark:border-surface-800 dark:bg-form-dark"
+            class="min-w-60 scale-95 transform rounded-md border border-surface-300 bg-surface-100 opacity-0 shadow-md transition-all duration-300 ease-out dark:border-surface-800 dark:bg-surface-800"
             :class="pickerOpen ? 'scale-100 opacity-100' : ''"
             style="position: absolute; z-index: 10"
         >
@@ -428,10 +428,10 @@ onBeforeUnmount(() => {
                             class="cursor-default rounded p-1 text-center"
                             :class="[
                                 day.currentMonth
-                                    ? 'cursor-pointer text-ink-950 hover:bg-primary-100 hover:!text-ink-950 dark:text-ink-50'
-                                    : 'text-ink-400 dark:text-ink-600',
+                                    ? 'cursor-pointer text-surface-950 hover:bg-primary-100 hover:!text-surface-950 dark:text-surface-50'
+                                    : 'text-surface-400 dark:text-surface-600',
                                 isSelectedDay(day)
-                                    ? 'bg-primary-500 !text-ink-50'
+                                    ? 'bg-primary-500 !text-surface-50'
                                     : '',
                             ]"
                             @click="selectDate(day)"
@@ -462,9 +462,9 @@ onBeforeUnmount(() => {
                         :key="'month-' + ix"
                         class="cursor-pointer rounded p-1 text-center"
                         :class="[
-                            'hover:bg-primary-100 hover:!text-ink-950 dark:text-ink-50',
+                            'hover:bg-primary-100 hover:!text-surface-950 dark:text-surface-50',
                             selectedDate.getMonth() === ix
-                                ? 'bg-primary-500 !text-ink-50'
+                                ? 'bg-primary-500 !text-surface-50'
                                 : '',
                         ]"
                         @click.stop="changeDateMonth(ix)"
@@ -483,9 +483,9 @@ onBeforeUnmount(() => {
                         :key="'year-' + ix"
                         class="cursor-pointer rounded p-1 text-center"
                         :class="[
-                            'hover:bg-primary-100 hover:!text-ink-950 dark:text-ink-50',
+                            'hover:bg-primary-100 hover:!text-surface-950 dark:text-surface-50',
                             selectedDate.getFullYear() === year
-                                ? 'bg-primary-500 !text-ink-50'
+                                ? 'bg-primary-500 !text-surface-50'
                                 : '',
                         ]"
                         @click.stop="changeDateYear(year)"
@@ -501,7 +501,7 @@ onBeforeUnmount(() => {
             type="button"
             ref="buttonRef"
             @click="toggleSelector"
-            class="mt-4 cursor-default rounded border border-surface-300 bg-form-light px-3 py-1.5 text-center focus:outline-none focus:ring-1 focus:ring-primary-500 focus:ring-opacity-50 focus:ring-offset-2 focus:ring-offset-surface-50 dark:border-surface-800 dark:bg-form-dark dark:focus:ring-offset-surface-950"
+            class="mt-4 cursor-default rounded border border-surface-300 bg-surface-100 px-3 py-1.5 text-center focus:outline-none focus:ring-1 focus:ring-primary-500 focus:ring-opacity-50 focus:ring-offset-2 focus:ring-offset-surface-50 dark:border-surface-800 dark:bg-surface-800 dark:focus:ring-offset-surface-950"
         >
             {{ formatDate(selectedDate, props.format) }}
         </button>

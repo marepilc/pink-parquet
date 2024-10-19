@@ -44,6 +44,18 @@ export const useDataStore = defineStore({
                 return ix !== -1 ? ix + 1 : null
             }
         },
+        columnIndexInFiltering: (state) => {
+            return (column: string) => {
+                const ix = state.filtering.findIndex((f) => f.column === column)
+                return ix !== -1 ? ix : null
+            }
+        },
+        columnInFiltering: (state) => {
+            return (column: string) => {
+                const ix = state.filtering.findIndex((f) => f.column === column)
+                return ix !== -1
+            }
+        },
     },
     actions: {
         async loadParquet(filePath: string) {
@@ -60,16 +72,9 @@ export const useDataStore = defineStore({
                     filtering,
                     // filtering: [
                     //     {
-                    //         column: 'date',
-                    //         condition: 'between',
-                    //         value: [
-                    //             new Date('2024-01-13')
-                    //                 .toISOString()
-                    //                 .slice(0, -1),
-                    //             new Date('2024-01-13')
-                    //                 .toISOString()
-                    //                 .slice(0, -1),
-                    //         ],
+                    //         column: 'boolean_col',
+                    //         condition: '==',
+                    //         value: true,
                     //     },
                     // ],
                 })
@@ -187,7 +192,7 @@ export const useDataStore = defineStore({
             if (index === -1) {
                 this.filtering.push(filteringRequest)
             } else {
-                this.filtering.splice(index, 1)
+                this.filtering[index] = filteringRequest
             }
         },
     },

@@ -224,6 +224,8 @@ pub fn filter_columns(lf: LazyFrame, filtering_info: Vec<Filtering>) -> Result<L
                     } else {
                         return Err("Invalid number value for filter".to_string());
                     }
+                } else if let Value::Bool(b) = &filter.value {
+                    filtered_lf = filtered_lf.filter(col(&filter.column).eq(lit(*b)));
                 } else if let Value::String(date_str) = &filter.value {
                     if let Ok(date) = NaiveDateTime::parse_from_str(date_str, "%Y-%m-%dT%H:%M:%S%.f") {
                         filtered_lf = filtered_lf.filter(col(&filter.column).eq(lit(date)));

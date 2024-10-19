@@ -94,7 +94,6 @@ const tableFontClass = computed(() => {
 const op = ref()
 const columnFilterIx = ref(null)
 const filterBtnClicked = (event, ix) => {
-    console.log(op.value.visible)
     op.value.hide()
     if (columnFilterIx.value === ix) {
         columnFilterIx.value = null
@@ -166,6 +165,13 @@ const date = ref(new Date())
                                         @click.stop="
                                             filterBtnClicked($event, ixCol)
                                         "
+                                        :class="
+                                            dataStore.columnInFiltering(
+                                                column.name
+                                            )
+                                                ? 'text-primary'
+                                                : 'text-surface-500'
+                                        "
                                         text
                                     >
                                         <template #icon>
@@ -181,28 +187,6 @@ const date = ref(new Date())
                                             </svg>
                                         </template>
                                     </Button>
-                                    <!--                                    <UPopover @click.stop>-->
-                                    <!--                                        <UButton-->
-                                    <!--                                            size="2xs"-->
-                                    <!--                                            class="text-stone-400 hover:text-pink-700"-->
-                                    <!--                                            square-->
-                                    <!--                                            icon="material-symbols:filter-alt"-->
-                                    <!--                                            variant="link"-->
-                                    <!--                                            @click="handleFiltering"-->
-                                    <!--                                        />-->
-                                    <!--                                        <template #panel>-->
-                                    <!--                                            <div class="p-4">-->
-                                    <!--                                                <div class="min-h-20">-->
-                                    <!--                                                    <FilterPanel-->
-                                    <!--                                                        @close="-->
-                                    <!--                                                            filterPanelOpen = false-->
-                                    <!--                                                        "-->
-                                    <!--                                                        :dtype="column.dtype"-->
-                                    <!--                                                    />-->
-                                    <!--                                                </div>-->
-                                    <!--                                            </div>-->
-                                    <!--                                        </template>-->
-                                    <!--                                    </UPopover>-->
 
                                     <div
                                         class="overflow-hidden text-ellipsis whitespace-nowrap"
@@ -224,45 +208,70 @@ const date = ref(new Date())
                                     </div>
                                 </div>
                             </div>
-                            <div class="flex flex-col text-stone-400">
-                                <ActionBtn
+                            <div class="flex flex-col">
+                                <Button
                                     @click.stop="
                                         handleSorting({
                                             column: column.name,
                                             ascending: true,
                                         })
                                     "
-                                    class="h-4 w-4 hover:text-pink-700"
+                                    class="h-4 w-4 text-surface-500"
                                     :class="{
-                                        'text-pink-700':
+                                        '!text-primary':
                                             dataStore.indexInSorting({
                                                 column: column.name,
                                                 ascending: true,
                                             }),
                                     }"
+                                    text
                                 >
-                                    <IconAsc />
-                                </ActionBtn>
-                                <ActionBtn
+                                    <template #icon>
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            class="h-3 w-3"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="currentColor"
+                                        >
+                                            <path
+                                                d="m12 3.167 10.406 17.666H1.595L12 3.167Z"
+                                            />
+                                        </svg>
+                                    </template>
+                                </Button>
+                                <Button
                                     @click.stop="
                                         handleSorting({
                                             column: column.name,
                                             ascending: false,
                                         })
                                     "
-                                    class="h-4 w-4 hover:text-pink-700"
+                                    class="h-4 w-4 text-surface-500"
                                     :class="{
-                                        'text-pink-700':
+                                        '!text-primary':
                                             dataStore.indexInSorting({
                                                 column: column.name,
                                                 ascending: false,
                                             }),
                                     }"
+                                    text
                                 >
-                                    <IconDesc />
-                                </ActionBtn>
+                                    <template #icon>
+                                        <svg
+                                            viewBox="0 0 24 24"
+                                            class="h-3 w-3"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="currentColor"
+                                        >
+                                            <path
+                                                d="M12 20.833 1.594 3.167h21.812L12 20.833Z"
+                                            />
+                                        </svg>
+                                    </template>
+                                </Button>
+
                                 <div
-                                    class="flex h-4 items-center justify-center text-pink-700"
+                                    class="flex h-4 items-center justify-center text-primary"
                                 >
                                     {{
                                         dataStore.columnIndexInSorting(
