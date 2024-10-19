@@ -34,6 +34,8 @@ const filterType = computed(() => {
         ].includes(dtype.value)
     ) {
         return 'number'
+    } else if (dtype.value === 'Boolean') {
+        return 'boolean'
     } else {
         return 'text'
     }
@@ -81,6 +83,10 @@ const formattedValue = computed(() => {
         ) {
             return [value.value, value2.value]
         }
+    } else if (filterType.value === 'boolean') {
+        return value.value
+    } else if (filterType.value === 'text') {
+        return value.value
     }
 
     return null
@@ -88,11 +94,19 @@ const formattedValue = computed(() => {
 
 onMounted(() => {
     const ixInFiltering = dataStore.columnIndexInFiltering(columnName.value)
-    if (dataStore.filtering.length && ixInFiltering > -1) {
-        const filter =
-            dataStore.filtering[
-                dataStore.columnIndexInFiltering(columnName.value)
-            ]
+    console.log(
+        'ixInFiltering',
+        ixInFiltering,
+        ixInFiltering > -1,
+        columnName.value
+    )
+    if (
+        dataStore.filtering.length &&
+        ixInFiltering !== null &&
+        ixInFiltering > -1
+    ) {
+        const filter = dataStore.filtering[ixInFiltering]
+        console.log('filter', filter)
         selectCondition.value = filter.condition
         if (filterType.value === 'datetime') {
             // parse date from value to model value
@@ -116,6 +130,10 @@ onMounted(() => {
                 value.value = val1
                 value2.value = val2
             }
+        } else if (filterType.value === 'boolean') {
+            value.value = filter.value
+        } else if (filterType.value === 'text') {
+            value.value = filter.value
         }
     }
 })
@@ -142,7 +160,7 @@ async function clearFiltering() {
 }
 
 const canBeFiltered = computed(() => {
-    return !selectCondition.value || !formattedValue.value
+    return selectCondition.value !== null && formattedValue.value !== null
 })
 </script>
 
@@ -159,14 +177,37 @@ const canBeFiltered = computed(() => {
             />
         </div>
         <div v-else-if="filterType == 'number'" class="flex gap-1">
-            <InputNumber v-model="value" />
+            <InputNumber
+                v-model="value"
+                :minFractionDigits="0"
+                :maxFractionDigits="4"
+                @input="value = $event.value"
+            />
             <InputNumber
                 v-if="selectCondition === Condition.between"
                 v-model="value2"
+                :minFractionDigits="0"
+                :maxFractionDigits="4"
+                @input="value = $event.value"
             />
         </div>
+        <div v-else-if="filterType == 'boolean'" class="flex gap-1">
+            <SelectButton
+                v-model="value"
+                :options="[
+                    { label: 'True', value: true },
+                    { label: 'False', value: false },
+                ]"
+                :option-label="(option) => option.label"
+                :option-value="(option) => option.value"
+                class="w-32"
+            />
+        </div>
+        <div v-else-if="filterType == 'text'" class="flex gap-1">
+            <InputText v-model="value" class="w-48" />
+        </div>
         <div class="flex gap-2">
-            <Button @click="filterData" :disabled="canBeFiltered">
+            <Button @click="filterData" :disabled="!canBeFiltered">
                 Filter
             </Button>
             <Button @click="clearFiltering" outlined>Clear</Button>

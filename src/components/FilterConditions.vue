@@ -6,7 +6,22 @@ const props = defineProps<{
     dtype: string
 }>()
 
+const emit = defineEmits(['update:modelValue'])
+
 const selectCondition = ref<Condition | null>(null)
+
+onMounted(() => {
+    if (props.dtype === 'Boolean') {
+        selectCondition.value = Condition.eq
+        emit('update:modelValue', Condition.eq)
+        return
+    }
+    if (props.dtype === 'String') {
+        selectCondition.value = Condition.equals
+        emit('update:modelValue', Condition.equals)
+        return
+    }
+})
 
 watch(
     () => props.modelValue,
@@ -14,8 +29,6 @@ watch(
         selectCondition.value = newValue
     }
 )
-
-const emit = defineEmits(['update:modelValue'])
 
 function updateCondition(condition: Condition) {
     if (condition === selectCondition.value) {
@@ -26,10 +39,16 @@ function updateCondition(condition: Condition) {
         emit('update:modelValue', condition)
     }
 }
+
+const fixedCondition = computed(() => {
+    return ['Boolean', 'String'].includes(props.dtype)
+})
 </script>
 
 <template>
+    <div v-if="fixedCondition"></div>
     <SelectButton
+        v-else
         :modelValue="selectCondition"
         :options="[
             Condition.lt,

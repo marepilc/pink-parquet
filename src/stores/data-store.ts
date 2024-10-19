@@ -72,9 +72,9 @@ export const useDataStore = defineStore({
                     filtering,
                     // filtering: [
                     //     {
-                    //         column: 'boolean_col',
-                    //         condition: '==',
-                    //         value: true,
+                    //         column: 'string_col',
+                    //         condition: 'equals',
+                    //         value: 'foo',
                     //     },
                     // ],
                 })
