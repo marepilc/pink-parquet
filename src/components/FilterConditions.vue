@@ -8,62 +8,60 @@ const props = defineProps<{
 
 const emit = defineEmits(['update:modelValue'])
 
-const selectCondition = ref<Condition | null>(null)
-
-const conditionOptions = ref<Condition[]>()
+const selectedCondition = ref<Condition | null>(null)
 
 onMounted(() => {
     if (props.dtype === 'Boolean') {
-        selectCondition.value = Condition.eq
+        selectedCondition.value = Condition.eq
         emit('update:modelValue', Condition.eq)
         return
     }
     if (props.dtype === 'String' || props.dtype === 'Categorical') {
-        selectCondition.value = Condition.equals
+        selectedCondition.value = Condition.equals
         emit('update:modelValue', Condition.equals)
         return
     }
-    if (['String', 'Categorical'].includes(props.dtype)) {
-        conditionOptions.value = [
-            Condition.equals,
-            Condition.notEquals,
-            Condition.isNull,
-            Condition.isNotNull,
-        ]
-    } else if (props.dtype === 'Boolean') {
-        conditionOptions.value = [
-            Condition.eq,
-            Condition.isNull,
-            Condition.isNotNull,
-        ]
-    } else {
-        conditionOptions.value = [
-            Condition.lt,
-            Condition.le,
-            Condition.eq,
-            Condition.neq,
-            Condition.ge,
-            Condition.gt,
-            Condition.between,
-            Condition.isNull,
-            Condition.isNotNull,
-        ]
-    }
+    // if (['String', 'Categorical'].includes(props.dtype)) {
+    //     conditionOptions.value = [
+    //         Condition.equals,
+    //         Condition.notEquals,
+    //         Condition.isNull,
+    //         Condition.isNotNull,
+    //     ]
+    // } else if (props.dtype === 'Boolean') {
+    //     conditionOptions.value = [
+    //         Condition.eq,
+    //         Condition.isNull,
+    //         Condition.isNotNull,
+    //     ]
+    // } else {
+    //     conditionOptions.value = [
+    //         Condition.lt,
+    //         Condition.le,
+    //         Condition.eq,
+    //         Condition.neq,
+    //         Condition.ge,
+    //         Condition.gt,
+    //         Condition.between,
+    //         Condition.isNull,
+    //         Condition.isNotNull,
+    //     ]
+    // }
 })
 
 watch(
     () => props.modelValue,
     (newValue) => {
-        selectCondition.value = newValue
+        selectedCondition.value = newValue
     }
 )
 
 function updateCondition(condition: Condition) {
-    if (condition === selectCondition.value) {
-        selectCondition.value = null
+    if (condition === selectedCondition.value) {
+        selectedCondition.value = null
         emit('update:modelValue', null)
     } else {
-        selectCondition.value = condition
+        selectedCondition.value = condition
         emit('update:modelValue', condition)
     }
 }
@@ -74,11 +72,49 @@ const fixedCondition = computed(() => {
 </script>
 
 <template>
-    <div v-if="fixedCondition"></div>
+    <SelectButton
+        v-if="['String', 'Categorical'].includes(props.dtype)"
+        :modelValue="selectedCondition"
+        :options="[
+            Condition.equals,
+            Condition.different,
+            Condition.isNull,
+            Condition.isNotNull,
+        ]"
+        @update:modelValue="updateCondition"
+    >
+        <template #option="slotProps">
+            <IconEq v-if="slotProps.option === Condition.eq" class="h-4 w-4" />
+            <IconNeq
+                v-if="slotProps.option === Condition.different"
+                class="h-4 w-4"
+            />
+        </template>
+    </SelectButton>
+    <SelectButton
+        v-else-if="props.dtype === 'Boolean'"
+        :modelValue="selectedCondition"
+        :options="[Condition.eq, Condition.isNull, Condition.isNotNull]"
+        @update:modelValue="updateCondition"
+    >
+        <template #option="slotProps">
+            <IconEq v-if="slotProps.option === Condition.eq" class="h-4 w-4" />
+        </template>
+    </SelectButton>
     <SelectButton
         v-else
-        :modelValue="selectCondition"
-        :options="conditionOptions"
+        :modelValue="selectedCondition"
+        :options="[
+            Condition.lt,
+            Condition.le,
+            Condition.eq,
+            Condition.neq,
+            Condition.ge,
+            Condition.gt,
+            Condition.between,
+            Condition.isNull,
+            Condition.isNotNull,
+        ]"
         @update:modelValue="updateCondition"
     >
         <template #option="slotProps">
