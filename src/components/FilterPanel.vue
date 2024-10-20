@@ -191,7 +191,15 @@ function onEnterKey(event: KeyboardEvent) {
     <div class="flex flex-col items-center gap-2" @keydown.enter="onEnterKey">
         <FilterConditions :dtype="dtype" v-model="selectCondition" />
         <div v-if="filterType == 'datetime'" class="flex gap-1">
-            <DatePicker class="w-32" v-model="value" dateFormat="yy-mm-dd" />
+            <DatePicker
+                class="w-32"
+                v-model="value"
+                dateFormat="yy-mm-dd"
+                :disabled="
+                    selectCondition === Condition.isNull ||
+                    selectCondition === Condition.isNotNull
+                "
+            />
             <DatePicker
                 v-if="selectCondition === Condition.between"
                 v-model="value2"
@@ -205,6 +213,10 @@ function onEnterKey(event: KeyboardEvent) {
                 :minFractionDigits="0"
                 :maxFractionDigits="4"
                 @input="value = $event.value"
+                :disabled="
+                    selectCondition === Condition.isNull ||
+                    selectCondition === Condition.isNotNull
+                "
             />
             <InputNumber
                 v-if="selectCondition === Condition.between"
@@ -224,10 +236,21 @@ function onEnterKey(event: KeyboardEvent) {
                 :option-label="(option) => option.label"
                 :option-value="(option) => option.value"
                 class="w-32"
+                :disabled="
+                    selectCondition === Condition.isNull ||
+                    selectCondition === Condition.isNotNull
+                "
             />
         </div>
         <div v-else-if="filterType == 'text'" class="flex gap-1">
-            <InputText v-model="value" class="w-48" />
+            <InputText
+                v-model="value"
+                class="w-48"
+                :disabled="
+                    selectCondition === Condition.isNull ||
+                    selectCondition === Condition.isNotNull
+                "
+            />
         </div>
         <div class="flex gap-2">
             <Button @click="filterData" :disabled="!canBeFiltered">
