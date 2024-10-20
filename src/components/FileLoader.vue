@@ -4,7 +4,7 @@ const dataStore = useDataStore()
 
 <template>
     <div
-        class="flex h-full w-full flex-col items-center justify-center gap-4 rounded-2xl border-2 border-dashed border-pink-700 bg-stone-50/75 dark:bg-stone-900/90"
+        class="flex h-full min-h-0 w-full min-w-0 flex-col items-center justify-center gap-4 overflow-hidden rounded-2xl border-2 border-dashed border-pink-700 bg-stone-50/75 dark:bg-stone-900/90"
     >
         <div
             class="h-32 w-32 text-pink-700"
@@ -12,8 +12,18 @@ const dataStore = useDataStore()
         >
             <IconParquetFile />
         </div>
-        <p>{{ dataStore.draggedFilePath }}</p>
+        <div
+            class="grow-1 mx-auto flex w-[90%] justify-center overflow-hidden break-words px-4 py-2 text-center"
+        >
+            {{ dataStore.draggedFilePath }}
+        </div>
+        <div class="text-4xl font-bold text-primary-700">DROP ZONE</div>
     </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* Ensure long words are broken to fit within the container */
+.flex > .grow-1 {
+    word-break: break-all;
+}
+</style>
