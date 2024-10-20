@@ -39,4 +39,6 @@ export enum Condition {
     between = 'between',
     equals = 'equals',
     different = 'different',
+    isNull = 'is_null',
+    isNotNull = 'is_not_null',
 }

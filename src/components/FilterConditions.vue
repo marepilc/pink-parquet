@@ -10,6 +10,8 @@ const emit = defineEmits(['update:modelValue'])
 
 const selectCondition = ref<Condition | null>(null)
 
+const conditionOptions = ref<Condition[]>()
+
 onMounted(() => {
     if (props.dtype === 'Boolean') {
         selectCondition.value = Condition.eq
@@ -20,6 +22,32 @@ onMounted(() => {
         selectCondition.value = Condition.equals
         emit('update:modelValue', Condition.equals)
         return
+    }
+    if (['String', 'Categorical'].includes(props.dtype)) {
+        conditionOptions.value = [
+            Condition.equals,
+            Condition.notEquals,
+            Condition.isNull,
+            Condition.isNotNull,
+        ]
+    } else if (props.dtype === 'Boolean') {
+        conditionOptions.value = [
+            Condition.eq,
+            Condition.isNull,
+            Condition.isNotNull,
+        ]
+    } else {
+        conditionOptions.value = [
+            Condition.lt,
+            Condition.le,
+            Condition.eq,
+            Condition.neq,
+            Condition.ge,
+            Condition.gt,
+            Condition.between,
+            Condition.isNull,
+            Condition.isNotNull,
+        ]
     }
 })
 
@@ -50,15 +78,7 @@ const fixedCondition = computed(() => {
     <SelectButton
         v-else
         :modelValue="selectCondition"
-        :options="[
-            Condition.lt,
-            Condition.le,
-            Condition.eq,
-            Condition.neq,
-            Condition.ge,
-            Condition.gt,
-            Condition.between,
-        ]"
+        :options="conditionOptions"
         @update:modelValue="updateCondition"
     >
         <template #option="slotProps">

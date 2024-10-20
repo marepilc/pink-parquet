@@ -307,6 +307,12 @@ pub fn filter_columns(lf: LazyFrame, filtering_info: Vec<Filtering>) -> Result<L
                     return Err("Invalid value type for equality filter".to_string());
                 }
             }
+            "is_null" => {
+                filtered_lf = filtered_lf.filter(col(&filter.column).is_null());
+            }
+            "is_not_null" => {
+                filtered_lf = filtered_lf.filter(col(&filter.column).is_not_null());
+            }
             _ => return Err(format!("Unknown filter condition: {}", filter.condition)),
         }
     }
