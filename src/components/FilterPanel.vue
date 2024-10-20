@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Condition } from '~/types/app-types'
-
 import { formatDate } from '~/utils/format'
 
 const props = defineProps<{
@@ -94,19 +93,12 @@ const formattedValue = computed(() => {
 
 onMounted(() => {
     const ixInFiltering = dataStore.columnIndexInFiltering(columnName.value)
-    console.log(
-        'ixInFiltering',
-        ixInFiltering,
-        ixInFiltering > -1,
-        columnName.value
-    )
     if (
         dataStore.filtering.length &&
         ixInFiltering !== null &&
         ixInFiltering > -1
     ) {
         const filter = dataStore.filtering[ixInFiltering]
-        console.log('filter', filter)
         selectCondition.value = filter.condition
         if (filterType.value === 'datetime') {
             // parse date from value to model value
@@ -147,26 +139,49 @@ async function filterData() {
             condition: selectCondition.value,
             value: formattedValue.value,
         })
-        // await dataStore.loadParquet(dataStore.filePath)
     }
-    //emit close event
     emit('filter')
 }
 
 async function clearFiltering() {
     const columnName = dataStore.columns[props.colIx].name
     dataStore.removeFilterByColumn(columnName)
-    // await dataStore.loadParquet(dataStore.filePath)
     emit('clear')
 }
 
 const canBeFiltered = computed(() => {
-    return selectCondition.value !== null && formattedValue.value !== null
+    if (selectCondition.value === null) {
+        return false
+    }
+
+    if (
+        filterType.value === 'number' ||
+        filterType.value === 'text' ||
+        filterType.value === 'datetime'
+    ) {
+        return value.value !== null && value.value !== ''
+    }
+
+    if (filterType.value === 'boolean') {
+        return value.value !== null
+    }
+
+    if (selectCondition.value === Condition.between) {
+        return value.value !== null && value2.value !== null
+    }
+
+    return value.value !== null
 })
+
+function onEnterKey(event: KeyboardEvent) {
+    if (event.key === 'Enter' && canBeFiltered.value) {
+        filterData()
+    }
+}
 </script>
 
 <template>
-    <div class="flex flex-col items-center gap-2">
+    <div class="flex flex-col items-center gap-2" @keydown.enter="onEnterKey">
         <FilterConditions :dtype="dtype" v-model="selectCondition" />
         <div v-if="filterType == 'datetime'" class="flex gap-1">
             <DatePicker class="w-32" v-model="value" dateFormat="yy-mm-dd" />
@@ -215,5 +230,3 @@ const canBeFiltered = computed(() => {
         </div>
     </div>
 </template>
-
-<style scoped></style>

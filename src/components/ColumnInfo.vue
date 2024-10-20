@@ -5,10 +5,7 @@ const tableStore = useTableStore()
 </script>
 
 <template>
-    <div
-        v-if="tableStore.selectedColumn"
-        class="flex grow flex-col border-l border-l-stone-500 px-2"
-    >
+    <div class="flex grow flex-col border-l border-l-stone-500 px-2">
         <div class="flex flex-col">
             <div class="flex items-center gap-2">
                 <DtypeIcon

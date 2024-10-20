@@ -138,7 +138,7 @@ const speedDialItems = ref([
     },
     {
         name: 'Clear Sorting',
-        icon: 'M3.205 13.1c-.603 0-1.1-.497-1.1-1.1 0-.603.497-1.1 1.1-1.1h17.59c.603 0 1.1.497 1.1 1.1 0 .603-.497 1.1-1.1 1.1H3.205ZM8.38 8.38a1.099 1.099 0 0 1-1.555-1.555l4.397-4.397a1.1 1.1 0 0 1 1.556 0l4.397 4.397A1.1 1.1 0 0 1 15.62 8.38L12 4.76 8.38 8.38Zm7.24 7.24a1.099 1.099 0 0 1 1.555 1.555l-4.397 4.397a1.1 1.1 0 0 1-1.556 0l-4.397-4.397A1.1 1.1 0 0 1 8.38 15.62L12 19.24l3.62-3.62Z',
+        icon: 'M24 22.303 22.273 24 11.606 13.333H2.105v-2.666h6.834l-4-4H2.105V4h.167L0 1.727 1.697 0 24 22.303ZM9.121 4h12.774v2.667H11.788L9.121 4ZM2.105 20v-2.667h6.597V20H2.105Z',
         command: () => {
             tableStore.deselectColumn()
             // scroll to top
@@ -191,7 +191,7 @@ const speedDialVisible = computed(() => {
             <template #item="{ item, toggleCallback }">
                 <Button
                     severity="secondary"
-                    class="m-0 h-8 w-8 p-1 text-primary disabled:text-surface-500 disabled:opacity-100"
+                    class="m-0 h-8 w-8 p-1 text-primary hover:!text-primary-700 disabled:text-surface-500 disabled:opacity-100 hover:disabled:!text-surface-500"
                     @click="toggleCallback"
                     raised
                     :disabled="!buttonEnabled(item.name)"

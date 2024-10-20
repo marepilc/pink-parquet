@@ -105,3 +105,8 @@ export function convertToDuration(nanoseconds) {
 
     return `${seconds}s ${remainingMilliseconds}ms`
 }
+
+export function numberThousandsSeparator(num: number | string): string {
+    // Convert the number to a string and use a regular expression to add commas
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
