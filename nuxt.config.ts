@@ -35,6 +35,7 @@ export default defineNuxtConfig({
     primevue: {
         options: {
             ripple: true,
+            tooltip: true,
             theme: 'none',
         },
     },

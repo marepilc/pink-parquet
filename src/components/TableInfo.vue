@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import StatsDetails from '~/components/StatsDetails.vue'
-
 const dataStore = useDataStore()
+const tableStore = useTableStore()
 
 function formatPercentage(value: number): string {
     if (value === 1) {
@@ -30,33 +29,42 @@ const columnHealths = computed(() => {
 </script>
 
 <template>
-    <div class="flex w-full flex-col items-center justify-between bg-cyan-100">
+    <div class="flex w-full flex-col items-center justify-between">
         <h2 class="text-lg font-semibold">Data health</h2>
 
         <!-- Bar Chart -->
-        <div class="flex w-full gap-2">
+        <div class="flex w-full gap-1">
             <div
                 v-for="(colValue, ix) in columnHealths"
                 :key="ix"
-                class="flex min-w-0 flex-1 basis-0 flex-col items-center"
+                class="flex min-w-8 flex-1 basis-0 flex-col items-center"
             >
-                <div class="relative h-32 w-full bg-red-500">
+                <div
+                    class="relative h-32 w-full bg-primary"
+                    v-tooltip.top="{
+                        value: `${dataStore.columns[ix].name} (${dataStore.columns[ix].dtype})`,
+                        showDelay: 250,
+                    }"
+                    @click="tableStore.selectColumn(ix)"
+                >
                     <div
                         :style="{
                             height: colValue * 100 + '%',
-                            backgroundColor: '#3b82f6',
                         }"
-                        class="absolute bottom-0 left-0 w-full"
+                        class="absolute bottom-0 left-0 w-full bg-surface-400 dark:bg-surface-600"
                     ></div>
                 </div>
             </div>
         </div>
 
-        <div class="flex w-full gap-2">
+        <div class="flex w-full gap-1">
             <div
                 v-for="(colHealth, ix) in columnHealths"
                 :key="ix"
-                class="min-w-0 flex-1 basis-0 bg-amber-200 text-center"
+                class="min-w-8 flex-1 basis-0 text-center text-sm"
+                :class="{
+                    'font-semibold text-primary': colHealth < 1,
+                }"
             >
                 {{ formatPercentage(colHealth) }}
             </div>

@@ -9,7 +9,9 @@ const dataStore = useDataStore()
         <PpPanel>
             <slot name="table"></slot>
         </PpPanel>
-        <PpPanel>
+        <PpPanel
+            class="scrollbar-custom flex w-full items-center overflow-x-auto"
+        >
             <slot name="info"></slot>
         </PpPanel>
         <PpPanel class="flex w-full items-center justify-between gap-3">
