@@ -10,45 +10,6 @@ const emit = defineEmits(['update:modelValue'])
 
 const selectedCondition = ref<Condition | null>(null)
 
-onMounted(() => {
-    if (props.dtype === 'Boolean') {
-        selectedCondition.value = Condition.eq
-        emit('update:modelValue', Condition.eq)
-        return
-    }
-    if (props.dtype === 'String' || props.dtype === 'Categorical') {
-        selectedCondition.value = Condition.equals
-        emit('update:modelValue', Condition.equals)
-        return
-    }
-    // if (['String', 'Categorical'].includes(props.dtype)) {
-    //     conditionOptions.value = [
-    //         Condition.equals,
-    //         Condition.notEquals,
-    //         Condition.isNull,
-    //         Condition.isNotNull,
-    //     ]
-    // } else if (props.dtype === 'Boolean') {
-    //     conditionOptions.value = [
-    //         Condition.eq,
-    //         Condition.isNull,
-    //         Condition.isNotNull,
-    //     ]
-    // } else {
-    //     conditionOptions.value = [
-    //         Condition.lt,
-    //         Condition.le,
-    //         Condition.eq,
-    //         Condition.neq,
-    //         Condition.ge,
-    //         Condition.gt,
-    //         Condition.between,
-    //         Condition.isNull,
-    //         Condition.isNotNull,
-    //     ]
-    // }
-})
-
 watch(
     () => props.modelValue,
     (newValue) => {
@@ -65,10 +26,6 @@ function updateCondition(condition: Condition) {
         emit('update:modelValue', condition)
     }
 }
-
-const fixedCondition = computed(() => {
-    return ['Boolean', 'String', 'Categorical'].includes(props.dtype)
-})
 </script>
 
 <template>
@@ -84,9 +41,20 @@ const fixedCondition = computed(() => {
         @update:modelValue="updateCondition"
     >
         <template #option="slotProps">
-            <IconEq v-if="slotProps.option === Condition.eq" class="h-4 w-4" />
+            <IconEq
+                v-if="slotProps.option === Condition.equals"
+                class="h-4 w-4"
+            />
             <IconNeq
                 v-if="slotProps.option === Condition.different"
+                class="h-4 w-4"
+            />
+            <IconNull
+                v-if="slotProps.option === Condition.isNull"
+                class="h-4 w-4"
+            />
+            <IconNotNull
+                v-if="slotProps.option === Condition.isNotNull"
                 class="h-4 w-4"
             />
         </template>
@@ -99,6 +67,14 @@ const fixedCondition = computed(() => {
     >
         <template #option="slotProps">
             <IconEq v-if="slotProps.option === Condition.eq" class="h-4 w-4" />
+            <IconNull
+                v-if="slotProps.option === Condition.isNull"
+                class="h-4 w-4"
+            />
+            <IconNotNull
+                v-if="slotProps.option === Condition.isNotNull"
+                class="h-4 w-4"
+            />
         </template>
     </SelectButton>
     <SelectButton
@@ -129,6 +105,14 @@ const fixedCondition = computed(() => {
             <IconGt v-if="slotProps.option === Condition.gt" class="h-4 w-4" />
             <IconBetween
                 v-if="slotProps.option === Condition.between"
+                class="h-4 w-4"
+            />
+            <IconNull
+                v-if="slotProps.option === Condition.isNull"
+                class="h-4 w-4"
+            />
+            <IconNotNull
+                v-if="slotProps.option === Condition.isNotNull"
                 class="h-4 w-4"
             />
         </template>

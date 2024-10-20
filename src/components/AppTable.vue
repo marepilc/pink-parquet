@@ -88,9 +88,11 @@ const tableFontClass = computed(() => {
 const op = ref()
 const columnFilterIx = ref(null)
 const filterBtnClicked = (event, ix) => {
+    console.log('filterBtnClicked', ix)
+    console.log('event', event)
     op.value.hide()
     if (columnFilterIx.value === ix) {
-        columnFilterIx.value = null
+        op.value.show(event)
     } else {
         columnFilterIx.value = ix
         nextTick(() => {

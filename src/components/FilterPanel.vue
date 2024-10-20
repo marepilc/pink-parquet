@@ -155,6 +155,13 @@ const canBeFiltered = computed(() => {
     }
 
     if (
+        selectCondition.value === Condition.isNull ||
+        selectCondition.value === Condition.isNotNull
+    ) {
+        return true
+    }
+
+    if (
         filterType.value === 'number' ||
         filterType.value === 'text' ||
         filterType.value === 'datetime'
