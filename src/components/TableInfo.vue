@@ -30,7 +30,7 @@ const columnHealths = computed(() => {
 
 <template>
     <div class="flex w-full flex-col items-center justify-between">
-        <h2 class="text-lg font-semibold">Data health</h2>
+        <h2 class="text-lg font-semibold">&#128151; Data health &#128151;</h2>
 
         <!-- Bar Chart -->
         <div class="flex w-full gap-1">
