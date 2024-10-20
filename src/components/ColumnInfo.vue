@@ -16,7 +16,7 @@ const tableStore = useTableStore()
                     {{ tableStore.selectedColumn.name }}
                 </h3>
             </div>
-            <StatsDetails />
+            <StatsDetails v-if="tableStore.selectedColumn" />
         </div>
     </div>
 </template>
