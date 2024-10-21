@@ -71,6 +71,9 @@ fn anyvalue_to_string(value: AnyValue) -> String {
         AnyValue::Categorical(ix, rev_mapping, ..) => {
             rev_mapping.get(ix).to_string()
         }
+        AnyValue::Enum(ix, rev_mapping, ..) => {
+            rev_mapping.get(ix).to_string()
+        }
         _ => value.to_string(),
     }
 }

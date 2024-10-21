@@ -35,6 +35,8 @@ const filterType = computed(() => {
         return 'number'
     } else if (dtype.value === 'Boolean') {
         return 'boolean'
+    } else if (dtype.value === 'Enum') {
+        return 'enum'
     } else {
         return 'text'
     }
@@ -84,6 +86,8 @@ const formattedValue = computed(() => {
         }
     } else if (filterType.value === 'boolean') {
         return value.value
+    } else if (filterType.value === 'enum') {
+        return value.value
     } else if (filterType.value === 'text') {
         return value.value
     }
@@ -123,6 +127,8 @@ onMounted(() => {
                 value2.value = val2
             }
         } else if (filterType.value === 'boolean') {
+            value.value = filter.value
+        } else if (filterType.value === 'enum') {
             value.value = filter.value
         } else if (filterType.value === 'text') {
             value.value = filter.value
@@ -236,6 +242,17 @@ function onEnterKey(event: KeyboardEvent) {
                 :option-label="(option) => option.label"
                 :option-value="(option) => option.value"
                 class="w-32"
+                :disabled="
+                    selectCondition === Condition.isNull ||
+                    selectCondition === Condition.isNotNull
+                "
+            />
+        </div>
+        <div v-else-if="filterType == 'enum'" class="flex gap-1">
+            <Select
+                v-model="value"
+                :options="dataStore.columnsInfo[columnName]['available_values']"
+                class="w-48"
                 :disabled="
                     selectCondition === Condition.isNull ||
                     selectCondition === Condition.isNotNull

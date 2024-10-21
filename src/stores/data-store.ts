@@ -7,6 +7,7 @@ import type {
 } from '~/types/app-types'
 import { invoke } from '@tauri-apps/api/core'
 import { dtypeCleaner } from '~/utils/dtype-cleaner'
+import { Condition } from '~/types/app-types'
 
 export const useDataStore = defineStore({
     id: 'dataStore',

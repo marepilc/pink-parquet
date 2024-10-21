@@ -23,6 +23,7 @@ export const useTableStore = defineStore({
                 'Date',
                 'Datetime',
                 'Categorical',
+                'Enum',
             ])
 
             return !supportedTypes.has(column.dtype)

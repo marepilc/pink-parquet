@@ -261,7 +261,7 @@ const speedDialVisible = computed(() => {
                                 <div class="flex min-w-8 flex-col">
                                     <div class="flex items-center gap-1">
                                         <Button
-                                            class="h-4 w-4"
+                                            class="h-4 w-4 flex-shrink-0"
                                             @click.stop="
                                                 filterBtnClicked($event, ixCol)
                                             "
@@ -283,7 +283,7 @@ const speedDialVisible = computed(() => {
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     viewBox="0 0 24 24"
-                                                    class="h-3 w-3"
+                                                    class="h-3 w-3 flex-shrink-0"
                                                 >
                                                     <path
                                                         fill="currentColor"
