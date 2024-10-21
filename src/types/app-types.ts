@@ -20,6 +20,7 @@ export interface TableData {
     shape: [number, number]
     columns: Array<{ name: string; dtype: string }>
     rows: string[][]
+    height: number
 }
 
 export interface FileMetadata {

@@ -19,22 +19,34 @@ const modifiedDate = formatToLocalDateTime(dataStore.fileMetadata.modifiedAt)
     <div class="flex min-h-52 w-full gap-2">
         <div class="flex min-w-40 max-w-64 flex-col items-center">
             <h2
-                class="mb-4 overflow-hidden text-ellipsis whitespace-nowrap text-xl font-bold"
+                class="mb-3 w-full max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-xl font-bold"
             >
                 {{ removeExtension(dataStore.fileMetadata.fileName) }}
             </h2>
 
-            <div>
-                <span class="font-semibold">
-                    {{ numberThousandsSeparator(dataStore.noOfColumns) }}
-                </span>
-                col. &#215;
-                <span class="font-semibold">
-                    {{ numberThousandsSeparator(dataStore.noOfRows) }}
-                </span>
-                rows
+            <div class="flex flex-col">
+                <div>
+                    <span class="font-semibold">
+                        {{ numberThousandsSeparator(dataStore.noOfColumns) }}
+                    </span>
+                    col. &#215;
+                    <span class="font-semibold">
+                        {{ numberThousandsSeparator(dataStore.noOfRows) }}
+                    </span>
+                    rows
+                </div>
+                <div v-if="dataStore.noOfRows !== dataStore.filteredRowsCount">
+                    <span class="font-semibold">
+                        {{
+                            numberThousandsSeparator(
+                                dataStore.filteredRowsCount
+                            )
+                        }}
+                    </span>
+                    rows filtered
+                </div>
             </div>
-            <div class="mt-2 flex flex-col items-center gap-0.5">
+            <div class="mt-2 flex flex-col items-center">
                 <div class="text-right text-sm italic">Created:</div>
                 <div class="text-sm font-semibold italic">
                     {{
@@ -44,7 +56,7 @@ const modifiedDate = formatToLocalDateTime(dataStore.fileMetadata.modifiedAt)
             </div>
             <div
                 v-if="createdDate !== modifiedDate"
-                class="mt-2 flex flex-col items-center gap-0.5"
+                class="mt-2 flex flex-col items-center"
             >
                 <div class="text-right text-sm italic">Last modified:</div>
                 <div class="text-sm font-semibold italic">
@@ -54,7 +66,7 @@ const modifiedDate = formatToLocalDateTime(dataStore.fileMetadata.modifiedAt)
                 </div>
             </div>
 
-            <div class="mt-2 flex flex-col items-center gap-0.5">
+            <div class="mt-2 flex flex-col items-center">
                 <div class="text-right text-sm italic">File size:</div>
                 <div class="text-sm font-semibold italic">
                     {{ bytesForHuman(dataStore.fileMetadata.size) }}

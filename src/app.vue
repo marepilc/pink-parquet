@@ -6,6 +6,7 @@ import { extractPath } from '~/utils/path'
 const colorMode = useColorMode()
 
 const dataStore = useDataStore()
+const tableStore = useTableStore()
 const configStore = useConfigStore()
 
 const unlisten = ref<UnlistenFn | null>(null)
@@ -20,6 +21,7 @@ onMounted(async () => {
         } else if (event.payload.type === 'drop') {
             dataStore.updateOpenState(false, '', [0, 0])
             dataStore.resetContent()
+            tableStore.deselectColumn()
             dataStore.loadParquet(extractPath(event.payload.paths))
         } else if (event.payload.type === 'leave') {
             dataStore.updateDraggedFilePath(null)

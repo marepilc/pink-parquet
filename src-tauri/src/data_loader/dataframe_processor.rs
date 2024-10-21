@@ -18,6 +18,7 @@ pub struct DataFrameInfo {
     pub columns: Vec<ColumnInfo>,
     pub rows: Vec<Vec<String>>,
     pub metadata: Option<MetadataInfo>,
+    pub height: usize,
 }
 
 #[derive(Serialize)]
@@ -97,8 +98,14 @@ pub fn dataframe_to_rows(df: &DataFrame) -> Vec<Vec<String>> {
 
 // Function to process the DataFrame and return its info
 pub fn process_dataframe(lf: LazyFrame, file_path: &str) -> Result<DataFrameInfo, String> {
+    // Collect the DataFrame safely from the LazyFrame
     let df = collect_dataframe_safe(lf)?;
     let shape = df.shape();
+
+    // Calculate the height of the DataFrame
+    let height = shape.0;  // Number of rows after filtering
+
+    // Get column information
     let columns: Vec<ColumnInfo> = df
         .get_columns()
         .iter()
@@ -108,11 +115,12 @@ pub fn process_dataframe(lf: LazyFrame, file_path: &str) -> Result<DataFrameInfo
         })
         .collect();
 
-    // Get the first n rows (for example, the first 100 rows)
+    // Get the first n rows (for example, the first 250 rows)
     let n = shape.0.min(250);
     let df_head = df.head(Some(n));
     let rows = dataframe_to_rows(&df_head);
 
+    // Extract metadata from the file
     let metadata = get_file_metadata(file_path).ok();
 
     Ok(DataFrameInfo {
@@ -120,8 +128,10 @@ pub fn process_dataframe(lf: LazyFrame, file_path: &str) -> Result<DataFrameInfo
         columns,
         rows,
         metadata,
+        height,  // Set the height in the DataFrameInfo
     })
 }
+
 
 pub fn get_file_metadata(file_path: &str) -> Result<MetadataInfo, String> {
     match fs::metadata(file_path) {

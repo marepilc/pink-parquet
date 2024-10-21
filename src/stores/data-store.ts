@@ -20,6 +20,7 @@ export const useDataStore = defineStore({
         columnsInfo: {} as { [key: string]: {} },
         rows: shallowRef<string[][]>([]),
         noOfRows: 0,
+        filteredRowsCount: 0,
         noOfColumns: 0,
         rowsLoadingCounter: 0,
         rowsLoadingInProgress: false,
@@ -77,7 +78,7 @@ export const useDataStore = defineStore({
 
                 this.resetContent(false)
 
-                this.updateOpenState(true, filePath, data.shape)
+                this.updateOpenState(true, filePath, data.shape, data.height)
                 this.updateFileMetadata(data.metadata)
                 this.updateColumns(
                     data.columns.map((col) => ({
@@ -124,11 +125,17 @@ export const useDataStore = defineStore({
                 this.rowsLoadingInProgress = false
             }
         },
-        updateOpenState(isOpen: boolean, filePath: string, shape: Shape) {
+        updateOpenState(
+            isOpen: boolean,
+            filePath: string,
+            shape: Shape,
+            height: number
+        ) {
             this.isFileOpen = isOpen
             this.filePath = filePath
             this.noOfRows = shape[0]
             this.noOfColumns = shape[1]
+            this.filteredRowsCount = height
         },
         updateFileMetadata(metadata: FileMetadata | null) {
             if (metadata === null) {
@@ -153,6 +160,7 @@ export const useDataStore = defineStore({
             this.columns = []
             this.rows = []
             this.noOfRows = 0
+            this.filteredRowsCount = 0
             this.noOfColumns = 0
             this.rowsLoadingCounter = 0
             this.rowsLoadingInProgress = false
