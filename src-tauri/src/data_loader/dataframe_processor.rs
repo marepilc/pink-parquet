@@ -257,6 +257,15 @@ pub fn filter_columns(mut filtered_lf: LazyFrame, filtering_info: Vec<Filtering>
                     return Err("Invalid value type for inequality filter".to_string());
                 }
             }
+            "contains" => {
+                if let Value::String(val) = &filter.value {
+                    filtered_lf = filtered_lf.filter(
+                        col(&filter.column).str().contains(lit(val.as_str()), false)
+                    );
+                } else {
+                    return Err("Invalid value type for contains filter".to_string());
+                }
+            }
             "is_null" => {
                 filtered_lf = filtered_lf.filter(col(&filter.column).is_null());
             }
