@@ -14,6 +14,10 @@ const tableStore = useTableStore()
                 ></DtypeIcon>
                 <h3 class="text-lg font-semibold">
                     {{ tableStore.selectedColumn.name }}
+                    <span class="text-sm">
+                        — Compression
+                        {{ tableStore.selectedColumn.compression }}
+                    </span>
                 </h3>
             </div>
             <StatsDetails v-if="tableStore.selectedColumn" />

@@ -40,12 +40,12 @@ const columnHealths = computed(() => {
 
         <!-- Shared Scrollable Container for Bar Chart and Values -->
         <div class="scrollbar-custom w-full overflow-auto">
-            <div class="flex gap-1">
+            <div class="flex gap-2">
                 <!-- Bar Chart Columns -->
                 <div
                     v-for="(colValue, ix) in columnHealths"
                     :key="ix"
-                    class="flex min-w-[32px] flex-grow flex-col items-center"
+                    class="flex min-w-[50px] flex-grow flex-col items-center"
                 >
                     <div
                         class="relative h-32 w-full bg-primary"
@@ -56,21 +56,26 @@ const columnHealths = computed(() => {
                         @click="tableStore.selectColumn(ix)"
                     >
                         <div
-                            :style="{
-                                height: colValue * 100 + '%',
-                            }"
+                            :style="{ height: colValue * 100 + '%' }"
                             class="absolute bottom-0 left-0 w-full bg-surface-400 dark:bg-surface-600"
                         ></div>
+                        <!-- Correctly Rotated Text at Bottom of the Column -->
+                        <div
+                            class="absolute bottom-16 left-10 origin-bottom -translate-x-1/2 -rotate-90 transform select-none overflow-hidden text-ellipsis whitespace-nowrap text-sm"
+                            :style="{ width: '110px', paddingBottom: '5px' }"
+                        >
+                            {{ dataStore.columns[ix].name }}
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Health Percentages -->
-            <div class="mt-2 flex gap-1">
+            <div class="mt-2 flex gap-2">
                 <div
                     v-for="(colHealth, ix) in columnHealths"
                     :key="ix"
-                    class="min-w-[32px] flex-grow text-center text-sm"
+                    class="min-w-[50px] flex-grow select-none text-center text-sm"
                     :class="{
                         'font-semibold text-primary': colHealth < 1,
                     }"
