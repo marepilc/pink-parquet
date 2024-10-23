@@ -119,6 +119,7 @@ dependencies = [
  "log",
  "parquet",
  "polars",
+ "regex",
  "serde",
  "serde_json",
  "tauri",

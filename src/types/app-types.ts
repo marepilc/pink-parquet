@@ -40,6 +40,8 @@ export enum Condition {
     le = '<=',
     between = 'between',
     equals = 'equals',
+    contains = 'contains',
+    containsCaseInsensitive = 'contains_case_insensitive',
     different = 'different',
     isNull = 'is_null',
     isNotNull = 'is_not_null',

@@ -28,3 +28,4 @@ hashbrown = { version = "0.14.5", features = ["raw"] }
 polars = { version = "0.43.1", features = ["lazy", "parquet", "dtype-full", "timezones", "regex", "strings"] }
 chrono = { version = "0.4.38", features = ["serde"] }
 parquet = "53.1.0"
+regex = "1.11.0"
