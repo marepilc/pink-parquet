@@ -1,9 +1,11 @@
-use std::fs;
+use std::fs::{self, File};
 use std::path::Path;
 use polars::prelude::*;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use chrono::{NaiveDateTime, DateTime, Utc};
+use parquet::file::reader::{FileReader};
+use parquet::file::serialized_reader::SerializedFileReader;
 use crate::data_loader::collect_dataframe;
 
 #[derive(Serialize)]
@@ -22,11 +24,20 @@ pub struct DataFrameInfo {
 }
 
 #[derive(Serialize)]
+pub struct ColumnMetaData {
+    pub name: String,
+    pub compression: String,
+}
+
+#[derive(Serialize)]
 pub struct MetadataInfo {
     pub file_name: String,
     pub created_at: Option<DateTime<Utc>>,
     pub modified_at: Option<DateTime<Utc>>,
     pub file_size: u64,
+    pub row_groups: usize,
+    pub num_rows: usize,
+    pub columns: Vec<ColumnMetaData>,
 }
 
 #[derive(Deserialize)]
@@ -134,26 +145,48 @@ pub fn process_dataframe(lf: LazyFrame, file_path: &str) -> Result<DataFrameInfo
 
 
 pub fn get_file_metadata(file_path: &str) -> Result<MetadataInfo, String> {
-    match fs::metadata(file_path) {
-        Ok(metadata) => {
-            let file_name = Path::new(file_path)
-                .file_name()
-                .and_then(|name| name.to_str())
-                .unwrap_or("Unknown")
-                .to_string();
-            let created_at = metadata.created().ok().map(|time| DateTime::<Utc>::from(time));
-            let modified_at = metadata.modified().ok().map(|time| DateTime::<Utc>::from(time));
-            let file_size = metadata.len(); // Change file_size to direct u64 value
+    // Get file system metadata
+    let metadata = fs::metadata(file_path).map_err(|e| format!("Failed to get file metadata: {}", e))?;
+    let file_name = Path::new(file_path)
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or("Unknown")
+        .to_string();
+    let created_at = metadata.created().ok().map(|time| DateTime::<Utc>::from(time));
+    let modified_at = metadata.modified().ok().map(|time| DateTime::<Utc>::from(time));
+    let file_size = metadata.len();
 
-            Ok(MetadataInfo {
-                file_name,
-                created_at,
-                modified_at,
-                file_size,
-            })
+    // Open the Parquet file and read its metadata
+    let file = File::open(file_path).map_err(|e| format!("Failed to open file: {}", e))?;
+    let parquet_reader = SerializedFileReader::new(file).map_err(|e| format!("Failed to read Parquet file: {}", e))?;
+    let parquet_metadata = parquet_reader.metadata();
+
+    // Collect row group and column metadata
+    let num_row_groups = parquet_metadata.num_row_groups();
+    let num_rows = parquet_metadata.file_metadata().num_rows() as usize;
+    let mut columns = Vec::new();
+
+    for row_group_idx in 0..num_row_groups {
+        let row_group = parquet_metadata.row_group(row_group_idx);
+        for column_chunk in row_group.columns() {
+            let column_name = column_chunk.column_descr().name().to_string();
+            let compression = column_chunk.compression().to_string();
+            columns.push(ColumnMetaData {
+                name: column_name,
+                compression,
+            });
         }
-        Err(e) => Err(format!("Failed to get file metadata: {}", e)),
     }
+
+    Ok(MetadataInfo {
+        file_name,
+        created_at,
+        modified_at,
+        file_size,
+        row_groups: num_row_groups,
+        num_rows,
+        columns,
+    })
 }
 
 

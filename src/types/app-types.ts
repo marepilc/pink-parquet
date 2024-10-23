@@ -1,6 +1,7 @@
 export interface Column {
     name: string
     dtype: string
+    compression?: string
 }
 
 export type Shape = [number, number]

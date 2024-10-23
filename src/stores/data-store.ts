@@ -133,19 +133,28 @@ export const useDataStore = defineStore({
         ) {
             this.isFileOpen = isOpen
             this.filePath = filePath
-            this.noOfRows = shape[0]
             this.noOfColumns = shape[1]
             this.filteredRowsCount = height
         },
-        updateFileMetadata(metadata: FileMetadata | null) {
+        async updateFileMetadata(metadata: FileMetadata | null) {
             if (metadata === null) {
-                this.fileMetadata = metadata
+                this.fileMetadata = null
             } else {
+                console.log(metadata)
                 this.fileMetadata = {
                     fileName: metadata.file_name,
                     createdAt: metadata.created_at,
                     modifiedAt: metadata.modified_at,
                     size: metadata.file_size as number,
+                }
+                this.noOfRows = metadata.num_rows
+                console.log(metadata.columns)
+                console.log(this.columns)
+
+                await nextTick()
+                for (let i = 0; i < metadata.columns.length; i++) {
+                    this.columns[i].compression =
+                        metadata.columns[i].compression
                 }
             }
         },
