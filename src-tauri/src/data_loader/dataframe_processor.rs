@@ -1,6 +1,7 @@
 use std::fs::{self, File};
 use std::path::Path;
 use polars::prelude::*;
+use polars::datatypes::DataType;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use chrono::{NaiveDateTime, DateTime, Utc};
@@ -20,7 +21,6 @@ pub struct DataFrameInfo {
     pub columns: Vec<ColumnInfo>,
     pub rows: Vec<Vec<String>>,
     pub metadata: Option<MetadataInfo>,
-    pub height: usize,
 }
 
 #[derive(Serialize)]
@@ -113,9 +113,6 @@ pub fn process_dataframe(lf: LazyFrame, file_path: &str) -> Result<DataFrameInfo
     let df = collect_dataframe_safe(lf)?;
     let shape = df.shape();
 
-    // Calculate the height of the DataFrame
-    let height = shape.0;  // Number of rows after filtering
-
     // Get column information
     let columns: Vec<ColumnInfo> = df
         .get_columns()
@@ -139,7 +136,6 @@ pub fn process_dataframe(lf: LazyFrame, file_path: &str) -> Result<DataFrameInfo
         columns,
         rows,
         metadata,
-        height,  // Set the height in the DataFrameInfo
     })
 }
 
@@ -296,6 +292,7 @@ pub fn filter_columns(mut filtered_lf: LazyFrame, filtering_info: Vec<Filtering>
                     let pattern = format!("(?i){}", regex::escape(val));
                     filtered_lf = filtered_lf.filter(
                         col(&filter.column)
+                            .cast(DataType::String)
                             .str()
                             .contains(lit(pattern), false)
                     );
@@ -306,7 +303,10 @@ pub fn filter_columns(mut filtered_lf: LazyFrame, filtering_info: Vec<Filtering>
             "contains" => {
                 if let Value::String(val) = &filter.value {
                     filtered_lf = filtered_lf.filter(
-                        col(&filter.column).str().contains(lit(val.as_str()), false)
+                        col(&filter.column)
+                            .cast(DataType::String)
+                            .str()
+                            .contains(lit(val.as_str()), false)
                     );
                 } else {
                     return Err("Invalid value type for contains filter".to_string());

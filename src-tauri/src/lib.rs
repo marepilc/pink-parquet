@@ -6,15 +6,16 @@ use data_loader::dataframe_processor::{sort_columns, Sorting, filter_columns, Fi
 use std::collections::HashMap;
 
 #[command]
-fn get_data(file_path: &str, sorting: Option<Vec<Sorting>>, filtering: Option<Vec<Filtering>>) -> Result<DataFrameInfo, String> {
+fn get_data(
+    file_path: &str,
+    sorting: Option<Vec<Sorting>>,
+    filtering: Option<Vec<Filtering>>,
+) -> Result<DataFrameInfo, String> {
     let mut lf = match open_parquet(file_path) {
         Ok(df) => df,
         Err(e) => return Err(format!("Failed to read Parquet file: {}", e)),
     };
-
-    // Get shape before filtering
-    let df = collect_dataframe_safe(lf.clone())?;
-    let shape = df.shape();
+    
 
     if let Some(filtering_info) = filtering {
         lf = match filter_columns(lf, filtering_info) {
@@ -30,17 +31,10 @@ fn get_data(file_path: &str, sorting: Option<Vec<Sorting>>, filtering: Option<Ve
         };
     }
 
-    // Get the shape of the DataFrame after filtering to calculate the height
-    let filtered_df = collect_dataframe_safe(lf.clone())?;
-    let filtered_shape = filtered_df.shape();
-    let height = filtered_shape.0;  // Get the number of rows after filtering
+    // No need to collect DataFrame or calculate shape and height here
 
     let df_info = match process_dataframe(lf, file_path) {
-        Ok(mut df_info) => {
-            df_info.shape = shape;  // Update shape before filtering
-            df_info.height = height;  // Set the new height
-            df_info
-        }
+        Ok(df_info) => df_info,  // `process_dataframe` now returns the correct shape after filtering
         Err(e) => return Err(format!("Failed to process DataFrame: {}", e)),
     };
 

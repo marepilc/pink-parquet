@@ -30,7 +30,7 @@ function updateCondition(condition: Condition) {
 
 <template>
     <SelectButton
-        v-if="props.dtype === 'String'"
+        v-if="['Categorical', 'String'].includes(props.dtype)"
         :modelValue="selectedCondition"
         :options="[
             Condition.equals,
@@ -70,7 +70,7 @@ function updateCondition(condition: Condition) {
         </template>
     </SelectButton>
     <SelectButton
-        v-else-if="['Categorical', 'Enum'].includes(props.dtype)"
+        v-else-if="props.dtype === 'Enum'"
         :modelValue="selectedCondition"
         :options="[
             Condition.equals,

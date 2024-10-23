@@ -7,7 +7,6 @@ import type {
 } from '~/types/app-types'
 import { invoke } from '@tauri-apps/api/core'
 import { dtypeCleaner } from '~/utils/dtype-cleaner'
-import { Condition } from '~/types/app-types'
 
 export const useDataStore = defineStore({
     id: 'dataStore',
@@ -78,7 +77,7 @@ export const useDataStore = defineStore({
 
                 this.resetContent(false)
 
-                this.updateOpenState(true, filePath, data.shape, data.height)
+                this.updateOpenState(true, filePath, data.shape)
                 this.updateFileMetadata(data.metadata)
                 this.updateColumns(
                     data.columns.map((col) => ({
@@ -125,22 +124,16 @@ export const useDataStore = defineStore({
                 this.rowsLoadingInProgress = false
             }
         },
-        updateOpenState(
-            isOpen: boolean,
-            filePath: string,
-            shape: Shape,
-            height: number
-        ) {
+        updateOpenState(isOpen: boolean, filePath: string, shape: Shape) {
             this.isFileOpen = isOpen
             this.filePath = filePath
             this.noOfColumns = shape[1]
-            this.filteredRowsCount = height
+            this.filteredRowsCount = shape[0]
         },
         async updateFileMetadata(metadata: FileMetadata | null) {
             if (metadata === null) {
                 this.fileMetadata = null
             } else {
-                console.log(metadata)
                 this.fileMetadata = {
                     fileName: metadata.file_name,
                     createdAt: metadata.created_at,
@@ -148,8 +141,6 @@ export const useDataStore = defineStore({
                     size: metadata.file_size as number,
                 }
                 this.noOfRows = metadata.num_rows
-                console.log(metadata.columns)
-                console.log(this.columns)
 
                 await nextTick()
                 for (let i = 0; i < metadata.columns.length; i++) {
