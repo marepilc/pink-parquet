@@ -30,7 +30,7 @@ const columnHealths = computed(() => {
 
 <template>
     <div
-        class="flex w-full max-w-full flex-col items-center justify-between overflow-auto px-2"
+        class="flex w-full max-w-full flex-col items-center justify-between overflow-hidden px-2"
     >
         <h2
             class="overflow-hidden text-ellipsis whitespace-nowrap text-lg font-semibold"
@@ -45,13 +45,13 @@ const columnHealths = computed(() => {
                 <div
                     v-for="(colValue, ix) in columnHealths"
                     :key="ix"
-                    class="flex min-w-[50px] flex-grow flex-col items-center"
+                    class="flex min-w-8 flex-grow flex-col items-center"
                 >
                     <div
                         class="relative h-32 w-full bg-primary"
                         v-tooltip.top="{
                             value: `${dataStore.columns[ix].name} (${dataStore.columns[ix].dtype})`,
-                            showDelay: 250,
+                            showDelay: 1000,
                         }"
                         @click="tableStore.selectColumn(ix)"
                     >
@@ -61,7 +61,7 @@ const columnHealths = computed(() => {
                         ></div>
                         <!-- Correctly Rotated Text at Bottom of the Column -->
                         <div
-                            class="absolute bottom-16 left-1/2 ml-2.5 w-[110px] origin-bottom -translate-x-1/2 -rotate-90 transform select-none overflow-hidden text-ellipsis whitespace-nowrap p-0 text-sm"
+                            class="absolute bottom-16 left-1/2 ml-2.5 w-[110px] origin-bottom -translate-x-1/2 -rotate-90 transform select-none overflow-hidden text-ellipsis whitespace-nowrap p-0 text-sm font-semibold"
                         >
                             {{ dataStore.columns[ix].name }}
                         </div>
@@ -74,7 +74,7 @@ const columnHealths = computed(() => {
                 <div
                     v-for="(colHealth, ix) in columnHealths"
                     :key="ix"
-                    class="min-w-[50px] flex-grow select-none text-center text-sm"
+                    class="min-w-8 flex-grow select-none text-center text-sm"
                     :class="{
                         'font-semibold text-primary': colHealth < 1,
                     }"

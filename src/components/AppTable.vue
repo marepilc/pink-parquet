@@ -163,6 +163,12 @@ function buttonEnabled(buttonName: string) {
 const speedDialVisible = computed(() => {
     return dataStore.filtering.length > 0 || dataStore.sorting.length > 0
 })
+
+const cellOp = ref()
+
+function cellRightClicked(event) {
+    cellOp.value.show(event)
+}
 </script>
 
 <template>
@@ -210,6 +216,15 @@ const speedDialVisible = computed(() => {
             class="scrollbar-custom h-full w-full overflow-auto"
             @scroll="onScroll"
         >
+            <Popover ref="cellOp">
+                <Button
+                    label="Copy Cell"
+                    class="h-8 w-20 p-1"
+                    @click="copyCellValue"
+                    text
+                />
+            </Popover>
+
             <Popover ref="op">
                 <div
                     v-if="columnFilterIx !== null"
@@ -223,7 +238,7 @@ const speedDialVisible = computed(() => {
                 </div>
             </Popover>
             <table
-                class="w-full table-fixed cursor-default text-left text-stone-950 dark:text-stone-50"
+                class="w-full table-fixed cursor-default text-left text-surface-950 dark:text-surface-50"
                 :style="{ width: `${totalTableWidth}px` }"
             >
                 <!-- Colgroup for column definitions -->
@@ -239,13 +254,13 @@ const speedDialVisible = computed(() => {
                 </colgroup>
 
                 <thead
-                    class="sticky-header sticky top-0 z-10 bg-stone-200 dark:bg-stone-800"
+                    class="sticky-header sticky top-0 z-10 bg-surface-200 dark:bg-surface-800"
                 >
                     <tr>
                         <th
                             v-for="(column, ixCol) in dataStore.columns"
                             :key="ixCol"
-                            class="relative max-w-64 overflow-hidden text-ellipsis whitespace-nowrap border-r border-stone-300 px-3 py-1.5 dark:border-stone-600"
+                            class="relative max-w-64 overflow-hidden text-ellipsis whitespace-nowrap border-r border-surface-300 px-3 py-1.5 dark:border-surface-600"
                             :class="{
                                 'bg-pink-300 dark:bg-pink-950':
                                     tableStore.selectedColumn === column,
@@ -298,7 +313,7 @@ const speedDialVisible = computed(() => {
                                         </div>
                                     </div>
                                     <div
-                                        class="flex items-center gap-2 text-xs text-stone-700 dark:text-stone-400"
+                                        class="flex items-center gap-2 text-xs text-surface-700 dark:text-surface-400"
                                     >
                                         <DtypeIcon
                                             class="h-5 w-5 flex-shrink-0 text-pink-700"
@@ -399,12 +414,13 @@ const speedDialVisible = computed(() => {
                     <tr
                         v-for="(row, ixRow) in dataStore.rows"
                         :key="ixRow"
-                        class="whitespace-nowrap px-2 py-1 odd:bg-stone-50/65 even:bg-stone-200/65 dark:odd:bg-stone-800/65 dark:even:bg-stone-600/65"
+                        class="whitespace-nowrap px-2 py-1 odd:bg-surface-50/65 even:bg-surface-200/65 dark:odd:bg-surface-800/65 dark:even:bg-surface-600/65"
                     >
                         <td
                             v-for="(cell, ixCell) in row"
                             :key="ixCell"
-                            class="max-w-40 overflow-hidden text-ellipsis border-b border-r border-stone-300 px-3 py-1.5 dark:border-stone-600"
+                            class="max-w-40 overflow-hidden text-ellipsis border-b border-r border-surface-300 px-3 py-1.5 hover:bg-primary-50 dark:border-surface-600 dark:hover:bg-pink-950"
+                            @contextmenu.prevent="cellRightClicked($event)"
                         >
                             {{ cell }}
                         </td>
