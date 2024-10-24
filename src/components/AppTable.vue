@@ -165,9 +165,24 @@ const speedDialVisible = computed(() => {
 })
 
 const cellOp = ref()
+const cellValueToCopy = ref('')
 
-function cellRightClicked(event) {
+function cellRightClicked(event: MouseEvent, value: string) {
+    event.preventDefault() // Prevent the default context menu
+
+    // Store the value to be copied
+    cellValueToCopy.value = value
+
+    // Show the Popover at the click position
     cellOp.value.show(event)
+}
+
+function copyCellValue() {
+    // Use the Clipboard API to copy the value to the clipboard
+    navigator.clipboard.writeText(cellValueToCopy.value).then(() => {
+        // Hide the popover after copying
+        cellOp.value.hide()
+    })
 }
 </script>
 
@@ -420,7 +435,9 @@ function cellRightClicked(event) {
                             v-for="(cell, ixCell) in row"
                             :key="ixCell"
                             class="max-w-40 overflow-hidden text-ellipsis border-b border-r border-surface-300 px-3 py-1.5 hover:bg-primary-50 dark:border-surface-600 dark:hover:bg-pink-950"
-                            @contextmenu.prevent="cellRightClicked($event)"
+                            @contextmenu.prevent="
+                                cellRightClicked($event, cell)
+                            "
                         >
                             {{ cell }}
                         </td>
