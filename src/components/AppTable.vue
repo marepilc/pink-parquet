@@ -178,11 +178,23 @@ function cellRightClicked(event: MouseEvent, value: string) {
 }
 
 function copyCellValue() {
+    // Strip leading spaces from the value before copying
+    const valueWithoutLeadingSpaces = cellValueToCopy.value.trim()
+
     // Use the Clipboard API to copy the value to the clipboard
-    navigator.clipboard.writeText(cellValueToCopy.value).then(() => {
-        // Hide the popover after copying
-        cellOp.value.hide()
-    })
+    navigator.clipboard
+        .writeText(valueWithoutLeadingSpaces)
+        .then(() => {
+            // Hide the popover after copying
+            cellOp.value.hide()
+        })
+        .catch((err) => {
+            console.error('Failed to copy text: ', err)
+        })
+}
+
+function noNewLines(value: string) {
+    return value.replace(/\n/g, ' ')
 }
 </script>
 
@@ -439,7 +451,9 @@ function copyCellValue() {
                                 cellRightClicked($event, cell)
                             "
                         >
-                            {{ cell }}
+                            <span class="whitespace-pre">
+                                {{ noNewLines(cell) }}
+                            </span>
                         </td>
                     </tr>
                 </tbody>

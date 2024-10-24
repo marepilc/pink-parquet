@@ -85,7 +85,7 @@ export const useDataStore = defineStore({
                         dtype: dtypeCleaner(col.dtype),
                     }))
                 )
-                this.addRows(data.rows)
+                this.addRows(this.formatRows(data.rows))
                 if (!sorting) {
                     this.updateDraggedFilePath(null)
                 }
@@ -114,7 +114,7 @@ export const useDataStore = defineStore({
                 })
 
                 if (Array.isArray(data)) {
-                    this.addRows(data)
+                    this.addRows(this.formatRows(data))
                 } else {
                     console.error('Data is not an array')
                 }
@@ -211,6 +211,87 @@ export const useDataStore = defineStore({
             if (index !== -1) {
                 this.filtering.splice(index, 1)
             }
+        },
+        formatRows(rows: string[][]): string[][] {
+            // Get the indices of numeric columns based on dtype
+            const numericColumns = this.columns
+                .map((col, index) => {
+                    const isNumeric = [
+                        'Int8',
+                        'Int16',
+                        'Int32',
+                        'Int64',
+                        'UInt8',
+                        'UInt16',
+                        'UInt32',
+                        'UInt64',
+                        'Float32',
+                        'Float64',
+                    ].includes(col.dtype)
+                    return isNumeric ? index : null
+                })
+                .filter((index): index is number => index !== null)
+
+            const { intLengths, fracLengths } = this.calculateMaxPartsLengths(
+                rows,
+                numericColumns
+            )
+
+            return rows.map((row) =>
+                row.map((value, colIndex) => {
+                    if (
+                        numericColumns.includes(colIndex) &&
+                        !isNaN(Number(value))
+                    ) {
+                        // Format numeric columns with decimal alignment
+                        const numericIndex = numericColumns.indexOf(colIndex)
+                        const [integerPart, fractionalPart = ''] =
+                            value.split('.')
+                        const paddedInt =
+                            ' '.repeat(
+                                intLengths[numericIndex] - integerPart.length
+                            ) + integerPart
+                        const paddedFrac =
+                            fractionalPart +
+                            ' '.repeat(
+                                fracLengths[numericIndex] -
+                                    fractionalPart.length
+                            )
+                        return fracLengths[numericIndex] > 0
+                            ? `${paddedInt}.${paddedFrac}`
+                            : paddedInt
+                    }
+                    // Return other columns unchanged
+                    return value
+                })
+            )
+        },
+        calculateMaxPartsLengths(
+            rows: string[][],
+            numericColumns: number[]
+        ): {
+            intLengths: number[]
+            fracLengths: number[]
+        } {
+            const intLengths = numericColumns.map((colIndex) =>
+                Math.max(
+                    ...rows.map((row) => {
+                        const parts = row[colIndex].split('.')
+                        return parts[0].length
+                    })
+                )
+            )
+
+            const fracLengths = numericColumns.map((colIndex) =>
+                Math.max(
+                    ...rows.map((row) => {
+                        const parts = row[colIndex].split('.')
+                        return parts.length > 1 ? parts[1].length : 0
+                    })
+                )
+            )
+
+            return { intLengths, fracLengths }
         },
     },
 })
