@@ -26,5 +26,5 @@ const numericTypes = [
     <StatsDetailsDatetime v-else-if="props.dtype === 'Datetime'" />
     <StatsDetailsTime v-else-if="props.dtype === 'Time'" />
     <StatsDetailsDuration v-else-if="props.dtype === 'Duration'" />
-    <StatsDetailsOther v-else />
+    <StatsDetailsOther v-else :dtype="props.dtype" />
 </template>

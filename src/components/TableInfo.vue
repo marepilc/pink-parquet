@@ -35,9 +35,9 @@ const columnHealths = computed(() => {
         class="flex w-full max-w-full flex-col items-center justify-between overflow-hidden px-2"
     >
         <h2
-            class="overflow-hidden text-ellipsis whitespace-nowrap text-lg font-semibold"
+            class="overflow-hidden text-ellipsis whitespace-nowrap text-lg font-semibold uppercase"
         >
-            &#128151; Data health &#128151;
+            &#128151; Data health
         </h2>
 
         <!-- Shared Scrollable Container for Bar Chart and Values -->

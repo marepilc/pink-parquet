@@ -43,27 +43,27 @@ const nullsValue = computed(() => {
 const memoryDemand = computed(() => {
     switch (props.dtype) {
         case 'Int8':
-            return bytesForHuman(dataStore.noOfRows)
+            return dataStore.noOfRows
         case 'Int16':
-            return bytesForHuman(dataStore.noOfRows * 2)
+            return dataStore.noOfRows * 2
         case 'Int32':
-            return bytesForHuman(dataStore.noOfRows * 4)
+            return dataStore.noOfRows * 4
         case 'Int64':
-            return bytesForHuman(dataStore.noOfRows * 8)
+            return dataStore.noOfRows * 8
         case 'Float32':
-            return bytesForHuman(dataStore.noOfRows * 4)
+            return dataStore.noOfRows * 4
         case 'Float64':
-            return bytesForHuman(dataStore.noOfRows * 8)
+            return dataStore.noOfRows * 8
         case 'UInt8':
-            return bytesForHuman(dataStore.noOfRows)
+            return dataStore.noOfRows
         case 'UInt16':
-            return bytesForHuman(dataStore.noOfRows * 2)
+            return dataStore.noOfRows * 2
         case 'UInt32':
-            return bytesForHuman(dataStore.noOfRows * 4)
+            return dataStore.noOfRows * 4
         case 'UInt64':
-            return bytesForHuman(dataStore.noOfRows * 8)
+            return dataStore.noOfRows * 8
         default:
-            return 'N/A'
+            return null
     }
 })
 
@@ -76,25 +76,26 @@ const optimalDtype = computed(() => {
             return 'Float64'
         }
     } else {
-        if (minValue.value >= -128 && maxValue.value <= 127) {
-            return 'Int8'
-        } else if (minValue.value >= 0 && maxValue.value <= 255) {
-            return 'UInt8'
-        } else if (minValue.value >= -32768 && maxValue.value <= 32767) {
-            return 'Int16'
-        } else if (minValue.value >= 0 && maxValue.value <= 65535) {
-            return 'UInt16'
-        } else if (
-            minValue.value >= -2147483648 &&
-            maxValue.value <= 2147483647
-        ) {
-            return 'Int32'
-        } else if (minValue.value >= 0 && maxValue.value <= 4294967295) {
-            return 'UInt32'
-        } else if (minValue.value >= 0) {
-            return 'UInt64'
+        if (minValue.value >= 0) {
+            if (maxValue.value <= 255) {
+                return 'UInt8'
+            } else if (maxValue.value <= 65535) {
+                return 'UInt16'
+            } else if (maxValue.value <= 4294967295) {
+                return 'UInt32'
+            } else {
+                return 'UInt64'
+            }
         } else {
-            return 'Int64'
+            if (maxValue.value <= 127) {
+                return 'Int8'
+            } else if (maxValue.value <= 32767) {
+                return 'Int16'
+            } else if (maxValue.value <= 2147483647) {
+                return 'Int32'
+            } else {
+                return 'Int64'
+            }
         }
     }
 })
@@ -102,25 +103,25 @@ const optimalDtype = computed(() => {
 const optimalDtypeMemoryDemand = computed(() => {
     switch (optimalDtype.value) {
         case 'Int8':
-            return bytesForHuman(dataStore.noOfRows)
+            return dataStore.noOfRows
         case 'Int16':
-            return bytesForHuman(dataStore.noOfRows * 2)
+            return dataStore.noOfRows * 2
         case 'Int32':
-            return bytesForHuman(dataStore.noOfRows * 4)
+            return dataStore.noOfRows * 4
         case 'Int64':
-            return bytesForHuman(dataStore.noOfRows * 8)
+            return dataStore.noOfRows * 8
         case 'Float32':
-            return bytesForHuman(dataStore.noOfRows * 4)
+            return dataStore.noOfRows * 4
         case 'Float64':
-            return bytesForHuman(dataStore.noOfRows * 8)
+            return dataStore.noOfRows * 8
         case 'UInt8':
-            return bytesForHuman(dataStore.noOfRows)
+            return dataStore.noOfRows
         case 'UInt16':
-            return bytesForHuman(dataStore.noOfRows * 2)
+            return dataStore.noOfRows * 2
         case 'UInt32':
-            return bytesForHuman(dataStore.noOfRows * 4)
+            return dataStore.noOfRows * 4
         case 'UInt64':
-            return bytesForHuman(dataStore.noOfRows * 8)
+            return dataStore.noOfRows * 8
         default:
             return 'N/A'
     }
@@ -133,8 +134,7 @@ const isDtypeOptimal = computed(() => {
 const memoryDemandPercentage = computed(() => {
     if (memoryDemand.value === 'N/A') return 'N/A'
     return (
-        (parseInt(optimalDtypeMemoryDemand.value) /
-            parseInt(memoryDemand.value)) *
+        (optimalDtypeMemoryDemand.value / memoryDemand.value) *
         100
     ).toFixed(2)
 })
@@ -176,18 +176,24 @@ const memoryDemandPercentage = computed(() => {
         <div class="flex flex-col gap-2">
             <div>
                 Memory:
-                <span class="font-semibold">{{ memoryDemand }}</span>
+                <span class="font-semibold">
+                    {{ bytesForHuman(memoryDemand) }}
+                </span>
             </div>
             <div v-if="!isDtypeOptimal">
                 Values within this range can be stored using the
                 <span class="font-semibold">{{ optimalDtype }}</span>
                 data type. The required memory would be
                 <span class="font-semibold">
-                    {{ optimalDtypeMemoryDemand }}
+                    {{ bytesForHuman(optimalDtypeMemoryDemand) }}
                 </span>
                 , which is
                 <span class="font-semibold">{{ memoryDemandPercentage }}%</span>
                 of the memory needed for the current data type.
+            </div>
+            <div v-else>
+                The current data type is optimal for storing the values in this
+                range.
             </div>
         </div>
     </div>
