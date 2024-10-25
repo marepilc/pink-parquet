@@ -22,7 +22,10 @@ onMounted(async () => {
             dataStore.updateOpenState(false, '', [0, 0])
             dataStore.resetContent()
             tableStore.deselectColumn()
-            dataStore.loadParquet(extractPath(event.payload.paths))
+            const extractedPath = extractPath(event.payload.paths)
+            if (extractedPath) {
+                dataStore.loadParquet(extractedPath)
+            }
         } else if (event.payload.type === 'leave') {
             dataStore.updateDraggedFilePath(null)
         }

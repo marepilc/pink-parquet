@@ -13,7 +13,8 @@ const dataStore = useDataStore()
             <IconParquetFile />
         </div>
         <div
-            class="grow-1 mx-auto flex w-[90%] justify-center overflow-hidden break-words px-4 py-2 text-center"
+            v-if="dataStore.draggedFilePath"
+            class="grow-1 z-10 mx-auto flex w-[90%] justify-center overflow-hidden break-words rounded-md border border-surface-400 bg-surface-100 px-4 py-2 text-center dark:border-surface-600 dark:bg-surface-800"
         >
             {{ dataStore.draggedFilePath }}
         </div>
