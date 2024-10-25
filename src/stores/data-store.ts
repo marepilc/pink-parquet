@@ -26,6 +26,7 @@ export const useDataStore = defineStore({
         rowsLoadingInProgress: false,
         sorting: [] as Sorting[],
         filtering: [] as Filtering[],
+        loadingInProgress: false,
     }),
     getters: {
         allRowsLoaded: (state) => {
@@ -61,6 +62,7 @@ export const useDataStore = defineStore({
     },
     actions: {
         async loadParquet(filePath: string) {
+            this.loadingInProgress = true
             const sorting =
                 this.sorting && this.sorting.length > 0 ? this.sorting : null
             const filtering =
@@ -90,11 +92,13 @@ export const useDataStore = defineStore({
                 if (!sorting) {
                     this.updateDraggedFilePath(null)
                 }
+                this.loadingInProgress = false
             } catch (e) {
                 console.error(e)
             }
         },
         async getMoreRows() {
+            this.loadingInProgress = true
             if (this.rowsLoadingInProgress) return
             this.rowsLoadingInProgress = true
             try {
@@ -119,6 +123,7 @@ export const useDataStore = defineStore({
                 } else {
                     console.error('Data is not an array')
                 }
+                this.loadingInProgress = false
             } catch (e) {
                 console.error(e)
             } finally {

@@ -268,6 +268,12 @@ function noNewLines(value: string) {
                     />
                 </div>
             </Popover>
+            <div
+                v-if="dataStore.loadingInProgress"
+                class="absolute inset-0 z-20 flex items-center justify-center bg-surface-100/75 dark:bg-surface-800/75"
+            >
+                <ProgressSpinner />
+            </div>
             <table
                 class="w-full table-fixed cursor-default text-left text-surface-950 dark:text-surface-50"
                 :style="{ width: `${totalTableWidth}px` }"
