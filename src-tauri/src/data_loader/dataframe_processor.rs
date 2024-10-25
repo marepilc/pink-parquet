@@ -227,6 +227,12 @@ pub fn filter_columns(mut filtered_lf: LazyFrame, filtering_info: Vec<Filtering>
                     } else {
                         return Err("Invalid date value for filter".to_string());
                     }
+                } else if let Value::Bool(val) = &filter.value {
+                    filtered_lf = match filter.condition.as_str() {
+                        "==" => filtered_lf.filter(col(&filter.column).eq(lit(*val))),
+                        "!=" => filtered_lf.filter(col(&filter.column).neq(lit(*val))),
+                        _ => return Err(format!("Invalid boolean filter condition: {}", filter.condition)),
+                    };
                 } else {
                     return Err("Invalid value type for filter".to_string());
                 }
@@ -276,6 +282,8 @@ pub fn filter_columns(mut filtered_lf: LazyFrame, filtering_info: Vec<Filtering>
             "equals" => {
                 if let Value::String(val) = &filter.value {
                     filtered_lf = filtered_lf.filter(col(&filter.column).eq(lit(val.as_str())));
+                } else if let Value::Bool(val) = &filter.value {
+                    filtered_lf = filtered_lf.filter(col(&filter.column).eq(lit(*val)));
                 } else {
                     return Err("Invalid value type for equality filter".to_string());
                 }
@@ -283,6 +291,8 @@ pub fn filter_columns(mut filtered_lf: LazyFrame, filtering_info: Vec<Filtering>
             "different" => {
                 if let Value::String(val) = &filter.value {
                     filtered_lf = filtered_lf.filter(col(&filter.column).neq(lit(val.as_str())));
+                } else if let Value::Bool(val) = &filter.value {
+                    filtered_lf = filtered_lf.filter(col(&filter.column).neq(lit(*val)));
                 } else {
                     return Err("Invalid value type for inequality filter".to_string());
                 }
@@ -295,7 +305,7 @@ pub fn filter_columns(mut filtered_lf: LazyFrame, filtering_info: Vec<Filtering>
                         col(&filter.column)
                             .cast(DataType::String)
                             .str()
-                            .contains(lit(pattern), false)
+                            .contains(lit(pattern), false),
                     );
                 } else {
                     return Err("Invalid value type for case-insensitive contains filter".to_string());
@@ -307,7 +317,7 @@ pub fn filter_columns(mut filtered_lf: LazyFrame, filtering_info: Vec<Filtering>
                         col(&filter.column)
                             .cast(DataType::String)
                             .str()
-                            .contains(lit(val.as_str()), false)
+                            .contains(lit(val.as_str()), false),
                     );
                 } else {
                     return Err("Invalid value type for contains filter".to_string());
