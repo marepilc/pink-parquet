@@ -24,11 +24,19 @@ export interface TableData {
     height: number
 }
 
+export interface ColumnMetadata {
+    name: string
+    compression: string
+}
+
 export interface FileMetadata {
-    fileName: string
+    columns: ColumnMetadata[]
     createdAt: string
+    fileName: string
+    fileSize: number
     modifiedAt: string
-    size: number
+    numRows: number
+    rowGroups?: number
 }
 
 export enum Condition {
@@ -45,4 +53,11 @@ export enum Condition {
     different = 'different',
     isNull = 'is_null',
     isNotNull = 'is_not_null',
+}
+
+export interface ParquetData {
+    shape: Shape
+    columns: Column[]
+    rows: string[][]
+    metadata: FileMetadata
 }

@@ -30,6 +30,7 @@ pub struct ColumnMetaData {
 }
 
 #[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct MetadataInfo {
     pub file_name: String,
     pub created_at: Option<DateTime<Utc>>,

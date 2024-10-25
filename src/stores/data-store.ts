@@ -4,6 +4,7 @@ import type {
     Filtering,
     Shape,
     Sorting,
+    ParquetData,
 } from '~/types/app-types'
 import { invoke } from '@tauri-apps/api/core'
 import { dtypeCleaner } from '~/utils/dtype-cleaner'
@@ -80,7 +81,7 @@ export const useDataStore = defineStore({
                 this.updateOpenState(true, filePath, data.shape)
                 this.updateFileMetadata(data.metadata)
                 this.updateColumns(
-                    data.columns.map((col) => ({
+                    data.columns.map((col: Column) => ({
                         ...col,
                         dtype: dtypeCleaner(col.dtype),
                     }))
@@ -135,15 +136,17 @@ export const useDataStore = defineStore({
                 this.fileMetadata = null
             } else {
                 this.fileMetadata = {
-                    fileName: metadata.file_name,
-                    createdAt: metadata.created_at,
-                    modifiedAt: metadata.modified_at,
-                    size: metadata.file_size as number,
+                    fileName: metadata.fileName,
+                    createdAt: metadata.createdAt,
+                    modifiedAt: metadata.modifiedAt,
+                    fileSize: metadata.fileSize as number,
+                    numRows: metadata.numRows,
+                    columns: metadata.columns,
                 }
-                this.noOfRows = metadata.num_rows
+                this.noOfRows = metadata.numRows
 
                 await nextTick()
-                for (let i = 0; i < metadata.columns.length; i++) {
+                for (let i = 0; i < this.columns.length; i++) {
                     this.columns[i].compression =
                         metadata.columns[i].compression
                 }

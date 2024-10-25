@@ -178,7 +178,6 @@ function cellRightClicked(event: MouseEvent, value: string) {
 }
 
 function cellLeftClicked() {
-    // close the popover
     cellOp.value.hide()
 }
 

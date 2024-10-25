@@ -11,12 +11,17 @@ import TableInfo from '~/components/TableInfo.vue'
 const dataStore = useDataStore()
 const tableStore = useTableStore()
 
-const createdDate = formatToLocalDateTime(dataStore.fileMetadata.createdAt)
-const modifiedDate = formatToLocalDateTime(dataStore.fileMetadata.modifiedAt)
+let createdDate = ''
+let modifiedDate = ''
+
+if (dataStore.fileMetadata) {
+    createdDate = formatToLocalDateTime(dataStore.fileMetadata.createdAt)
+    modifiedDate = formatToLocalDateTime(dataStore.fileMetadata.modifiedAt)
+}
 </script>
 
 <template>
-    <div class="flex min-h-52 w-full gap-2">
+    <div v-if="dataStore.fileMetadata" class="flex min-h-52 w-full gap-2">
         <div class="flex min-w-40 max-w-64 flex-col items-center">
             <h2
                 class="mb-3 w-full max-w-full overflow-hidden text-ellipsis whitespace-nowrap text-xl font-bold"
@@ -69,7 +74,7 @@ const modifiedDate = formatToLocalDateTime(dataStore.fileMetadata.modifiedAt)
             <div class="mt-2 flex flex-col items-center">
                 <div class="text-right text-sm italic">File size:</div>
                 <div class="text-sm font-semibold italic">
-                    {{ bytesForHuman(dataStore.fileMetadata.size) }}
+                    {{ bytesForHuman(dataStore.fileMetadata.fileSize) }}
                 </div>
             </div>
         </div>

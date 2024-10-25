@@ -68,12 +68,12 @@ export function removeExtension(fileName: string): string {
     return fileName.slice(0, lastDotIndex)
 }
 
-export function convertToDate(days) {
+export function convertToDate(days: number) {
     const milliseconds = days * 24 * 60 * 60 * 1000 // Convert days to milliseconds
     return new Date(milliseconds).toISOString().split('T')[0] // Outputs just the date portion
 }
 
-export function convertToDatetime(microseconds) {
+export function convertToDatetime(microseconds: number) {
     const milliseconds = Math.floor(microseconds / 1000) // Convert microseconds to milliseconds
     const date = new Date(milliseconds)
 
@@ -88,7 +88,7 @@ export function convertToDatetime(microseconds) {
     return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
-export function convertToTime(nanoseconds) {
+export function convertToTime(nanoseconds: number) {
     const milliseconds = Math.floor(nanoseconds / 1e6) // Convert nanoseconds to milliseconds
     const date = new Date(milliseconds)
 
@@ -98,7 +98,7 @@ export function convertToTime(nanoseconds) {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }
 
-export function convertToDuration(nanoseconds) {
+export function convertToDuration(nanoseconds: number) {
     const milliseconds = nanoseconds / 1e6 // Convert nanoseconds to milliseconds
     const seconds = Math.floor(milliseconds / 1000)
     const remainingMilliseconds = milliseconds % 1000
