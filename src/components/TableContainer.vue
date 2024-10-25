@@ -14,7 +14,7 @@ const dataStore = useDataStore()
         >
             <slot name="info"></slot>
         </PpPanel>
-        <PpPanel class="flex w-full items-center justify-between gap-3">
+        <div class="flex w-full items-center gap-2">
             <Button
                 class="h-8 w-8 p-1"
                 type="button"
@@ -22,9 +22,15 @@ const dataStore = useDataStore()
             >
                 <IconSettings class="h-5 w-5" />
             </Button>
-
-            <slot name="status"></slot>
-        </PpPanel>
+            <Button class="h-8 w-8 p-1" type="button">
+                <IconAbout class="h-5 w-5" />
+            </Button>
+            <PpPanel
+                class="flex w-auto flex-grow items-center justify-between gap-3"
+            >
+                <slot name="status"></slot>
+            </PpPanel>
+        </div>
     </div>
 </template>
 

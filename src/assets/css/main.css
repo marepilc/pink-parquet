@@ -50,7 +50,7 @@
     }
 
     body {
-        @apply text-surface-900 dark:text-surface-0 bg-surface-50 dark:bg-surface-950 transition-colors duration-500 selection:bg-primary-400 select-none;
+        @apply text-surface-900 dark:text-surface-100 bg-surface-50 dark:bg-surface-950 transition-colors duration-500 selection:bg-primary-400 select-none;
     }
 }
 
@@ -85,12 +85,12 @@
     }
 
     .scrollbar-custom::-webkit-scrollbar-thumb {
-        background-color: #db2777; /* Thumb color */
+        background-color: #a3a3a3; /* Thumb color */
         border-radius: 1px; /* Rounded corners */
-        border: 1px solid #9d174d; /* Adds padding around thumb */
+        border: 1px solid #525252; /* Adds padding around thumb */
     }
 
     .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-        background-color: #ec4899; /* Thumb color on hover */
+        background-color: #EC4899; /* Thumb color on hover */
     }
 }

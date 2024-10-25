@@ -285,7 +285,7 @@ function noNewLines(value: string) {
                 </colgroup>
 
                 <thead
-                    class="sticky-header sticky top-0 z-10 bg-surface-200 dark:bg-surface-800"
+                    class="sticky-header sticky top-0 z-10 bg-surface-200 before:bg-primary-400 after:bg-primary-400 dark:bg-surface-800 dark:before:bg-primary-600 dark:after:bg-primary-600"
                 >
                     <tr>
                         <th
@@ -475,7 +475,6 @@ function noNewLines(value: string) {
     left: 0;
     right: 0;
     height: 1px;
-    background-color: rgba(219, 39, 119, 1); /* Adjust the color as needed */
     pointer-events: none; /* Allows clicks to pass through */
 }
 

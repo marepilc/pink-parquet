@@ -61,7 +61,7 @@ const columnHealths = computed(() => {
                         ></div>
                         <!-- Correctly Rotated Text at Bottom of the Column -->
                         <div
-                            class="absolute bottom-16 left-1/2 ml-2.5 w-[110px] origin-bottom -translate-x-1/2 -rotate-90 transform select-none overflow-hidden text-ellipsis whitespace-nowrap p-0 text-sm font-semibold"
+                            class="absolute bottom-16 left-1/2 ml-2.5 w-[110px] origin-bottom -translate-x-1/2 -rotate-90 transform select-none overflow-hidden text-ellipsis whitespace-nowrap p-0 text-sm"
                         >
                             {{ dataStore.columns[ix].name }}
                         </div>

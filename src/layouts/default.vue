@@ -2,10 +2,10 @@
 
 <template>
     <div
-        class="relative flex h-screen max-h-screen flex-col bg-pink-200/80 dark:bg-pink-800/80"
+        class="relative flex h-screen max-h-screen flex-col bg-surface-200 dark:bg-surface-700"
     >
         <div
-            class="absolute inset-0 bg-pink-200/80 bg-[url('/abstract.svg')] bg-cover bg-center opacity-25 blur-md filter"
+            class="absolute inset-0 bg-[url('/abstract.svg')] bg-cover bg-center opacity-10 blur-md filter"
         ></div>
 
         <slot />
