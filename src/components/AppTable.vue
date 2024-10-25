@@ -86,12 +86,14 @@ const tableFontClass = computed(() => {
 })
 
 const op = ref()
-const columnFilterIx = ref(null)
-const filterBtnClicked = (event, ix) => {
-    op.value.hide()
+const columnFilterIx = ref<number | null>(null)
+const filterBtnClicked = (event: Event, ix: number) => {
     if (columnFilterIx.value === ix) {
-        op.value.show(event)
+        nextTick(() => {
+            op.value.toggle(event)
+        })
     } else {
+        op.value.hide()
         columnFilterIx.value = ix
         nextTick(() => {
             op.value.show(event)
@@ -168,13 +170,16 @@ const cellOp = ref()
 const cellValueToCopy = ref('')
 
 function cellRightClicked(event: MouseEvent, value: string) {
-    event.preventDefault() // Prevent the default context menu
-
     // Store the value to be copied
     cellValueToCopy.value = value
 
     // Show the Popover at the click position
     cellOp.value.show(event)
+}
+
+function cellLeftClicked() {
+    // close the popover
+    cellOp.value.hide()
 }
 
 function copyCellValue() {
@@ -450,6 +455,7 @@ function noNewLines(value: string) {
                             @contextmenu.prevent="
                                 cellRightClicked($event, cell)
                             "
+                            @click="cellLeftClicked(cell)"
                         >
                             <span class="whitespace-pre">
                                 {{ noNewLines(cell) }}
