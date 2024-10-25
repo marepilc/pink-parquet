@@ -6,7 +6,7 @@ const props = defineProps<{
     colIx: number
 }>()
 
-const dataStore = useDataStore()
+const dataStore = useDataStore() as any
 
 const dtype = computed(() => dataStore.columns[props.colIx].dtype)
 const columnName = computed(() => dataStore.columns[props.colIx].name)
@@ -43,13 +43,12 @@ const filterType = computed(() => {
 })
 
 const selectCondition = ref<Condition | null>(null)
-const value = ref(null)
-const value2 = ref(null)
+const value = ref<any>(null)
+const value2 = ref<any>(null)
 
-function getFormattedValue(date: Date, format: string): string {
-    // Default format for 'Date'
-    const defaultFormat = 'yyyy-MM-dd'
-    return formatDate(date, format || defaultFormat)
+function getFormattedValue(date: Date): string {
+    //todo: implement custom date format
+    return formatDate(date)
 }
 
 const formattedValue = computed(() => {
@@ -61,7 +60,7 @@ const formattedValue = computed(() => {
 
         if (selectCondition.value !== Condition.between) {
             // For single value (Date or Datetime)
-            return getFormattedValue(new Date(value.value), format)
+            return getFormattedValue(new Date(value.value))
         } else if (
             selectCondition.value === Condition.between &&
             value2.value
@@ -70,10 +69,7 @@ const formattedValue = computed(() => {
             const date1 = new Date(value.value)
             const date2 = new Date(value2.value)
 
-            return [
-                getFormattedValue(date1, format),
-                getFormattedValue(date2, format),
-            ]
+            return [getFormattedValue(date1), getFormattedValue(date2)]
         }
     } else if (filterType.value === 'number') {
         if (selectCondition.value !== Condition.between) {
@@ -251,6 +247,7 @@ function onEnterKey(event: KeyboardEvent) {
         <div v-else-if="filterType == 'enum'" class="flex gap-1">
             <Select
                 v-model="value"
+                filter
                 :options="dataStore.columnsInfo[columnName]['available_values']"
                 class="w-48"
                 :disabled="
