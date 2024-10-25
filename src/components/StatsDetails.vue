@@ -1,6 +1,7 @@
 <script setup lang="ts">
-const tableStore = useTableStore()
-const dataStore = useDataStore()
+const props = defineProps<{
+    dtype: string
+}>()
 
 const numericTypes = [
     'Int8',
@@ -18,15 +19,12 @@ const numericTypes = [
 
 <template>
     <StatsDetailsNumeric
-        v-if="numericTypes.includes(tableStore.selectedColumn.dtype)"
+        v-if="numericTypes.includes(props.dtype)"
+        :dtype="props.dtype"
     />
-    <StatsDetailsDate v-else-if="tableStore.selectedColumn.dtype === 'Date'" />
-    <StatsDetailsDatetime
-        v-else-if="tableStore.selectedColumn.dtype === 'Datetime'"
-    />
-    <StatsDetailsTime v-else-if="tableStore.selectedColumn.dtype === 'Time'" />
-    <StatsDetailsDuration
-        v-else-if="tableStore.selectedColumn.dtype === 'Duration'"
-    />
+    <StatsDetailsDate v-else-if="props.dtype === 'Date'" />
+    <StatsDetailsDatetime v-else-if="props.dtype === 'Datetime'" />
+    <StatsDetailsTime v-else-if="props.dtype === 'Time'" />
+    <StatsDetailsDuration v-else-if="props.dtype === 'Duration'" />
     <StatsDetailsOther v-else />
 </template>

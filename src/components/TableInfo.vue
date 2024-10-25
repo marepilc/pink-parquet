@@ -1,6 +1,8 @@
 <script setup lang="ts">
-const dataStore = useDataStore()
-const tableStore = useTableStore()
+import type { Column } from '~/types/app-types'
+
+const dataStore = useDataStore() as any
+const tableStore = useTableStore() as any
 
 function formatPercentage(value: number): string {
     if (value === 1) {
@@ -17,7 +19,7 @@ function formatPercentage(value: number): string {
 }
 
 const columnHealths = computed(() => {
-    return dataStore.columns.map((column) => {
+    return dataStore.columns.map((column: Column) => {
         if (dataStore.noOfRows === 0) return 0
         return (
             (dataStore.noOfRows -

@@ -5,22 +5,26 @@ const tableStore = useTableStore()
 </script>
 
 <template>
-    <div class="flex grow flex-col border-l border-l-stone-500 px-2">
+    <div class="flex grow flex-col px-2" v-if="tableStore.selectedColumn">
         <div class="flex flex-col">
-            <div class="flex items-center gap-2">
-                <DtypeIcon
-                    class="h-5 w-5 flex-shrink-0"
-                    :dtype="tableStore.selectedColumn.dtype"
-                ></DtypeIcon>
-                <h3 class="text-lg font-semibold">
-                    {{ tableStore.selectedColumn.name }}
+            <div class="mb-2 flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <DtypeIcon
+                        class="h-6 w-6 flex-shrink-0 text-primary"
+                        :dtype="tableStore.selectedColumn.dtype"
+                    ></DtypeIcon>
+                    <h3 class="text-lg font-semibold">
+                        {{ tableStore.selectedColumn.name }}
+                    </h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <IconCompress class="h-6 w-6" />
                     <span class="text-sm">
-                        — Compression
                         {{ tableStore.selectedColumn.compression }}
                     </span>
-                </h3>
+                </div>
             </div>
-            <StatsDetails v-if="tableStore.selectedColumn" />
+            <StatsDetails :dtype="tableStore.selectedColumn.dtype" />
         </div>
     </div>
 </template>

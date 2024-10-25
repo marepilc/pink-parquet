@@ -78,6 +78,7 @@ if (dataStore.fileMetadata) {
                 </div>
             </div>
         </div>
+        <Divider layout="vertical" />
         <ColumnInfo v-if="tableStore.selectedColumn" />
         <TableInfo v-else />
     </div>
