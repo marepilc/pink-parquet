@@ -1,0 +1,74 @@
+/* Primary and Surface Palettes */
+:root {
+    --p-primary-50: #FDEEF6;
+    --p-primary-100: #FBDCEB;
+    --p-primary-200: #F8B7D7;
+    --p-primary-300: #F492C2;
+    --p-primary-400: #F06DAE;
+    --p-primary-500: #EC4899;
+    --p-primary-600: #E4187D;
+    --p-primary-700: #B11261;
+    --p-primary-800: #7F0D45;
+    --p-primary-900: #4C0829;
+    --p-primary-950: #32051B;
+    --p-surface-0: #ffffff;
+    --p-surface-50: #fafafa;
+    --p-surface-100: #f5f5f5;
+    --p-surface-200: #e5e5e5;
+    --p-surface-300: #d4d4d4;
+    --p-surface-400: #a3a3a3;
+    --p-surface-500: #737373;
+    --p-surface-600: #525252;
+    --p-surface-700: #404040;
+    --p-surface-800: #262626;
+    --p-surface-900: #171717;
+    --p-surface-950: #0a0a0a;
+    --p-content-border-radius: 6px;
+}
+
+/* Light */
+:root {
+    --p-primary-color: var(--p-primary-500);
+    --p-primary-contrast-color: var(--p-surface-0);
+    --p-primary-hover-color: var(--p-primary-600);
+    --p-primary-active-color: var(--p-primary-700);
+    --p-content-border-color: var(--p-surface-200);
+    --p-content-hover-background: var(--p-surface-100);
+    --p-content-hover-color: var(--p-surface-800);
+    --p-highlight-background: var(--p-primary-50);
+    --p-highlight-color: var(--p-primary-700);
+    --p-highlight-focus-background: var(--p-primary-100);
+    --p-highlight-focus-color: var(--p-primary-800);
+    --p-text-color: var(--p-surface-700);
+    --p-text-hover-color: var(--p-surface-800);
+    --p-text-muted-color: var(--p-surface-500);
+    --p-text-hover-muted-color: var(--p-surface-600);
+}
+
+/*
+ * Dark Mode
+ * Defaults to system, change the selector to match the darkMode in tailwind.config.
+ * For example;
+ * darkMode: ['selector', '[class*="app-dark"]']
+ * should be;
+ * :root[class="app-dark"] {
+*/
+@media (prefers-color-scheme: dark) {
+    :root {
+        --p-primary-color: var(--p-primary-400);
+        --p-primary-contrast-color: var(--p-surface-900);
+        --p-primary-hover-color: var(--p-primary-300);
+        --p-primary-active-color: var(--p-primary-200);
+        --p-content-border-color: var(--p-surface-700);
+        --p-content-hover-background: var(--p-surface-800);
+        --p-content-hover-color: var(--p-surface-0);
+        --p-highlight-background: color-mix(in srgb, var(--p-primary-400), transparent 84%);
+        --p-highlight-color: rgba(255, 255, 255, 0.87);
+        --p-highlight-focus-background: color-mix(in srgb, var(--p-primary-400), transparent 76%);
+        --p-highlight-focus-color: rgba(255, 255, 255, 0.87);
+        --p-text-color: var(--p-surface-0);
+        --p-text-hover-color: var(--p-surface-0);
+        --p-text-muted-color: var(--p-surface-400);
+        --p-text-hover-muted-color: var(--p-surface-300);
+    }
+}

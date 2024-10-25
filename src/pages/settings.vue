@@ -43,7 +43,7 @@ function setTableFont() {
         >
             <h2 class="mb-4 text-center text-xl font-bold">settings</h2>
             <div class="flex items-center gap-2">
-                <UButton
+                <Button
                     size="sm"
                     color="primary"
                     square
@@ -51,34 +51,44 @@ function setTableFont() {
                     @click="toggleTheme"
                 >
                     <IconTheme class="h-6 w-6" />
-                </UButton>
+                </Button>
                 <label class="ml-2 text-sm">{{ configStore.theme }}</label>
             </div>
-            <div>
+            <div class="flex flex-col gap-1">
                 <label class="text-sm" for="ui-font-menu">UI Font</label>
-                <USelectMenu
-                    id="ui-font-menu"
+                <Select
                     v-model="uiFontSelected"
                     :options="uiFont"
                     @change="setUIFont"
                 />
             </div>
-            <div>
+            <div class="flex flex-col gap-1">
                 <label class="text-sm" for="table-font-menu">Table Font</label>
-                <USelectMenu
+                <Select
                     id="table-font-menu"
                     v-model="tableFontSelected"
                     :options="tableFont"
                     @change="setTableFont"
                 />
             </div>
-            <UButton
+            <Button
                 class="mb-4 self-center"
                 @click="$router.push('/')"
-                variant="solid"
-                icon="material-symbols:sync-saved-locally-outline"
                 label="Close"
-            ></UButton>
+            >
+                <template v-slot:icon>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        class="h-5 w-5"
+                    >
+                        <path
+                            fill="currentColor"
+                            d="M10.925 14.05L16.6 8.4l-1.425-1.425l-4.25 4.25L8.8 9.1l-1.4 1.4zM1 21v-2h22v2zm3-3q-.825 0-1.412-.587T2 16V5q0-.825.588-1.412T4 3h16q.825 0 1.413.588T22 5v11q0 .825-.587 1.413T20 18zm0-2h16V5H4zm0 0V5z"
+                        />
+                    </svg>
+                </template>
+            </Button>
         </div>
     </div>
 </template>

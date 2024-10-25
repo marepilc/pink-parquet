@@ -1,6 +1,11 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "~/assets/primevue/tailwind.css";
+@import "tailwindcss/utilities";
+
+/*@tailwind base;*/
+/*@tailwind components;*/
+/*@tailwind utilities;*/
 
 
 @font-face {
@@ -41,24 +46,24 @@
 
 @layer base {
     html {
-        font-family: Optima, Candara, 'Noto Sans', source-sans-pro, sans-serif;
+        @apply overflow-hidden;
     }
 
     body {
-        @apply text-stone-950 dark:text-stone-100 bg-stone-50 dark:bg-stone-950 selection:bg-pink-700 selection:text-stone-50;
+        @apply text-surface-900 dark:text-surface-100 bg-surface-50 dark:bg-surface-950 transition-colors duration-500 selection:bg-primary-400 select-none;
     }
 }
 
-@layer components {
-    .frame {
-        @apply rounded-md border border-stone-700 bg-stone-50/90 p-2 dark:border-pink-800 dark:bg-stone-950/90 transition-colors duration-500;
-    }
+/*@layer components {*/
+/*    .frame {*/
+/*        @apply rounded-md border border-stone-700 bg-surface-50/90 p-2 dark:border-pink-800 dark:bg-surface-950/90 transition-colors duration-500;*/
+/*    }*/
 
-    .btn-primary {
-        @apply rounded-md bg-pink-700 px-4 py-2 font-semibold text-stone-50 transition-colors duration-500 hover:bg-pink-900 dark:bg-pink-700 dark:hover:bg-pink-900
-    }
+/*    .btn-primary {*/
+/*        @apply rounded-md bg-pink-700 px-4 py-2 font-semibold text-ink-50 transition-colors duration-500 hover:bg-pink-900 dark:bg-pink-700 dark:hover:bg-pink-900*/
+/*    }*/
 
-}
+/*}*/
 
 @layer utilities {
     .scrollbar-hide::-webkit-scrollbar {
@@ -80,12 +85,12 @@
     }
 
     .scrollbar-custom::-webkit-scrollbar-thumb {
-        background-color: #db2777; /* Thumb color */
+        background-color: #a3a3a3; /* Thumb color */
         border-radius: 1px; /* Rounded corners */
-        border: 1px solid #9d174d; /* Adds padding around thumb */
+        border: 1px solid #525252; /* Adds padding around thumb */
     }
 
     .scrollbar-custom::-webkit-scrollbar-thumb:hover {
-        background-color: #ec4899; /* Thumb color on hover */
+        background-color: #EC4899; /* Thumb color on hover */
     }
 }

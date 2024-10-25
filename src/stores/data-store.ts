@@ -4,6 +4,7 @@ import type {
     Filtering,
     Shape,
     Sorting,
+    ParquetData,
 } from '~/types/app-types'
 import { invoke } from '@tauri-apps/api/core'
 import { dtypeCleaner } from '~/utils/dtype-cleaner'
@@ -19,11 +20,13 @@ export const useDataStore = defineStore({
         columnsInfo: {} as { [key: string]: {} },
         rows: shallowRef<string[][]>([]),
         noOfRows: 0,
+        filteredRowsCount: 0,
         noOfColumns: 0,
         rowsLoadingCounter: 0,
         rowsLoadingInProgress: false,
         sorting: [] as Sorting[],
         filtering: [] as Filtering[],
+        loadingInProgress: false,
     }),
     getters: {
         allRowsLoaded: (state) => {
@@ -44,9 +47,22 @@ export const useDataStore = defineStore({
                 return ix !== -1 ? ix + 1 : null
             }
         },
+        columnIndexInFiltering: (state) => {
+            return (column: string) => {
+                const ix = state.filtering.findIndex((f) => f.column === column)
+                return ix !== -1 ? ix : null
+            }
+        },
+        columnInFiltering: (state) => {
+            return (column: string) => {
+                const ix = state.filtering.findIndex((f) => f.column === column)
+                return ix !== -1
+            }
+        },
     },
     actions: {
         async loadParquet(filePath: string) {
+            this.loadingInProgress = true
             const sorting =
                 this.sorting && this.sorting.length > 0 ? this.sorting : null
             const filtering =
@@ -58,20 +74,6 @@ export const useDataStore = defineStore({
                     filePath,
                     sorting,
                     filtering,
-                    // filtering: [
-                    //     {
-                    //         column: 'date',
-                    //         condition: 'between',
-                    //         value: [
-                    //             new Date('2024-01-13')
-                    //                 .toISOString()
-                    //                 .slice(0, -1),
-                    //             new Date('2024-01-13')
-                    //                 .toISOString()
-                    //                 .slice(0, -1),
-                    //         ],
-                    //     },
-                    // ],
                 })
 
                 this.columnsInfo = await invoke('get_statistics', { filePath })
@@ -81,20 +83,22 @@ export const useDataStore = defineStore({
                 this.updateOpenState(true, filePath, data.shape)
                 this.updateFileMetadata(data.metadata)
                 this.updateColumns(
-                    data.columns.map((col) => ({
+                    data.columns.map((col: Column) => ({
                         ...col,
                         dtype: dtypeCleaner(col.dtype),
                     }))
                 )
-                this.addRows(data.rows)
+                this.addRows(this.formatRows(data.rows))
                 if (!sorting) {
                     this.updateDraggedFilePath(null)
                 }
+                this.loadingInProgress = false
             } catch (e) {
                 console.error(e)
             }
         },
         async getMoreRows() {
+            this.loadingInProgress = true
             if (this.rowsLoadingInProgress) return
             this.rowsLoadingInProgress = true
             try {
@@ -115,10 +119,11 @@ export const useDataStore = defineStore({
                 })
 
                 if (Array.isArray(data)) {
-                    this.addRows(data)
+                    this.addRows(this.formatRows(data))
                 } else {
                     console.error('Data is not an array')
                 }
+                this.loadingInProgress = false
             } catch (e) {
                 console.error(e)
             } finally {
@@ -128,18 +133,27 @@ export const useDataStore = defineStore({
         updateOpenState(isOpen: boolean, filePath: string, shape: Shape) {
             this.isFileOpen = isOpen
             this.filePath = filePath
-            this.noOfRows = shape[0]
             this.noOfColumns = shape[1]
+            this.filteredRowsCount = shape[0]
         },
-        updateFileMetadata(metadata: FileMetadata | null) {
+        async updateFileMetadata(metadata: FileMetadata | null) {
             if (metadata === null) {
-                this.fileMetadata = metadata
+                this.fileMetadata = null
             } else {
                 this.fileMetadata = {
-                    fileName: metadata.file_name,
-                    createdAt: metadata.created_at,
-                    modifiedAt: metadata.modified_at,
-                    size: metadata.file_size as number,
+                    fileName: metadata.fileName,
+                    createdAt: metadata.createdAt,
+                    modifiedAt: metadata.modifiedAt,
+                    fileSize: metadata.fileSize as number,
+                    numRows: metadata.numRows,
+                    columns: metadata.columns,
+                }
+                this.noOfRows = metadata.numRows
+
+                await nextTick()
+                for (let i = 0; i < this.columns.length; i++) {
+                    this.columns[i].compression =
+                        metadata.columns[i].compression
                 }
             }
         },
@@ -150,16 +164,18 @@ export const useDataStore = defineStore({
             this.rows = [...this.rows, ...rows]
             this.rowsLoadingCounter++
         },
-        resetContent(resetSorting = true) {
+        resetContent(resetSortingAndFiltering = true) {
             this.columns = []
             this.rows = []
             this.noOfRows = 0
+            this.filteredRowsCount = 0
             this.noOfColumns = 0
             this.rowsLoadingCounter = 0
             this.rowsLoadingInProgress = false
             this.fileMetadata = null
-            if (resetSorting) {
+            if (resetSortingAndFiltering) {
                 this.sorting = []
+                this.filtering = []
             }
         },
         updateDraggedFilePath(filePath: string | null) {
@@ -179,6 +195,111 @@ export const useDataStore = defineStore({
                 // Remove sorting if the same column is clicked twice
                 this.sorting.splice(index, 1)
             }
+        },
+        clearSorting() {
+            this.sorting = []
+        },
+        updateFiltering(filteringRequest: Filtering) {
+            const index = this.filtering.findIndex(
+                (f) => f.column === filteringRequest.column
+            )
+            if (index === -1) {
+                this.filtering.push(filteringRequest)
+            } else {
+                this.filtering[index] = filteringRequest
+            }
+        },
+        clearFiltering() {
+            this.filtering = []
+        },
+        removeFilterByColumn(columnName: string) {
+            const index = this.filtering.findIndex(
+                (f) => f.column === columnName
+            )
+            if (index !== -1) {
+                this.filtering.splice(index, 1)
+            }
+        },
+        formatRows(rows: string[][]): string[][] {
+            // Get the indices of numeric columns based on dtype
+            const numericColumns = this.columns
+                .map((col, index) => {
+                    const isNumeric = [
+                        'Int8',
+                        'Int16',
+                        'Int32',
+                        'Int64',
+                        'UInt8',
+                        'UInt16',
+                        'UInt32',
+                        'UInt64',
+                        'Float32',
+                        'Float64',
+                    ].includes(col.dtype)
+                    return isNumeric ? index : null
+                })
+                .filter((index): index is number => index !== null)
+
+            const { intLengths, fracLengths } = this.calculateMaxPartsLengths(
+                rows,
+                numericColumns
+            )
+
+            return rows.map((row) =>
+                row.map((value, colIndex) => {
+                    if (
+                        numericColumns.includes(colIndex) &&
+                        !isNaN(Number(value))
+                    ) {
+                        // Format numeric columns with decimal alignment
+                        const numericIndex = numericColumns.indexOf(colIndex)
+                        const [integerPart, fractionalPart = ''] =
+                            value.split('.')
+                        const paddedInt =
+                            ' '.repeat(
+                                intLengths[numericIndex] - integerPart.length
+                            ) + integerPart
+                        const paddedFrac =
+                            fractionalPart +
+                            ' '.repeat(
+                                fracLengths[numericIndex] -
+                                    fractionalPart.length
+                            )
+                        return fracLengths[numericIndex] > 0
+                            ? `${paddedInt}.${paddedFrac}`
+                            : paddedInt
+                    }
+                    // Return other columns unchanged
+                    return value
+                })
+            )
+        },
+        calculateMaxPartsLengths(
+            rows: string[][],
+            numericColumns: number[]
+        ): {
+            intLengths: number[]
+            fracLengths: number[]
+        } {
+            const intLengths = numericColumns.map((colIndex) =>
+                Math.max(
+                    ...rows.map((row) => {
+                        const parts = row[colIndex].split('.')
+                        return parts[0].length
+                    })
+                )
+            )
+
+            const fracLengths = numericColumns.map((colIndex) =>
+                Math.max(
+                    ...rows.map((row) => {
+                        const parts = row[colIndex].split('.')
+                        return parts.length > 1 ? parts[1].length : 0
+                    })
+                )
+            )
+
+            return { intLengths, fracLengths }
         },
     },
 })

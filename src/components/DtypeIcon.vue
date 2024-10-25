@@ -33,6 +33,9 @@ const props = defineProps<{
         <div v-else-if="props.dtype == 'Categorical'">
             <IconCategorical />
         </div>
+        <div v-else-if="props.dtype == 'Enum'">
+            <IconEnum />
+        </div>
         <div v-else-if="props.dtype.includes('Int')">
             <IconInteger />
         </div>

@@ -6,15 +6,16 @@ use data_loader::dataframe_processor::{sort_columns, Sorting, filter_columns, Fi
 use std::collections::HashMap;
 
 #[command]
-fn get_data(file_path: &str, sorting: Option<Vec<Sorting>>, filtering: Option<Vec<Filtering>>) -> Result<DataFrameInfo, String> {
+fn get_data(
+    file_path: &str,
+    sorting: Option<Vec<Sorting>>,
+    filtering: Option<Vec<Filtering>>,
+) -> Result<DataFrameInfo, String> {
     let mut lf = match open_parquet(file_path) {
         Ok(df) => df,
         Err(e) => return Err(format!("Failed to read Parquet file: {}", e)),
     };
-
-    // Get shape before filtering
-    let df = collect_dataframe_safe(lf.clone())?;
-    let shape = df.shape();
+    
 
     if let Some(filtering_info) = filtering {
         lf = match filter_columns(lf, filtering_info) {
@@ -30,13 +31,12 @@ fn get_data(file_path: &str, sorting: Option<Vec<Sorting>>, filtering: Option<Ve
         };
     }
 
-    let mut df_info = match process_dataframe(lf, file_path) {
-        Ok(df_info) => df_info,
+    // No need to collect DataFrame or calculate shape and height here
+
+    let df_info = match process_dataframe(lf, file_path) {
+        Ok(df_info) => df_info,  // `process_dataframe` now returns the correct shape after filtering
         Err(e) => return Err(format!("Failed to process DataFrame: {}", e)),
     };
-
-    // Update shape after filtering
-    df_info.shape = shape;
 
     Ok(df_info)
 }
@@ -67,9 +67,8 @@ fn get_more_rows(file_path: &str, offset: usize, limit: usize, sorting: Option<V
     let rows = dataframe_to_rows(&df_slice);
     Ok(rows)
 }
-
 #[command]
-fn get_statistics(file_path: &str) -> Result<HashMap<String, HashMap<String, f64>>, String> {
+fn get_statistics(file_path: &str) -> Result<HashMap<String, HashMap<String, serde_json::Value>>, String> {
     // Open the Parquet file
     let lf = match open_parquet(file_path) {
         Ok(lf) => lf,
@@ -85,27 +84,42 @@ fn get_statistics(file_path: &str) -> Result<HashMap<String, HashMap<String, f64
         let column_name = column.name();
         let mut column_stats = HashMap::new();
 
-        // Check if column is numeric or date
-        if column.dtype().is_numeric() || column.dtype() == &polars::prelude::DataType::Date || column.dtype() == &polars::prelude::DataType::Datetime(polars::prelude::TimeUnit::Milliseconds, None) {
+        // Check if column is numeric, date, datetime, time, or Enum
+        if column.dtype().is_numeric()
+            || matches!(column.dtype(), polars::prelude::DataType::Date)
+            || matches!(column.dtype(), polars::prelude::DataType::Datetime(_, _))
+            || matches!(column.dtype(), polars::prelude::DataType::Time)
+            || matches!(column.dtype(), polars::prelude::DataType::Duration(_))
+        {
             // Null values count
             let null_values = column.null_count() as f64;
-            column_stats.insert("null_values".to_string(), null_values);
-
-            // Min, Max, Mean, Median, 25th and 75th Percentile
-            if let Ok(Some(min)) = column.min() {
-                column_stats.insert("min".to_string(), min);
+            if let Some(number) = serde_json::Number::from_f64(null_values) {
+                column_stats.insert("null_values".to_string(), serde_json::Value::Number(number));
             }
 
-            if let Ok(Some(max)) = column.max() {
-                column_stats.insert("max".to_string(), max);
+            // Min, Max, Mean, Median
+            if let Ok(Some(min_value)) = column.min::<f64>() {
+                if let Some(number) = serde_json::Number::from_f64(min_value) {
+                    column_stats.insert("min".to_string(), serde_json::Value::Number(number));
+                }
+            }
+
+            if let Ok(Some(max_value)) = column.max::<f64>() {
+                if let Some(number) = serde_json::Number::from_f64(max_value) {
+                    column_stats.insert("max".to_string(), serde_json::Value::Number(number));
+                }
             }
 
             if let Some(mean) = column.mean() {
-                column_stats.insert("mean".to_string(), mean);
+                if let Some(number) = serde_json::Number::from_f64(mean) {
+                    column_stats.insert("mean".to_string(), serde_json::Value::Number(number));
+                }
             }
 
             if let Some(median) = column.median() {
-                column_stats.insert("median".to_string(), median);
+                if let Some(number) = serde_json::Number::from_f64(median) {
+                    column_stats.insert("median".to_string(), serde_json::Value::Number(number));
+                }
             }
 
             // Replace quantile method with manual percentile calculation
@@ -122,105 +136,58 @@ fn get_statistics(file_path: &str) -> Result<HashMap<String, HashMap<String, f64
                     let p75_idx = (0.75 * (len - 1) as f64).round() as usize;
 
                     if let Ok(p25_value) = sorted_column.get(p25_idx) {
-                        match p25_value {
-                            polars::prelude::AnyValue::Float64(val) => {
-                                column_stats.insert("percentile_25".to_string(), val);
-                            }
-                            polars::prelude::AnyValue::Float32(val) => {
-                                column_stats.insert("percentile_25".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::Datetime(val, _, _) => {
-                                column_stats.insert("percentile_25".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::Int64(val) => {
-                                column_stats.insert("percentile_25".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::UInt32(val) => {
-                                column_stats.insert("percentile_25".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::UInt64(val) => {
-                                column_stats.insert("percentile_25".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::Int32(val) => {
-                                column_stats.insert("percentile_25".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::UInt16(val) => {
-                                column_stats.insert("percentile_25".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::Int16(val) => {
-                                column_stats.insert("percentile_25".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::UInt8(val) => {
-                                column_stats.insert("percentile_25".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::Int8(val) => {
-                                column_stats.insert("percentile_25".to_string(), val as f64);
-                            }
-                            _ => {}
-                        }
+                        column_stats.insert("percentile_25".to_string(), serde_json::Value::String(p25_value.to_string()));
                     }
 
                     if let Ok(p75_value) = sorted_column.get(p75_idx) {
-                        match p75_value {
-                            polars::prelude::AnyValue::Float64(val) => {
-                                column_stats.insert("percentile_75".to_string(), val);
-                            }
-                            polars::prelude::AnyValue::Float32(val) => {
-                                column_stats.insert("percentile_75".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::Datetime(val, _, _) => {
-                                column_stats.insert("percentile_75".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::Int64(val) => {
-                                column_stats.insert("percentile_75".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::UInt32(val) => {
-                                column_stats.insert("percentile_75".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::UInt64(val) => {
-                                column_stats.insert("percentile_75".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::Int32(val) => {
-                                column_stats.insert("percentile_75".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::UInt16(val) => {
-                                column_stats.insert("percentile_75".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::Int16(val) => {
-                                column_stats.insert("percentile_75".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::UInt8(val) => {
-                                column_stats.insert("percentile_75".to_string(), val as f64);
-                            }
-                            polars::prelude::AnyValue::Int8(val) => {
-                                column_stats.insert("percentile_75".to_string(), val as f64);
-                            }
-                            _ => {}
-                        }
+                        column_stats.insert("percentile_75".to_string(), serde_json::Value::String(p75_value.to_string()));
                     }
                 }
             }
-        } else {
-            // Non-numeric column
+        } else if let polars::prelude::DataType::Enum(Some(rev_mapping), _) = column.dtype() {
+            // Enum column
+
             // Unique values count (distinct count)
             let unique_values = match column.n_unique() {
-                Ok(val) => val as f64, // Convert usize to f64
-                Err(e) => return Err(format!("Failed to compute unique values for column '{}': {}", column_name, e)),
+                Ok(val) => serde_json::Value::Number(serde_json::Number::from(val as u64)),
+                Err(e) => return Err(format!(
+                    "Failed to compute unique values for column '{}': {}",
+                    column_name, e
+                )),
             };
-
             column_stats.insert("unique_values".to_string(), unique_values);
 
             // Null values count
             let null_values = column.null_count() as f64;
-            column_stats.insert("null_values".to_string(), null_values);
-
-            // Min and Max for categorical data
-            if let Ok(Some(min)) = column.min() {
-                column_stats.insert("min".to_string(), min);
+            if let Some(number) = serde_json::Number::from_f64(null_values) {
+                column_stats.insert("null_values".to_string(), serde_json::Value::Number(number));
             }
 
-            if let Ok(Some(max)) = column.max() {
-                column_stats.insert("max".to_string(), max);
+            // Available Enum values
+            let enum_values: Vec<String> = (0..rev_mapping.len())
+                .filter_map(|ix| ix.try_into().ok().map(|ix_u32| rev_mapping.get(ix_u32)))
+                .map(|s| s.to_string())
+                .collect();
+            column_stats.insert(
+                "available_values".to_string(),
+                serde_json::Value::Array(enum_values.into_iter().map(serde_json::Value::String).collect()),
+            );
+        } else {
+            // Non-numeric column
+            // Unique values count (distinct count)
+            let unique_values = match column.n_unique() {
+                Ok(val) => serde_json::Value::Number(serde_json::Number::from(val as u64)),
+                Err(e) => return Err(format!(
+                    "Failed to compute unique values for column '{}': {}",
+                    column_name, e
+                )),
+            };
+            column_stats.insert("unique_values".to_string(), unique_values);
+
+            // Null values count
+            let null_values = column.null_count() as f64;
+            if let Some(number) = serde_json::Number::from_f64(null_values) {
+                column_stats.insert("null_values".to_string(), serde_json::Value::Number(number));
             }
         }
 
@@ -229,6 +196,7 @@ fn get_statistics(file_path: &str) -> Result<HashMap<String, HashMap<String, f64
 
     Ok(statistics)
 }
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

@@ -1,6 +1,7 @@
 export interface Column {
     name: string
     dtype: string
+    compression?: string
 }
 
 export type Shape = [number, number]
@@ -20,13 +21,22 @@ export interface TableData {
     shape: [number, number]
     columns: Array<{ name: string; dtype: string }>
     rows: string[][]
+    height: number
+}
+
+export interface ColumnMetadata {
+    name: string
+    compression: string
 }
 
 export interface FileMetadata {
-    fileName: string
+    columns: ColumnMetadata[]
     createdAt: string
+    fileName: string
+    fileSize: number
     modifiedAt: string
-    size: number
+    numRows: number
+    rowGroups?: number
 }
 
 export enum Condition {
@@ -38,5 +48,16 @@ export enum Condition {
     le = '<=',
     between = 'between',
     equals = 'equals',
+    contains = 'contains',
+    containsCaseInsensitive = 'contains_case_insensitive',
     different = 'different',
+    isNull = 'is_null',
+    isNotNull = 'is_not_null',
+}
+
+export interface ParquetData {
+    shape: Shape
+    columns: Column[]
+    rows: string[][]
+    metadata: FileMetadata
 }

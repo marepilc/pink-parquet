@@ -9,6 +9,8 @@ export function dtypeCleaner(dtype: string): string {
         return 'List'
     } else if (dtype.startsWith('Struct')) {
         return 'Struct'
+    } else if (dtype.startsWith('Enum')) {
+        return 'Enum'
     } else {
         return dtype
     }

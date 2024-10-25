@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import AppStatus from '~/components/AppStatus.vue'
-import AppInfo from '~/components/AppInfo.vue'
+const dataStore = useDataStore()
 </script>
 
 <template>
-    <AppContainer>
+    <TableContainer v-if="dataStore.isFileOpen && !dataStore.draggedFilePath">
         <template v-slot:table>
             <AppTable />
         </template>
@@ -14,5 +13,6 @@ import AppInfo from '~/components/AppInfo.vue'
         <template v-slot:status>
             <AppStatus />
         </template>
-    </AppContainer>
+    </TableContainer>
+    <FileLoader v-else />
 </template>
