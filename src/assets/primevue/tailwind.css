@@ -79,7 +79,7 @@
 
 /* Message */
 /*@import './message';*/
-/*@import './toast';*/
+@import './toast';
 
 /* Media */
 /*@import './carousel';*/
