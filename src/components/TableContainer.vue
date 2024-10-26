@@ -4,8 +4,15 @@ import AppLogo from '~/components/AppLogo.vue'
 const dataStore = useDataStore()
 const infoVisible = ref(false)
 
-function openInBrowser() {
-    window.open('https://github.com/marepilc/pink-parquet', '_blank')
+const toast = useToast()
+
+function copyToClipboard(str: string) {
+    navigator.clipboard.writeText(str)
+    toast.add({
+        severity: 'secondary',
+        detail: 'URL copied to clipboard',
+        life: 2000,
+    })
 }
 </script>
 
@@ -13,6 +20,7 @@ function openInBrowser() {
     <div
         class="grid h-full w-full grid-cols-1 grid-rows-[1fr_256px_48px] items-center justify-stretch justify-items-center gap-2 overflow-hidden p-2"
     >
+        <Toast class="w-64" />
         <Dialog
             v-model:visible="infoVisible"
             modal
@@ -26,13 +34,32 @@ function openInBrowser() {
                     <p class="text-center text-lg font-medium">
                         A user-friendly viewer for Parquet files.
                     </p>
-                    <NuxtLink
-                        to="https://github.com/marepilc/pink-parquet"
-                        target="_blank"
-                        class="text-primary underline hover:text-primary-600"
-                    >
-                        Visit the GitHub repository
-                    </NuxtLink>
+                    <div class="flex flex-col">
+                        <p class="text-center text-sm text-gray-500">
+                            Homepage:
+                            <span
+                                class="font-semibold text-primary hover:text-pink-600"
+                                @click="
+                                    copyToClipboard('https://pinkparquet.com')
+                                "
+                            >
+                                https://pinkparquet.com
+                            </span>
+                        </p>
+                        <p class="text-center text-sm text-gray-500">
+                            Issues reporting:
+                            <span
+                                class="font-semibold text-primary hover:text-pink-600"
+                                @click="
+                                    copyToClipboard(
+                                        'https://github.com/marepilc/pink-parquet/issues'
+                                    )
+                                "
+                            >
+                                https://github.com/marepilc/pink-parquet/issues
+                            </span>
+                        </p>
+                    </div>
                     <Button
                         class="mt-6 w-24"
                         type="button"
