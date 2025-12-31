@@ -12,13 +12,16 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Pink Parquet",
         "width": 1200,
         "height": 800,
         "minWidth": 800,
         "minHeight": 600,
         "decorations": false,
-        "transparent": false
+        "transparent": false,
+        "theme": "Dark",
+        "visible": true
       }
     ],
     "security": {
@@ -27,7 +30,12 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
+    "targets": [
+      "app",
+      "dmg",
+      "nsis",
+      "msi"
+    ],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -37,7 +45,9 @@
     ],
     "fileAssociations": [
       {
-        "ext": ["parquet"],
+        "ext": [
+          "parquet"
+        ],
         "name": "Parquet File",
         "description": "Apache Parquet Data File",
         "role": "Viewer"
