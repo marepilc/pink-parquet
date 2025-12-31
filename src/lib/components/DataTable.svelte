@@ -48,6 +48,7 @@
   let tableContainer: HTMLDivElement | undefined = $state()
   const BATCH_SIZE = 100
   const MIN_COL_WIDTH = 100
+  const MAX_COL_WIDTH_PERCENT = 0.8 // Max 80% of window width
 
   const data = $derived(dataStore.data)
   const columns = $derived(data?.columns || [])
@@ -169,9 +170,13 @@
     if (resizingColumn === null) return
 
     let diff = event.clientX - resizeStartX
+    const maxWidth = window.innerWidth * MAX_COL_WIDTH_PERCENT
 
     const newWidths = { ...dataStore.columnWidths }
-    newWidths[resizingColumn] = Math.max(MIN_COL_WIDTH, resizeStartWidth + diff)
+    newWidths[resizingColumn] = Math.max(
+      MIN_COL_WIDTH,
+      Math.min(maxWidth, resizeStartWidth + diff)
+    )
     dataStore.columnWidths = newWidths
   }
 
@@ -562,6 +567,8 @@
     if (!headerCells || headerCells.length === 0) return
     const newWidths: Record<number, number> = {}
     const colsCount = columns.length
+    const maxWidth = window.innerWidth * MAX_COL_WIDTH_PERCENT
+
     for (let i = 0; i < colsCount; i++) {
       const cell = headerCells[i]
       if (!cell) continue
@@ -574,8 +581,8 @@
       const boxW = cell.offsetWidth || MIN_COL_WIDTH
       const contentW = Math.max(0, boxW - padL - padR - bordL - bordR)
       const natural = Math.ceil(contentW)
-      // Small epsilon to guard against subpixel rounding causing overflow
-      newWidths[i] = Math.max(MIN_COL_WIDTH, natural)
+      // Apply min and max constraints
+      newWidths[i] = Math.max(MIN_COL_WIDTH, Math.min(maxWidth, natural))
     }
     if (Object.keys(newWidths).length > 0) {
       dataStore.columnWidths = newWidths

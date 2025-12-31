@@ -50,6 +50,7 @@
   class="drag-region"
   role="banner"
   ondblclick={handleDoubleClick}
+  data-tauri-drag-region
 >
   <div class="title-bar-content">
     <div class="logo-container">
@@ -120,9 +121,11 @@
 
   .drag-region {
     -webkit-app-region: drag;
+    app-region: drag;
   }
 
   .no-drag {
     -webkit-app-region: no-drag;
+    app-region: no-drag;
   }
 </style>
