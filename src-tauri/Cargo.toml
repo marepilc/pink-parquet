@@ -1,31 +1,32 @@
 [package]
-name = "app"
+name = "pinkparquet"
 version = "0.1.0"
 description = "A Tauri App"
 authors = ["you"]
-license = ""
-repository = ""
 edition = "2021"
-rust-version = "1.71"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-name = "app_lib"
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "pinkparquet_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2.0.0-rc.13", features = [] }
+tauri-build = { version = "2", features = [] }
 
 [dependencies]
-serde_json = "1.0"
-serde = { version = "1.0", features = ["derive"] }
-log = "0.4"
-tauri = { version = "2.0.0-rc.16", features = [] }
-tauri-plugin-log = "2.0"
-tauri-plugin-fs = "=2.0.0"
-hashbrown = { version = "0.14.5", features = ["raw"] }
-polars = { version = "0.43.1", features = ["lazy", "parquet", "dtype-full", "timezones", "regex", "strings"] }
-chrono = { version = "0.4.38", features = ["serde"] }
-parquet = "53.1.0"
-regex = "1.11.0"
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-single-instance = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+polars = { version = "0.51.0", features = ["lazy", "parquet", "dtype-date", "dtype-datetime", "dtype-time", "dtype-duration", "strings", "dtype-u8", "dtype-u16", "dtype-i8", "dtype-i16", "dtype-struct", "dtype-decimal", "dtype-categorical", "binary_encoding", "dtype-array", "object", "list_eval"] }
+parquet = "53"
+chrono = "0.4"
+polars-sql = "0.51.0"
+hex = "0.4"
+

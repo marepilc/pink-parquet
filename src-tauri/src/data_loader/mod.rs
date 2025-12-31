@@ -1,7 +1,5 @@
-pub mod parquet_loader;
 pub mod dataframe_processor;
+pub mod parquet_loader;
 
-// Re-export the key functions and types
-pub use parquet_loader::{open_parquet, collect_dataframe};
-pub use dataframe_processor::{process_dataframe, dataframe_to_rows, collect_dataframe_safe};
-pub use dataframe_processor::DataFrameInfo;
+pub use dataframe_processor::{apply_sorts, calculate_statistics, dataframe_to_rows, Sorting};
+pub use parquet_loader::open_parquet;

@@ -1,15 +1,12 @@
 {
-    "$schema": "../gen/schemas/desktop-schema.json",
-    "identifier": "default",
-    "description": "enables the default permissions",
-    "windows": [
-        "main"
-    ],
-    "permissions": [
-        "core:default",
-        "fs:default",
-        {
-            "identifier": "fs:allow-appconfig-write-recursive"
-        }
-    ]
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Capability for the main window",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "opener:default",
+    "dialog:default",
+    "dialog:allow-open"
+  ]
 }

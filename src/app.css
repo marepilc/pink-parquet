@@ -1,0 +1,256 @@
+/* Pure CSS - No Tailwind */
+
+/* Minimal CSS Reset - Essential only */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body,
+h1, h2, h3, h4, h5, h6,
+p, blockquote,
+ul, ol, li,
+figure, figcaption {
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    font-size: 16px;
+    scroll-behavior: smooth;
+    color-scheme: dark light;
+    --accent: light-dark(oklch(60.217% 0.23514 359.26), oklch(60.217% 0.23514 359.26));
+    --surface-1: light-dark(oklch(0.980 0.000 0), oklch(0.400 0.02 251.57));
+    --surface-2: light-dark(oklch(0.948 0.01 89.806), oklch(0.368 0.02 251.57));
+    --surface-3: light-dark(oklch(0.916 0.01 89.806), oklch(0.336 0.02 251.57));
+    --surface-4: light-dark(oklch(0.884 0.01 89.806), oklch(0.304 0.02 251.57));
+    --surface-5: light-dark(oklch(0.852 0.01 89.806), oklch(0.272 0.02 251.57));
+    --surface-6: light-dark(oklch(0.820 0.01 89.806), oklch(0.240 0.02 251.57));
+    --surface-7: light-dark(oklch(0.788 0.01 89.806), oklch(0.208 0.02 251.57));
+    --surface-8: light-dark(oklch(0.756 0.01 89.806), oklch(0.176 0.02 251.57));
+    --surface-9: light-dark(oklch(0.724 0.01 89.806), oklch(0.144 0.02 251.57));
+    --ink-1: light-dark(oklch(0.230 0.007 326), oklch(0.677 0.006 239.831));
+    --ink-2: light-dark(oklch(0.280 0.007 326), oklch(0.727 0.006 239.831));
+    --ink-3: light-dark(oklch(0.330 0.007 326), oklch(0.777 0.006 239.831));
+    --ink-4: light-dark(oklch(0.380 0.007 326), oklch(0.827 0.006 239.831));
+    --ink-5: light-dark(oklch(0.430 0.007 326), oklch(0.877 0.006 239.831));
+    --color-error: light-dark(oklch(0.628 0.218 19.364), oklch(0.79 0.109 13.43));
+    --color-error-bg: light-dark(oklch(0.946 0.028 6.653), oklch(0.355 0.103 18.537));
+    --color-error-hover: light-dark(oklch(0.858 0.078 11.876), oklch(0.295 0.077 16.135));
+
+    --default-inset: inset 0.2rem 0.2rem 0.5rem oklch(0 0 0 / 0.1);
+}
+
+/* Additional color and typography variables */
+:root {
+    --color-info: oklch(57.404% 0.21786 261.458);
+    --color-success: oklch(60.4% 0.2 120.5);
+    --color-warning: oklch(60.4% 0.2 60.5);
+    --color-accent: oklch(60.4% 0.2 300.5);
+
+    --font-sans: 'Nunito Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'IosevkaMP', 'Courier New', monospace;
+    --font-display: 'Galindo', cursive;
+
+    --text-xs: 0.6875rem; /* 11px */
+    --text-sm: 0.75rem; /* 12px */
+    --text-base: 0.825rem; /* 13.2px */
+    --text-lg: 0.9375rem; /* 15px */
+    --text-xl: 1.125rem; /* 18px */
+    --text-2xl: 1.25rem; /* 20px */
+    --text-3xl: 1.5rem; /* 24px */
+    --text-4xl: 1.875rem; /* 30px */
+    --text-5xl: 2.25rem; /* 36px */
+    --text-6xl: 3rem; /* 48px */
+    --text-7xl: 3.75rem; /* 60px */
+    --text-8xl: 4.5rem; /* 72px */
+    --text-9xl: 6rem; /* 96px */
+}
+
+
+/* Nunito Sans variable font */
+@font-face {
+    font-family: 'Nunito Sans';
+    src: url('/src/assets/fonts/NunitoSans/NunitoSans-VariableFont_YTLC,opsz,wdth,wght.ttf') format('truetype-variations');
+    font-weight: 200 1000;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Nunito Sans';
+    src: url('/src/assets/fonts/NunitoSans/NunitoSans-Italic-VariableFont_YTLC,opsz,wdth,wght.ttf') format('truetype-variations');
+    font-weight: 200 1000;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Galindo';
+    src: url('/src/assets/fonts/Galindo/Galindo-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* IosevkaMP mono font for the data table */
+@font-face {
+    font-family: 'IosevkaMP';
+    src: url('/src/assets/fonts/IosevkaMP/IosevkaMP-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'IosevkaMP';
+    src: url('/src/assets/fonts/IosevkaMP/IosevkaMP-Italic.ttf') format('truetype');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'IosevkaMP';
+    src: url('/src/assets/fonts/IosevkaMP/IosevkaMP-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'IosevkaMP';
+    src: url('/src/assets/fonts/IosevkaMP/IosevkaMP-BoldItalic.ttf') format('truetype');
+    font-weight: 700;
+    font-style: italic;
+    font-display: swap;
+}
+
+/* Monaspace variable fonts */
+@font-face {
+    font-family: 'Monaspace Argon';
+    src: url('/src/assets/fonts/Monaspace Argon/Monaspace Argon Var.ttf') format('truetype-variations');
+    font-weight: 200 1000;
+    font-style: oblique 0deg 11deg;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Monaspace Krypton';
+    src: url('/src/assets/fonts/Monaspace Krypton/Monaspace Krypton Var.ttf') format('truetype-variations');
+    font-weight: 200 1000;
+    font-style: oblique 0deg 11deg;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Monaspace Neon';
+    src: url('/src/assets/fonts/Monaspace Neon/Monaspace Neon Var.ttf') format('truetype-variations');
+    font-weight: 200 1000;
+    font-style: oblique 0deg 11deg;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Monaspace Radon';
+    src: url('/src/assets/fonts/Monaspace Radon/Monaspace Radon Var.ttf') format('truetype-variations');
+    font-weight: 200 1000;
+    font-style: oblique 0deg 11deg;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Monaspace Xenon';
+    src: url('/src/assets/fonts/Monaspace Xenon/Monaspace Xenon Var.ttf') format('truetype-variations');
+    font-weight: 200 1000;
+    font-style: oblique 0deg 11deg;
+    font-display: swap;
+}
+
+/* Set Nunito Sans as the default font and ensure full height */
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-sans), ui-sans-serif, sans-serif;
+}
+
+/* Use monospace font for code and data tables */
+code,
+pre,
+.font-mono,
+.font-mono * {
+    font-family: var(--font-mono), monospace !important;
+}
+
+/* Custom selection color using accent color */
+::selection {
+    background-color: var(--accent) !important;
+    color: black !important;
+}
+
+::-moz-selection {
+    background-color: var(--accent) !important;
+    color: black !important;
+}
+
+/* Global scrollbar styling (Webkit browsers) */
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: var(--surface-2);
+}
+
+::-webkit-scrollbar-thumb {
+    background: radial-gradient(var(--surface-3), var(--surface-4) 100%);
+    border: 1px solid var(--surface-6);
+    border-radius: 2.5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: radial-gradient(var(--surface-5), var(--surface-7) 100%);
+}
+
+::-webkit-scrollbar-corner {
+    background-color: var(--surface-2);
+}
+
+/* CodeMirror custom styles - outside layers to ensure they apply in production */
+.cm-editor .cm-scroller {
+    font-family: var(--font-mono), monospace !important;
+}
+
+.cm-activeLine {
+    background: transparent !important;
+}
+
+.cm-focused {
+    outline: none !important;
+}
+
+/*noinspection CssUnresolvedCustomProperty*/
+.cm-gutters {
+    background-color: transparent !important;
+    color: oklch(from var(--ink-5) l c h / .5) !important;
+    font-size: var(--font-size-mono, 14px);
+    border-right: 1px solid var(--surface-6) !important;
+    padding-right: 0.25rem !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: end !important;
+    min-height: 0.85rem !important;
+}
+
+/* Autocomplete tooltip styling */
+.cm-tooltip-autocomplete > ul {
+    max-height: 300px !important;
+    overflow-y: auto !important;
+}
