@@ -23,7 +23,7 @@
         "theme": "Dark",
         "visible": true,
         "titleBarStyle": "Overlay",
-        "hiddenTitle": true,
+        "hiddenTitle": false,
         "dragDropEnabled": true
       }
     ],
