@@ -88,9 +88,8 @@ fn execute_sql_query(
     ctx: &mut SQLContext,
     query: &str,
 ) -> Result<polars::prelude::LazyFrame, String> {
-    ctx.execute(query).map_err(|e| {
-        format!("SQL execution error: {}", e)
-    })
+    ctx.execute(query)
+        .map_err(|e| format!("SQL execution error: {}", e))
 }
 
 // Get initial data with metadata (returns first 100 rows)
@@ -470,13 +469,11 @@ fn save_parquet(state: tauri::State<AppState>, file_path: String) -> Result<(), 
 
     // Create parent directories if they don't exist
     if let Some(parent) = std::path::Path::new(&file_path).parent() {
-        fs::create_dir_all(parent)
-            .map_err(|e| format!("Failed to create directory: {}", e))?;
+        fs::create_dir_all(parent).map_err(|e| format!("Failed to create directory: {}", e))?;
     }
 
     // Open file for writing
-    let file = fs::File::create(&file_path)
-        .map_err(|e| format!("Failed to create file: {}", e))?;
+    let file = fs::File::create(&file_path).map_err(|e| format!("Failed to create file: {}", e))?;
 
     // Write DataFrame to Parquet
     polars::prelude::ParquetWriter::new(file)
@@ -612,20 +609,26 @@ fn calculate_histogram_from_dataframe(
     column_name: &str,
     num_bins: Option<usize>,
 ) -> Result<HistogramData, String> {
-
     // Get the column
-    let series = df.column(&column_name)
+    let series = df
+        .column(&column_name)
         .map_err(|e| format!("Column not found: {}", e))?;
 
     // Convert to f64
-    let ca = series.cast(&DataType::Float64)
+    let ca = series
+        .cast(&DataType::Float64)
         .map_err(|e| format!("Failed to convert to numeric: {}", e))?;
-    let f64_series = ca.f64()
+    let f64_series = ca
+        .f64()
         .map_err(|e| format!("Failed to get f64 series: {}", e))?;
 
     // Get min and max
-    let min = f64_series.min().ok_or_else(|| "No min value in column".to_string())?;
-    let max = f64_series.max().ok_or_else(|| "No max value in column".to_string())?;
+    let min = f64_series
+        .min()
+        .ok_or_else(|| "No min value in column".to_string())?;
+    let max = f64_series
+        .max()
+        .ok_or_else(|| "No max value in column".to_string())?;
 
     // Calculate histogram
     let bins_count = num_bins.unwrap_or(20);
@@ -753,6 +756,13 @@ pub fn run() {
             }
         }))
         .setup(|app| {
+            #[cfg(target_os = "windows")]
+            {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.set_decorations(false);
+                }
+            }
+
             // Handle file association on Windows
             let args: Vec<String> = std::env::args().collect();
             if args.len() > 1 {
