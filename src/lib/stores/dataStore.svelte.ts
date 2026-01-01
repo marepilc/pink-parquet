@@ -187,9 +187,15 @@ export const dataStore = {
 
     if (session) {
       if (effectiveIsSql) {
-        session.queryData = newData
-        session.loadingQuery = false
+        // SQL results are shared across all sessions (global SQL state)
+        sessions.forEach((s) => {
+          s.queryData = newData
+          s.loadingQuery = false
+          s.error = null
+          s.dataTag++
+        })
       } else {
+        // Raw file data is per-session
         session.rawData = newData
         session.loadingRaw = false
         if (
@@ -198,9 +204,9 @@ export const dataStore = {
         ) {
           session.baseColumns = newData.columns
         }
+        session.error = null
+        session.dataTag++
       }
-      session.error = null
-      session.dataTag++
     }
   },
 
@@ -229,13 +235,18 @@ export const dataStore = {
 
     if (session) {
       if (effectiveIsSql && session.queryData) {
-        session.queryData = {
+        // SQL results are shared across all sessions
+        const updatedQueryData = {
           ...session.queryData,
           rows: [...session.queryData.rows, ...newRows],
         }
-        session.loadingMoreQuery = false
-        session.dataTag++
+        sessions.forEach((s) => {
+          s.queryData = updatedQueryData
+          s.loadingMoreQuery = false
+          s.dataTag++
+        })
       } else if (!effectiveIsSql && session.rawData) {
+        // Raw file data is per-session
         session.rawData = {
           ...session.rawData,
           rows: [...session.rawData.rows, ...newRows],
@@ -253,8 +264,12 @@ export const dataStore = {
     if (session) {
       const effectiveIsSql = isSql !== undefined ? isSql : this.isSqlTabActive
       if (effectiveIsSql) {
-        session.loadingQuery = isLoading
+        // SQL loading state is shared across all sessions
+        sessions.forEach((s) => {
+          s.loadingQuery = isLoading
+        })
       } else {
+        // Raw file loading is per-session
         session.loadingRaw = isLoading
       }
     }
@@ -267,8 +282,12 @@ export const dataStore = {
     if (session) {
       const effectiveIsSql = isSql !== undefined ? isSql : this.isSqlTabActive
       if (effectiveIsSql) {
-        session.loadingMoreQuery = isLoading
+        // SQL loading state is shared across all sessions
+        sessions.forEach((s) => {
+          s.loadingMoreQuery = isLoading
+        })
       } else {
+        // Raw file loading is per-session
         session.loadingMoreRaw = isLoading
       }
     }
