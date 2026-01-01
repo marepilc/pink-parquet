@@ -28,18 +28,18 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        border: 4px dashed var(--accent);
+        border: 4px dashed var(--color-primary-500);
         pointer-events: none;
     }
 
     .overlay.transparent {
-        background-color: var(--accent);
+        background-color: var(--color-primary-500);
         opacity: 0.1;
         backdrop-filter: blur(4px);
     }
 
     .overlay.opaque {
-        background-color: var(--surface-2);
+        background-color: var(--color-surface-700);
         opacity: 0.95;
         backdrop-filter: blur(12px);
     }

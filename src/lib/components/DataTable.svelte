@@ -1096,7 +1096,7 @@
     gap: 0.5rem;
     flex: 1;
     margin-right: 0.5rem;
-    svg {
+    & svg {
       margin-top: 0.2rem;
     }
   }
@@ -1273,11 +1273,11 @@
   }
 
   .ascending::before {
-    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    clip-path: shape(from 50% 0%, line to 0% 100%, line to 100% 100%, close);
   }
 
   .descending::before {
-    clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
+    clip-path: shape(from 50% 100%, line to 0% 0%, line to 100% 0%, close);
   }
 
   .sort-active::before {
@@ -1511,8 +1511,10 @@
     transition: all 0.15s;
   }
 
-  .stats-close svg {
-    flex-shrink: 0;
+  .stats-close {
+    & svg {
+      flex-shrink: 0;
+    }
   }
 
   .stats-close:hover {
