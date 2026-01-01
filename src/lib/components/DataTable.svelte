@@ -98,7 +98,14 @@
       max: number
     } | null
     loading: boolean
-  }>({ columnIndex: null, stats: null, histogram: null, loading: false })
+    isOpen: boolean
+  }>({
+    columnIndex: null,
+    stats: null,
+    histogram: null,
+    loading: false,
+    isOpen: false,
+  })
 
   let statsPopoverElement: HTMLElement | undefined = $state()
 
@@ -375,9 +382,24 @@
     closeContextMenu()
   }
 
+  async function copyHeaderRow() {
+    const headerRow = columns.map((col) => col.name).join('\t')
+    await navigator.clipboard.writeText(headerRow)
+    closeContextMenu()
+  }
+
   async function handleHeaderClick(event: MouseEvent, colIndex: number) {
     // Don't trigger if clicking on sort buttons or resize handle
     if ((event.target as HTMLElement).closest('.sort-button, .resize-handle')) {
+      return
+    }
+
+    // Toggle: if clicking the same column that's already showing stats, close it
+    if (statsPopover.isOpen && statsPopover.columnIndex === colIndex) {
+      if (statsPopoverElement) {
+        statsPopoverElement.hidePopover()
+      }
+      statsPopover.isOpen = false
       return
     }
 
@@ -388,6 +410,7 @@
       stats: null,
       histogram: null,
       loading: true,
+      isOpen: true,
     }
 
     // Show the popover
@@ -484,7 +507,6 @@
               numBins: 20,
             })
           }
-          console.log('Histogram data:', statsPopover.histogram)
         } catch (histError) {
           console.error('Error fetching histogram:', histError)
           statsPopover.histogram = null
@@ -507,6 +529,7 @@
       stats: null,
       histogram: null,
       loading: false,
+      isOpen: false,
     }
   }
 
@@ -858,6 +881,13 @@
           role="menuitem"
         >
           Copy Column Name
+        </button>
+        <button
+          class="context-menu-item"
+          onclick={copyHeaderRow}
+          role="menuitem"
+        >
+          Copy Header Row
         </button>
       {/if}
     </div>
