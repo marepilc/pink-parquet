@@ -91,7 +91,7 @@
 <!--suppress CssUnknownProperty -->
 <style>
     #title-bar-container {
-        z-index: 50;
+        z-index: 100;
         width: 100%;
         height: 100%;
         display: flex;
@@ -115,6 +115,7 @@
     .logo-container {
         display: flex;
         align-items: center;
+        pointer-events: none;
     }
 
     #app-logo {
