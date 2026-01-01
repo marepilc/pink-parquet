@@ -1,5 +1,6 @@
 <script lang="ts">
   import { dataStore } from '$lib/stores/dataStore.svelte'
+  import { tooltipStore } from '$lib/stores/tooltipStore.svelte'
   import { invoke } from '@tauri-apps/api/core'
   import { onMount, untrack } from 'svelte'
   import QueryGuide from '$lib/components/query/QueryGuide.svelte'
@@ -316,6 +317,7 @@
     colIndex: number
   ) {
     event.preventDefault()
+    tooltipStore.hideImmediate()
     contextMenu = {
       visible: true,
       x: event.clientX,
@@ -328,6 +330,7 @@
 
   function handleHeaderContextMenu(event: MouseEvent, colIndex: number) {
     event.preventDefault()
+    tooltipStore.hideImmediate()
     contextMenu = {
       visible: true,
       x: event.clientX,
@@ -729,7 +732,10 @@
                   <!-- Content stack (flex-1) -->
                   <div class="header-content">
                     <div class="column-name">
-                      <span class="column-name-text" title={column.name}
+                      <span
+                        class="column-name-text"
+                        onmouseenter={(e) => tooltipStore.show(e.currentTarget, column.name)}
+                        onmouseleave={() => tooltipStore.hide()}
                         >{column.name}</span
                       >
                     </div>
@@ -739,7 +745,10 @@
                         <span class="dtype-icon primary-color">
                           <IconComponent size={18} className="dtype-icon-svg" />
                         </span>
-                        <span class="dtype-text" title={column.dtype}
+                        <span
+                          class="dtype-text"
+                          onmouseenter={(e) => tooltipStore.show(e.currentTarget, column.dtype)}
+                          onmouseleave={() => tooltipStore.hide()}
                           >{column.dtype}</span
                         >
                       </div>
@@ -813,7 +822,8 @@
                   <td
                     class="data-cell"
                     style={`min-width:${MIN_COL_WIDTH}px`}
-                    title={cell}
+                    onmouseenter={(e) => tooltipStore.show(e.currentTarget, cell)}
+                    onmouseleave={() => tooltipStore.hide()}
                     oncontextmenu={(e) =>
                       handleCellContextMenu(e, index, colIndex)}
                   >
@@ -863,6 +873,7 @@
       class="context-menu"
       style={`left: ${contextMenu.x}px; top: ${contextMenu.y}px;`}
       role="menu"
+      onmouseleave={closeContextMenu}
     >
       {#if contextMenu.type === 'cell'}
         <button class="context-menu-item" onclick={copyValue} role="menuitem">

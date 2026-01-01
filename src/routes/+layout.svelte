@@ -4,6 +4,7 @@
     import Toolbar from '$lib/components/Toolbar.svelte'
     import Footer from '$lib/components/Footer.svelte'
     import DragOverlay from '$lib/components/DragOverlay.svelte'
+    import Tooltip from '$lib/components/Tooltip.svelte'
     import type {Snippet} from 'svelte'
     import {onDestroy, onMount} from 'svelte'
     import {getCurrentWebview} from '@tauri-apps/api/webview'
@@ -153,6 +154,11 @@
         }
     }
 
+    function handleContextMenu(event: MouseEvent) {
+        // Prevent default browser context menu globally
+        event.preventDefault()
+    }
+
     onMount(async () => {
         // Initialize settings
         await settingsStore.init()
@@ -198,7 +204,7 @@
     })
 </script>
 
-<svelte:window onkeydown={handleKeyDown}/>
+<svelte:window onkeydown={handleKeyDown} oncontextmenu={handleContextMenu}/>
 
 <main class="main-window">
     <header id="title-bar-panel" data-tauri-drag-region>
@@ -214,6 +220,7 @@
     </div>
 
     <DragOverlay isVisible={isDraggingValidFile} hasData={dataStore.hasData}/>
+    <Tooltip/>
 </main>
 
 <style>

@@ -19,8 +19,20 @@ figure, figcaption {
 :root {
     font-size: 16px;
     scroll-behavior: smooth;
-    color-scheme: dark light;
+}
 
+/* Theme-based color-scheme for proper tooltip rendering */
+html.light,
+:root.light {
+    color-scheme: light !important;
+}
+
+html.dark,
+:root.dark {
+    color-scheme: dark !important;
+}
+
+:root {
     /* Fallback colors for browsers without oklch/light-dark support */
     --accent: #d946a6;
     --surface-1: #f5f5f5;

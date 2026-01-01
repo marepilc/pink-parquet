@@ -70,12 +70,11 @@ export const settingsStore = {
     if (settings.theme === 'dark') {
       document.documentElement.classList.add('dark')
       document.documentElement.classList.remove('light')
-      document.documentElement.style.colorScheme = 'dark'
     } else {
       document.documentElement.classList.add('light')
       document.documentElement.classList.remove('dark')
-      document.documentElement.style.colorScheme = 'light'
     }
+    // color-scheme is now set via CSS classes in app.css
   },
 
   applyFont() {
