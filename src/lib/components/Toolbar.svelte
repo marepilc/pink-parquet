@@ -49,10 +49,10 @@
         await settingsStore.setTheme(newTheme)
     }
 
-    async function loadParquetFile(filePath: string) {
+    async function loadParquetFile(filePath: string, forceReload: boolean = false) {
         // Check if file is already open
         const existingSession = dataStore.sessions.find((s) => s.path === filePath)
-        if (existingSession) {
+        if (existingSession && !forceReload) {
             // File already open, just switch to it
             dataStore.activeSessionId = existingSession.id
             // Navigate to /app if not already there
@@ -60,8 +60,8 @@
             return
         }
 
-        const sessionId = dataStore.addSession(filePath)
-        dataStore.setLoading(true, sessionId)
+        const sessionId = existingSession ? existingSession.id : dataStore.addSession(filePath)
+        dataStore.setLoading(true, sessionId, false)
 
         try {
             const data = await invoke('get_data', {
@@ -150,6 +150,12 @@
             if (filePath) {
                 await invoke('save_parquet', {filePath})
                 console.log('File saved successfully to:', filePath)
+
+                // If the saved file is already open in any session, reload that session
+                const existingSession = dataStore.sessions.find((s) => s.path === filePath)
+                if (existingSession) {
+                    await loadParquetFile(filePath, true)
+                }
             }
         } catch (error) {
             console.error('Error saving file:', error)
