@@ -732,9 +732,9 @@
                   <!-- Content stack (flex-1) -->
                   <div class="header-content">
                     <div class="column-name">
+                      <!-- svelte-ignore a11y_no_static_element_interactions -->
                       <span
                         class="column-name-text"
-                        role="text"
                         onmouseenter={(e) => tooltipStore.show(e.currentTarget, column.name)}
                         onmouseleave={() => tooltipStore.hide()}
                         >{column.name}</span
@@ -746,9 +746,9 @@
                         <span class="dtype-icon primary-color">
                           <IconComponent size={18} className="dtype-icon-svg" />
                         </span>
+                        <!-- svelte-ignore a11y_no_static_element_interactions -->
                         <span
                           class="dtype-text"
-                          role="text"
                           onmouseenter={(e) => tooltipStore.show(e.currentTarget, column.dtype)}
                           onmouseleave={() => tooltipStore.hide()}
                           >{column.dtype}</span
@@ -821,6 +821,7 @@
             {#each rows as row, index (index)}
               <tr class="data-row">
                 {#each row as cell, colIndex}
+                  <!-- svelte-ignore a11y_no_static_element_interactions -->
                   <td
                     class="data-cell"
                     style={`min-width:${MIN_COL_WIDTH}px`}
