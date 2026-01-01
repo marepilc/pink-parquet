@@ -55,9 +55,8 @@ export const dataStore = {
   },
   set activeSessionId(id: string | null) {
     activeSessionId = id
-    if (id !== null) {
-      isSqlTabActive = false
-    }
+    // Don't automatically hide SQL tab when switching sessions
+    // Users should be able to switch between files while staying in SQL mode
   },
   get isSqlTabActive() {
     return isSqlTabActive

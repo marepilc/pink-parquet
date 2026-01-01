@@ -501,18 +501,13 @@
             'DATE_TRUNC',
             'DATE_PART',
             'EXTRACT',
-            'AGE',
             'TO_CHAR',
             'TO_DATE',
             'TO_TIMESTAMP',
             'INTERVAL',
             'EPOCH',
-            'YEAR',
-            'MONTH',
-            'DAY',
-            'HOUR',
-            'MINUTE',
-            'SECOND',
+            // Note: YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, AGE removed
+            // as they're commonly used as column names
 
             // Math functions
             'ABS',
@@ -562,7 +557,7 @@
             'CURRENT',
             'ROW',
 
-            // Data types
+            // Data types (commonly used in DDL, less likely as column names)
             'INTEGER',
             'INT',
             'BIGINT',
@@ -571,7 +566,6 @@
             'DECIMAL',
             'REAL',
             'DOUBLE',
-            'PRECISION',
             'FLOAT',
             'TEXT',
             'VARCHAR',
@@ -591,9 +585,8 @@
             'UUID',
 
             // Conditional and comparison
-            'FILTER',
             'SIMILAR',
-            'TO',
+            // Note: FILTER, TO, PRECISION removed as they're commonly used as column names
         ])
 
         return EditorState.transactionFilter.of((tr) => {
