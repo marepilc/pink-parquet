@@ -54,10 +54,8 @@
 
 <div
         id="title-bar-container"
-        class="drag-region"
         role="banner"
         ondblclick={handleDoubleClick}
-        data-tauri-drag-region
 >
     <div class="title-bar-content" class:macos={isMacOS}>
         <div class="logo-container">
@@ -116,13 +114,13 @@
         display: flex;
         align-items: center;
         pointer-events: none;
+        height: 100%;
     }
 
     #app-logo {
         display: flex;
         align-items: center;
         width: 10rem;
-        height: 100%;
     }
 
     #app-logo :global(svg) {
@@ -138,11 +136,7 @@
         height: 100%;
         gap: 0.5rem;
         padding-right: 0.5rem;
-    }
-
-    .drag-region {
-        -webkit-app-region: drag;
-        app-region: drag;
+        pointer-events: auto;
     }
 
     .no-drag {

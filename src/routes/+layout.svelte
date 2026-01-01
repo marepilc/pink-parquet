@@ -201,9 +201,9 @@
 <svelte:window onkeydown={handleKeyDown}/>
 
 <main class="main-window">
-    <div id="title-bar-panel" data-tauri-drag-region>
+    <header id="title-bar-panel" data-tauri-drag-region>
         <TitleBar/>
-    </div>
+    </header>
     <div id="toolbar">
         <Toolbar/>
     </div>
@@ -218,8 +218,8 @@
 
 <style>
     main {
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: 100vh;
         display: grid;
         grid-template-rows: 2.5rem 1fr 3.75rem;
         grid-template-columns: 5rem 1fr;
@@ -246,6 +246,7 @@
         z-index: 100;
         -webkit-app-region: drag;
         app-region: drag;
+        user-select: none;
     }
 
     #toolbar {
@@ -257,6 +258,8 @@
         grid-area: main-area;
         overflow: hidden;
         padding: 0 0.5rem 0 0;
+        display: flex;
+        flex-direction: column;
     }
 
     #footer {
