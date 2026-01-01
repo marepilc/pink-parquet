@@ -14,18 +14,19 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@codemirror/autocomplete": "^6.16.0",
+    "@codemirror/commands": "^6.5.0",
+    "@codemirror/lang-sql": "^6.5.5",
+    "@codemirror/language": "^6.10.8",
+    "@codemirror/lint": "^6.8.2",
+    "@codemirror/search": "^6.5.11",
+    "@codemirror/state": "^6.4.1",
+    "@codemirror/view": "^6.33.0",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-dialog": "^2.4.2",
     "@tauri-apps/plugin-opener": "^2",
     "@tauri-apps/plugin-os": "^2",
-    "cookie": "^1.1.1",
-    "@codemirror/state": "^6.4.1",
-    "@codemirror/view": "^6.33.0",
-    "@codemirror/commands": "^6.5.0",
-    "@codemirror/autocomplete": "^6.16.0",
-    "@codemirror/language": "^6.10.8",
-    "@codemirror/lang-sql": "^6.5.5",
-    "@codemirror/lint": "^6.8.2"
+    "cookie": "^1.1.1"
   },
   "devDependencies": {
     "@sveltejs/adapter-static": "^3.0.10",

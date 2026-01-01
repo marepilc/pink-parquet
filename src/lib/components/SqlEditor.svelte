@@ -1,22 +1,35 @@
 <script lang="ts">
-  import {onDestroy, onMount} from 'svelte'
-  import {Compartment, EditorState} from '@codemirror/state'
-  import {
-    EditorView,
-    highlightActiveLine,
-    keymap,
-    lineNumbers,
-    placeholder as cmPlaceholder,
-    type ViewUpdate,
-  } from '@codemirror/view'
-  import {defaultKeymap, history, historyKeymap} from '@codemirror/commands'
-  import {autocompletion, startCompletion} from '@codemirror/autocomplete'
-  import {PostgreSQL, sql} from '@codemirror/lang-sql'
-  import {linter} from '@codemirror/lint'
-  import {HighlightStyle, syntaxHighlighting} from '@codemirror/language'
-  import {tags as t} from '@lezer/highlight'
+    import {onDestroy, onMount} from 'svelte'
+    import {Compartment, EditorState} from '@codemirror/state'
+    import {
+        drawSelection,
+        EditorView,
+        highlightActiveLine,
+        keymap,
+        lineNumbers,
+        placeholder as cmPlaceholder,
+        rectangularSelection,
+        type ViewUpdate,
+    } from '@codemirror/view'
+    import {
+        copyLineDown,
+        copyLineUp,
+        defaultKeymap,
+        history,
+        historyKeymap,
+        indentLess,
+        indentMore,
+        moveLineDown,
+        moveLineUp,
+    } from '@codemirror/commands'
+    import {autocompletion, startCompletion} from '@codemirror/autocomplete'
+    import {search, searchKeymap, selectNextOccurrence, selectSelectionMatches} from '@codemirror/search'
+    import {PostgreSQL, sql} from '@codemirror/lang-sql'
+    import {linter} from '@codemirror/lint'
+    import {HighlightStyle, indentUnit, syntaxHighlighting} from '@codemirror/language'
+    import {tags as t} from '@lezer/highlight'
 
-  let {
+    let {
         value = $bindable(''),
         placeholder = '',
         onRun = null,
@@ -182,25 +195,53 @@
         const base = [
             lineNumbers(),
             history(),
+            drawSelection(),
+            EditorState.allowMultipleSelections.of(true),
+            rectangularSelection(),
+            search({top: true}),
+            indentUnit.of('  '),
+            EditorView.clickAddsSelectionRange.of((event) => event.altKey),
             keymap.of([
                 ...defaultKeymap,
                 ...historyKeymap,
+                ...searchKeymap,
                 {
-                    key: 'Tab',
-                    run: (view: EditorView) => {
-                        // Insert 2 spaces instead of moving focus
-                        view.dispatch({
-                            changes: {
-                                from: view.state.selection.main.from,
-                                to: view.state.selection.main.to,
-                                insert: '  ',
-                            },
-                            selection: {
-                                anchor: view.state.selection.main.from + 2,
-                            },
-                        })
+                    key: 'Mod-d',
+                    run: selectNextOccurrence,
+                    preventDefault: true,
+                },
+                {
+                    key: 'Shift-Mod-l',
+                    run: selectSelectionMatches,
+                    preventDefault: true,
+                },
+                {
+                    key: 'Alt-ArrowUp',
+                    run: moveLineUp,
+                },
+                {
+                    key: 'Alt-ArrowDown',
+                    run: moveLineDown,
+                },
+                {
+                    key: 'Shift-Alt-ArrowUp',
+                    run: copyLineUp,
+                },
+                {
+                    key: 'Shift-Alt-ArrowDown',
+                    run: copyLineDown,
+                },
+                {
+                    key: 'Mod-Enter',
+                    run: () => {
+                        onRun?.()
                         return true
                     },
+                },
+                {
+                    key: 'Tab',
+                    run: indentMore,
+                    shift: indentLess,
                 },
                 {
                     key: 'Ctrl-Space',
@@ -264,6 +305,10 @@
                     },
                 },
                 '.cm-content': {caretColor: 'var(--ink-5)'},
+                '.cm-selectionBackground, .cm-content ::selection': {
+                    backgroundColor: 'var(--accent) !important',
+                    color: 'black !important',
+                },
             }),
         ] as any[]
 
