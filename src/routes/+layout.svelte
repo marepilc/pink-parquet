@@ -15,6 +15,7 @@
     import {listen, type UnlistenFn} from '@tauri-apps/api/event'
     import InfoBar from '$lib/components/InfoBar.svelte'
     import {open, save} from '@tauri-apps/plugin-dialog'
+    import {type} from '@tauri-apps/plugin-os'
 
     interface Props {
         children: Snippet
@@ -25,6 +26,7 @@
     let unlistenDrag: UnlistenFn | null = null
     let unlistenOpenFile: UnlistenFn | null = null
     let isDraggingValidFile = $state(false)
+    let isMacOS = $state(false)
 
     function isValidFileType(filePath: string): boolean {
         return filePath.endsWith('.parquet') || filePath.endsWith('.sql')
@@ -160,6 +162,9 @@
     }
 
     onMount(async () => {
+        // Detect OS
+        isMacOS = (await type()) === 'macos'
+
         // Initialize settings
         await settingsStore.init()
 
@@ -206,10 +211,12 @@
 
 <svelte:window onkeydown={handleKeyDown} oncontextmenu={handleContextMenu}/>
 
-<main class="main-window">
-    <header id="title-bar-panel">
-        <TitleBar/>
-    </header>
+<main class="main-window" class:macos={isMacOS}>
+    {#if !isMacOS}
+        <header id="title-bar-panel">
+            <TitleBar/>
+        </header>
+    {/if}
     <div id="toolbar">
         <Toolbar/>
     </div>
@@ -241,6 +248,13 @@
                 var(--surface-4) 50%,
                 var(--surface-2) 100%
         );
+    }
+
+    main.macos {
+        grid-template-rows: 1fr 3.75rem;
+        grid-template-areas:
+      'toolbar main-area'
+      'footer footer';
     }
 
 

@@ -22,8 +22,6 @@
         "transparent": false,
         "theme": "Dark",
         "visible": true,
-        "titleBarStyle": "Overlay",
-        "hiddenTitle": false,
         "dragDropEnabled": true
       }
     ],
