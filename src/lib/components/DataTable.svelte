@@ -445,20 +445,36 @@
       if (isNumericColumn(colIndex)) {
         const isQuery = dataStore.isSqlTabActive && dataStore.isQueryMode
 
-        if (isQuery && dataStore.currentQuery) {
-          // For SQL queries, we need to calculate histogram from query result
-          // For now, skip histogram in query mode
+        try {
+          if (isQuery && dataStore.currentQuery) {
+            // For SQL queries, use the cached query result
+            statsPopover.histogram = await invoke<{
+              bins: number[]
+              counts: number[]
+              min: number
+              max: number
+            }>('get_query_column_histogram', {
+              query: dataStore.currentQuery,
+              columnName,
+              numBins: 20,
+            })
+          } else {
+            // For regular files, load from file path
+            statsPopover.histogram = await invoke<{
+              bins: number[]
+              counts: number[]
+              min: number
+              max: number
+            }>('get_column_histogram', {
+              filePath: dataStore.activeSession.path,
+              columnName,
+              numBins: 20,
+            })
+          }
+          console.log('Histogram data:', statsPopover.histogram)
+        } catch (histError) {
+          console.error('Error fetching histogram:', histError)
           statsPopover.histogram = null
-        } else {
-          statsPopover.histogram = await invoke<{
-            bins: number[]
-            counts: number[]
-            min: number
-            max: number
-          }>('get_column_histogram', {
-            columnName,
-            numBins: 20,
-          })
         }
       }
 
@@ -931,9 +947,9 @@
           {/each}
         </div>
 
-        {#if isNumeric && statsPopover.histogram}
+        {#if isNumeric && statsPopover.histogram && statsPopover.histogram.counts.length > 0}
           {@const hist = statsPopover.histogram}
-          {@const maxCount = Math.max(...hist.counts)}
+          {@const maxCount = Math.max(...hist.counts, 1)}
           {@const bins = statsPopover.histogram.bins}
           {@const width = 280}
           {@const height = 120}

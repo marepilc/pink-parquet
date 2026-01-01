@@ -560,60 +560,108 @@ struct HistogramData {
 
 #[tauri::command]
 fn get_column_histogram(
-    state: tauri::State<AppState>,
+    file_path: String,
     column_name: String,
     num_bins: Option<usize>,
 ) -> Result<HistogramData, String> {
+    // Open the file fresh to ensure we're working with the correct data
+    let lf = open_parquet(&file_path)?;
+    let df = lf
+        .collect()
+        .map_err(|e| format!("Failed to collect DataFrame: {}", e))?;
+
+    calculate_histogram_from_dataframe(&df, &column_name, num_bins)
+}
+
+#[tauri::command]
+fn get_query_column_histogram(
+    state: tauri::State<AppState>,
+    query: String,
+    column_name: String,
+    num_bins: Option<usize>,
+) -> Result<HistogramData, String> {
+    // Get the cached query result
     let cache = state.cache.lock().unwrap();
     if let Some(entry) = cache.as_ref() {
-        let df = &entry.df;
-
-        // Get the column
-        let series = df.column(&column_name)
-            .map_err(|e| format!("Column not found: {}", e))?;
-
-        // Convert to f64
-        let ca = series.cast(&DataType::Float64)
-            .map_err(|e| format!("Failed to convert to numeric: {}", e))?;
-        let f64_series = ca.f64()
-            .map_err(|e| format!("Failed to get f64 series: {}", e))?;
-
-        // Get min and max
-        let min = f64_series.min().ok_or_else(|| "No min value in column".to_string())?;
-        let max = f64_series.max().ok_or_else(|| "No max value in column".to_string())?;
-
-        // Calculate histogram
-        let bins_count = num_bins.unwrap_or(20);
-        let bin_width = (max - min) / bins_count as f64;
-
-        let mut bins = Vec::new();
-        let mut counts = vec![0usize; bins_count];
-
-        // Create bin edges
-        for i in 0..=bins_count {
-            bins.push(min + i as f64 * bin_width);
+        if entry.query.as_ref() == Some(&query) {
+            let df = &entry.df;
+            return calculate_histogram_from_dataframe(df, &column_name, num_bins);
         }
+    }
+    Err("Query result not found in cache".to_string())
+}
 
-        // Count values in each bin
+fn calculate_histogram_from_dataframe(
+    df: &DataFrame,
+    column_name: &str,
+    num_bins: Option<usize>,
+) -> Result<HistogramData, String> {
+
+    // Get the column
+    let series = df.column(&column_name)
+        .map_err(|e| format!("Column not found: {}", e))?;
+
+    // Convert to f64
+    let ca = series.cast(&DataType::Float64)
+        .map_err(|e| format!("Failed to convert to numeric: {}", e))?;
+    let f64_series = ca.f64()
+        .map_err(|e| format!("Failed to get f64 series: {}", e))?;
+
+    // Get min and max
+    let min = f64_series.min().ok_or_else(|| "No min value in column".to_string())?;
+    let max = f64_series.max().ok_or_else(|| "No max value in column".to_string())?;
+
+    // Calculate histogram
+    let bins_count = num_bins.unwrap_or(20);
+
+    // Handle edge case where all values are the same (min == max)
+    if (max - min).abs() < f64::EPSILON {
+        // All values are the same, create a single bin
+        let bins = vec![min, min];
+        let mut counts = vec![0usize; 1];
+
+        // Count all non-null values
         for opt_val in f64_series.into_iter() {
-            if let Some(val) = opt_val {
-                if val >= min && val <= max {
-                    let bin_idx = ((val - min) / bin_width).floor() as usize;
-                    let bin_idx = bin_idx.min(bins_count - 1); // Handle edge case where val == max
-                    counts[bin_idx] += 1;
-                }
+            if opt_val.is_some() {
+                counts[0] += 1;
             }
         }
 
-        Ok(HistogramData {
+        return Ok(HistogramData {
             bins,
             counts,
             min,
             max,
-        })
-    } else {
-        Err("No data loaded".to_string())
+        });
     }
+
+    let bin_width = (max - min) / bins_count as f64;
+
+    let mut bins = Vec::new();
+    let mut counts = vec![0usize; bins_count];
+
+    // Create bin edges
+    for i in 0..=bins_count {
+        bins.push(min + i as f64 * bin_width);
+    }
+
+    // Count values in each bin
+    for opt_val in f64_series.into_iter() {
+        if let Some(val) = opt_val {
+            if val >= min && val <= max {
+                let bin_idx = ((val - min) / bin_width).floor() as usize;
+                let bin_idx = bin_idx.min(bins_count - 1); // Handle edge case where val == max
+                counts[bin_idx] += 1;
+            }
+        }
+    }
+
+    Ok(HistogramData {
+        bins,
+        counts,
+        min,
+        max,
+    })
 }
 
 // Window control commands for custom title bar
@@ -713,6 +761,7 @@ pub fn run() {
             get_more_sql_rows,
             get_statistics,
             get_column_histogram,
+            get_query_column_histogram,
             save_parquet,
             copy_full_table,
             load_settings,
