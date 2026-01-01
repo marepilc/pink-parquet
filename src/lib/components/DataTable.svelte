@@ -734,6 +734,7 @@
                     <div class="column-name">
                       <span
                         class="column-name-text"
+                        role="text"
                         onmouseenter={(e) => tooltipStore.show(e.currentTarget, column.name)}
                         onmouseleave={() => tooltipStore.hide()}
                         >{column.name}</span
@@ -747,6 +748,7 @@
                         </span>
                         <span
                           class="dtype-text"
+                          role="text"
                           onmouseenter={(e) => tooltipStore.show(e.currentTarget, column.dtype)}
                           onmouseleave={() => tooltipStore.hide()}
                           >{column.dtype}</span
@@ -873,6 +875,7 @@
       class="context-menu"
       style={`left: ${contextMenu.x}px; top: ${contextMenu.y}px;`}
       role="menu"
+      tabindex="-1"
       onmouseleave={closeContextMenu}
     >
       {#if contextMenu.type === 'cell'}

@@ -55,12 +55,11 @@
 <div
         id="title-bar-container"
         role="banner"
-        data-tauri-drag-region
         ondblclick={handleDoubleClick}
 >
-    <div class="title-bar-content" class:macos={isMacOS} data-tauri-drag-region>
-        <div class="logo-container" data-tauri-drag-region>
-            <div id="app-logo" data-tauri-drag-region>
+    <div class="title-bar-content" class:macos={isMacOS}>
+        <div class="logo-container">
+            <div id="app-logo">
                 <AppLogo/>
             </div>
         </div>
@@ -95,8 +94,6 @@
         height: 100%;
         display: flex;
         align-items: center;
-        -webkit-app-region: drag;
-        app-region: drag;
     }
 
     .title-bar-content {
@@ -107,8 +104,6 @@
         gap: 0.75rem;
         padding-left: 1rem;
         padding-right: 1rem;
-        -webkit-app-region: drag;
-        app-region: drag;
     }
 
     .title-bar-content.macos {
@@ -120,16 +115,12 @@
         align-items: center;
         pointer-events: none;
         height: 100%;
-        -webkit-app-region: drag;
-        app-region: drag;
     }
 
     #app-logo {
         display: flex;
         align-items: center;
         width: 10rem;
-        -webkit-app-region: drag;
-        app-region: drag;
         pointer-events: none;
     }
 

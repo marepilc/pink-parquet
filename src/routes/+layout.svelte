@@ -207,7 +207,7 @@
 <svelte:window onkeydown={handleKeyDown} oncontextmenu={handleContextMenu}/>
 
 <main class="main-window">
-    <header id="title-bar-panel" data-tauri-drag-region>
+    <header id="title-bar-panel">
         <TitleBar/>
     </header>
     <div id="toolbar">
