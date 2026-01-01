@@ -763,10 +763,8 @@ pub fn run() {
                     let _ = window.set_decorations(false);
                 }
 
-                #[cfg(target_os = "macos")]
-                {
-                    let _ = window.set_decorations(false);
-                }
+                // On macOS, keep native decorations (traffic light buttons) visible
+                // The titleBarStyle: "Overlay" in tauri.conf.json allows content under the title bar
             }
 
             // Handle file association on Windows

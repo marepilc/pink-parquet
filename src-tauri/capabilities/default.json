@@ -7,9 +7,15 @@
   ],
   "permissions": [
     "core:default",
+    "core:event:default",
+    "core:webview:default",
+    "core:webview:allow-webview-position",
+    "core:webview:allow-webview-size",
+    "core:webview:allow-internal-toggle-devtools",
     "opener:default",
     "dialog:default",
     "dialog:allow-open",
+    "dialog:allow-save",
     "os:default"
   ]
 }
