@@ -1071,7 +1071,7 @@
     width: 100%;
     flex-direction: column;
     overflow: hidden;
-    border: 1px groove oklch(from var(--surface-9) l c h / 0.5);
+    border: 1px groove var(--surface-9);
     border-radius: 0.25rem;
     box-shadow: var(--default-inset);
     margin-bottom: 0.25rem;
@@ -1084,7 +1084,7 @@
     align-items: center;
     justify-content: space-between;
     background-color: var(--color-error-bg);
-    border-bottom: 1px solid oklch(from var(--color-error) l c h / 0.5);
+    border-bottom: 1px solid var(--color-error);
     color: var(--color-error);
     padding: 1rem;
     font-size: 0.875rem;
@@ -1179,9 +1179,10 @@
     height: 3rem;
     text-align: left;
     letter-spacing: 0.025em;
-    &:has(.header-content:hover) {
-      background-color: var(--surface-4);
-    }
+  }
+
+  .header-cell:has(.header-content:hover) {
+    background-color: var(--surface-4);
   }
 
   /* Header layout */
@@ -1272,21 +1273,11 @@
   }
 
   .ascending::before {
-    clip-path: shape(
-      from left bottom,
-      line to center top,
-      line to right bottom,
-      arc to left bottom of 90% ccw
-    );
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
   }
 
   .descending::before {
-    clip-path: shape(
-      from left top,
-      line to center bottom,
-      line to right top,
-      arc to left top of 90% cw
-    );
+    clip-path: polygon(50% 100%, 0% 0%, 100% 0%);
   }
 
   .sort-active::before {
@@ -1346,7 +1337,7 @@
   /* Data rows */
   .data-row {
     border-bottom: 1px solid var(--surface-3);
-    background-color: oklch(from var(--surface-1) l c h / 0.5);
+    background-color: var(--surface-1);
     transition: background-color 150ms;
   }
 

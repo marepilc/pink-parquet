@@ -20,7 +20,7 @@ figure, figcaption {
     font-size: 16px;
     scroll-behavior: smooth;
     color-scheme: dark light;
-    --accent: light-dark(oklch(60.217% 0.23514 359.26), oklch(60.217% 0.23514 359.26));
+    --accent: oklch(60.217% 0.23514 359.26);
     --surface-1: light-dark(oklch(0.980 0.000 0), oklch(0.400 0.02 251.57));
     --surface-2: light-dark(oklch(0.948 0.01 89.806), oklch(0.368 0.02 251.57));
     --surface-3: light-dark(oklch(0.916 0.01 89.806), oklch(0.336 0.02 251.57));
@@ -239,7 +239,8 @@ pre,
 /*noinspection CssUnresolvedCustomProperty*/
 .cm-gutters {
     background-color: transparent !important;
-    color: oklch(from var(--ink-5) l c h / .5) !important;
+    color: var(--ink-5) !important;
+    opacity: 0.5;
     font-size: var(--font-size-mono, 14px);
     border-right: 1px solid var(--surface-6) !important;
     padding-right: 0.25rem !important;
