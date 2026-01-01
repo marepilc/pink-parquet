@@ -755,7 +755,24 @@ pub fn run() {
                 let _ = app.emit("open-file", args[1].clone());
             }
         }))
-        .setup(|app| {
+        .setup(|app: &mut tauri::App| {
+            #[cfg(target_os = "macos")]
+            {
+                let app_handle = app.handle().clone();
+                app.on_macos_open_urls(move |_app, urls| {
+                    for url in urls {
+                        if let Ok(path) = url.to_file_path() {
+                            let path_str = path.to_string_lossy().to_string();
+                            let app_handle = app_handle.clone();
+                            std::thread::spawn(move || {
+                                std::thread::sleep(std::time::Duration::from_millis(1000));
+                                let _ = app_handle.emit("open-file", path_str);
+                            });
+                        }
+                    }
+                });
+            }
+
             // Disable window decorations for custom title bar
             if let Some(window) = app.get_webview_window("main") {
                 #[cfg(target_os = "windows")]
