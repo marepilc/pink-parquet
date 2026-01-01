@@ -429,13 +429,28 @@
       const columnName = columns[colIndex]?.name
       if (!columnName) return
 
+      const isQuery = dataStore.isSqlTabActive && dataStore.isQueryMode
+
       // Fetch basic statistics
-      const allStats = await invoke<Record<string, Record<string, any>>>(
-        'get_statistics',
-        {
-          filePath: dataStore.activeSession.path,
-        }
-      )
+      let allStats: Record<string, Record<string, any>>
+
+      if (isQuery && dataStore.currentQuery) {
+        // For SQL queries, use the cached query result
+        allStats = await invoke<Record<string, Record<string, any>>>(
+          'get_query_statistics',
+          {
+            query: dataStore.currentQuery,
+          }
+        )
+      } else {
+        // For regular files, load from file path
+        allStats = await invoke<Record<string, Record<string, any>>>(
+          'get_statistics',
+          {
+            filePath: dataStore.activeSession.path,
+          }
+        )
+      }
 
       if (allStats[columnName]) {
         statsPopover.stats = allStats[columnName]
@@ -443,8 +458,6 @@
 
       // Fetch histogram for numeric columns
       if (isNumericColumn(colIndex)) {
-        const isQuery = dataStore.isSqlTabActive && dataStore.isQueryMode
-
         try {
           if (isQuery && dataStore.currentQuery) {
             // For SQL queries, use the cached query result

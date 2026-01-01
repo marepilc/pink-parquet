@@ -140,8 +140,8 @@ export const dataStore = {
     const fileName = path.split('\\').pop()?.split('/').pop() || path
     const name = fileName.split('.').slice(0, -1).join('.') || fileName
 
-    // Inherit query from currently active session if it exists
-    const previousQuery = this.activeSession?.currentQuery || null
+    // Inherit query from any existing session (they all have the same query now)
+    const sharedQuery = sessions.length > 0 ? sessions[0].currentQuery : null
 
     const newSession: FileSession = {
       id,
@@ -154,7 +154,7 @@ export const dataStore = {
       loadingMoreRaw: false,
       loadingMoreQuery: false,
       error: null,
-      currentQuery: previousQuery,
+      currentQuery: sharedQuery,
       baseColumns: null,
       columnWidths: {},
       tableLayout: 'auto',
@@ -205,18 +205,19 @@ export const dataStore = {
   },
 
   setQuery(query: string | null, sessionId?: string) {
-    const session = sessionId
-      ? sessions.find((s) => s.id === sessionId)
-      : this.activeSession
-    if (session) {
-      session.currentQuery = query && query.trim().length > 0 ? query : null
-      if (session.currentQuery === null) {
+    const normalizedQuery = query && query.trim().length > 0 ? query : null
+
+    // Update all sessions with the same query to keep them in sync
+    // This ensures the query is visible regardless of which session is active
+    sessions.forEach((session) => {
+      session.currentQuery = normalizedQuery
+      if (normalizedQuery === null) {
         session.queryData = null
         session.loadingQuery = false
         session.loadingMoreQuery = false
         session.dataTag++
       }
-    }
+    })
   },
 
   appendRows(newRows: string[][], sessionId?: string, isSql?: boolean) {

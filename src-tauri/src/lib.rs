@@ -376,6 +376,22 @@ fn get_statistics(
     calculate_statistics(&df)
 }
 
+#[tauri::command]
+fn get_query_statistics(
+    state: tauri::State<AppState>,
+    query: String,
+) -> Result<HashMap<String, HashMap<String, serde_json::Value>>, String> {
+    // Get the cached query result
+    let cache = state.cache.lock().unwrap();
+    if let Some(entry) = cache.as_ref() {
+        if entry.query.as_ref() == Some(&query) {
+            let df = &entry.df;
+            return calculate_statistics(df);
+        }
+    }
+    Err("Query result not found in cache".to_string())
+}
+
 // Extract file metadata
 fn extract_metadata(file_path: &str) -> Result<MetadataInfo, String> {
     let file_metadata =
@@ -760,6 +776,7 @@ pub fn run() {
             execute_sql,
             get_more_sql_rows,
             get_statistics,
+            get_query_statistics,
             get_column_histogram,
             get_query_column_histogram,
             save_parquet,
