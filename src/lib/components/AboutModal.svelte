@@ -271,11 +271,13 @@
 
   .link-button.sponsor {
     background: var(--accent);
+    border-color: var(--accent);
     border-color: oklch(from var(--accent) calc(l * 0.8) c h);
     color: white;
   }
 
   .link-button.sponsor:hover {
+    filter: brightness(1.1);
     background: oklch(from var(--accent) calc(l * 0.9) c h);
   }
 

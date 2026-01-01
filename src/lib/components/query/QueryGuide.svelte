@@ -78,6 +78,7 @@
     height: 100%;
     overflow-y: auto;
     padding: 2rem;
+    background: var(--surface-2);
     background: oklch(from var(--surface-2) l c h / 0.75);
   }
 

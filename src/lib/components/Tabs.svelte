@@ -166,6 +166,7 @@
                 var(--surface-3)
         );
         border-radius: 0.25rem;
+        border: 1px groove var(--surface-9);
         border: 1px groove oklch(from var(--surface-9) l c h / 0.5);
     }
 
@@ -192,6 +193,7 @@
         width: 2rem;
         flex-shrink: 0;
         border-radius: 0.25rem;
+        color: var(--ink-1);
         color: oklch(from var(--ink-1) l c h / 0.7);
         background: var(--surface-3);
         border: 1px solid var(--surface-6);

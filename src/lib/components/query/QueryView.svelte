@@ -218,6 +218,7 @@
   .query-container {
     flex-shrink: 0;
     background: var(--surface-2);
+    border-bottom: 1px solid var(--surface-4);
     border-bottom: 1px solid oklch(from var(--surface-4) l c h / 0.6);
     padding: 0.75rem;
   }
@@ -248,6 +249,7 @@
     font-weight: 600;
     color: white;
     background: var(--accent);
+    border: 1px solid var(--accent);
     border: 1px solid oklch(from var(--accent) calc(l * 0.8) c h);
     border-radius: 0.25rem;
     cursor: pointer;
@@ -255,6 +257,7 @@
   }
 
   .run-button:hover {
+    filter: brightness(1.1);
     background: oklch(from var(--accent) calc(l * 0.9) c h);
   }
 

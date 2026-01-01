@@ -756,9 +756,15 @@ pub fn run() {
             }
         }))
         .setup(|app| {
-            #[cfg(target_os = "windows")]
-            {
-                if let Some(window) = app.get_webview_window("main") {
+            // Disable window decorations for custom title bar
+            if let Some(window) = app.get_webview_window("main") {
+                #[cfg(target_os = "windows")]
+                {
+                    let _ = window.set_decorations(false);
+                }
+
+                #[cfg(target_os = "macos")]
+                {
                     let _ = window.set_decorations(false);
                 }
             }

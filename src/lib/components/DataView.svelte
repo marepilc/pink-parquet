@@ -186,10 +186,12 @@
   }
 
   .table-row {
+    border-bottom: 1px solid var(--surface-3);
     border-bottom: 1px solid oklch(from var(--surface-3) l c h / 0.5);
   }
 
   .table-row:hover {
+    background: var(--surface-3);
     background: oklch(from var(--surface-3) l c h / 0.3);
   }
 

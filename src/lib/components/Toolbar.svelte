@@ -234,6 +234,7 @@
         padding: 0.5rem 0;
         border-radius: 0.25rem;
         height: 100%;
+        border: 1px groove var(--surface-9);
         border: 1px groove oklch(from var(--surface-9) l c h / 0.5);
         /*box-shadow:*/
         /*  0.05rem 0.05rem 0.5rem rgb(0 0 0 / 0.25),*/
@@ -247,6 +248,13 @@
             width: 100%;
             height: 100%;
             border: 2px solid transparent;
+            background: conic-gradient(
+                    from 170deg at 50% 50%,
+                    var(--surface-1),
+                    var(--surface-5) 10%,
+                    var(--surface-5) 40%,
+                    var(--surface-1) 100%
+            ) border-box;
             background: conic-gradient(
                     from 170deg at 50% 50%,
                     oklch(from var(--surface-1) l c h / 0.5),

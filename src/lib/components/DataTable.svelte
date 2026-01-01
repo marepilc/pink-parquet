@@ -1071,6 +1071,7 @@
     width: 100%;
     flex-direction: column;
     overflow: hidden;
+    border: 1px groove var(--surface-9);
     border: 1px groove oklch(from var(--surface-9) l c h / 0.5);
     border-radius: 0.25rem;
     box-shadow: var(--default-inset);
@@ -1084,6 +1085,7 @@
     align-items: center;
     justify-content: space-between;
     background-color: var(--color-error-bg);
+    border-bottom: 1px solid var(--color-error);
     border-bottom: 1px solid oklch(from var(--color-error) l c h / 0.5);
     color: var(--color-error);
     padding: 1rem;
@@ -1346,6 +1348,7 @@
   /* Data rows */
   .data-row {
     border-bottom: 1px solid var(--surface-3);
+    background-color: var(--surface-1);
     background-color: oklch(from var(--surface-1) l c h / 0.5);
     transition: background-color 150ms;
   }

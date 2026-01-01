@@ -74,17 +74,20 @@
         },
         {
             tag: [t.literal, t.number],
+            color: 'var(--accent)',
             color:
                 'light-dark(oklch(from var(--accent) 0.55 c h), oklch(from var(--accent) 0.85 c h))',
         },
         {
             tag: [t.string, t.regexp, t.escape, t.special(t.string)],
+            color: 'var(--accent)',
             color:
                 'light-dark(oklch(from var(--accent) 0.65 c h), oklch(from var(--accent) 0.95 c h))',
             fontStyle: 'italic',
         },
         {
             tag: [t.comment, t.meta],
+            color: 'var(--accent)',
             color:
                 'light-dark(oklch(from var(--accent) 0.45 c h), oklch(from var(--accent) 0.65 c h))',
         },
