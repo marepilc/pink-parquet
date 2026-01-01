@@ -17,11 +17,11 @@
     position: fixed;
     z-index: 10000;
     padding: 0.375rem 0.625rem;
-    background: var(--surface-8);
+    background: var(--surface-7);
     color: var(--ink-1);
-    border: 1px solid var(--surface-6);
+    border: 1px solid var(--surface-5);
     border-radius: 0.25rem;
-    font-size: var(--text-xs);
+    font-size: var(--text-sm);
     white-space: nowrap;
     pointer-events: none;
     transform: translateX(-50%);
@@ -34,10 +34,12 @@
   :global(.light) .tooltip {
     background: var(--surface-2);
     border-color: var(--surface-5);
+    color: #151315;
   }
 
   :global(.dark) .tooltip {
     background: var(--surface-8);
     border-color: var(--surface-6);
+    color: #ECECEC;
   }
 </style>
