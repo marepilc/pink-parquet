@@ -20,24 +20,24 @@ figure, figcaption {
     font-size: 16px;
     scroll-behavior: smooth;
     color-scheme: dark light;
-    --accent: oklch(60.217% 0.23514 359.26);
-    --surface-1: oklch(0.980 0.000 0);
-    --surface-2: oklch(0.948 0.01 89.806);
-    --surface-3: oklch(0.916 0.01 89.806);
-    --surface-4: oklch(0.884 0.01 89.806);
-    --surface-5: oklch(0.852 0.01 89.806);
-    --surface-6: oklch(0.820 0.01 89.806);
-    --surface-7: oklch(0.788 0.01 89.806);
-    --surface-8: oklch(0.756 0.01 89.806);
-    --surface-9: oklch(0.724 0.01 89.806);
-    --ink-1: oklch(0.230 0.007 326);
-    --ink-2: oklch(0.280 0.007 326);
-    --ink-3: oklch(0.330 0.007 326);
-    --ink-4: oklch(0.380 0.007 326);
-    --ink-5: oklch(0.430 0.007 326);
-    --color-error: oklch(0.628 0.218 19.364);
-    --color-error-bg: oklch(0.946 0.028 6.653);
-    --color-error-hover: oklch(0.858 0.078 11.876);
+    --accent: light-dark(oklch(60.217% 0.23514 359.26), oklch(60.217% 0.23514 359.26));
+    --surface-1: light-dark(oklch(0.980 0.000 0), oklch(0.400 0.02 251.57));
+    --surface-2: light-dark(oklch(0.948 0.01 89.806), oklch(0.368 0.02 251.57));
+    --surface-3: light-dark(oklch(0.916 0.01 89.806), oklch(0.336 0.02 251.57));
+    --surface-4: light-dark(oklch(0.884 0.01 89.806), oklch(0.304 0.02 251.57));
+    --surface-5: light-dark(oklch(0.852 0.01 89.806), oklch(0.272 0.02 251.57));
+    --surface-6: light-dark(oklch(0.820 0.01 89.806), oklch(0.240 0.02 251.57));
+    --surface-7: light-dark(oklch(0.788 0.01 89.806), oklch(0.208 0.02 251.57));
+    --surface-8: light-dark(oklch(0.756 0.01 89.806), oklch(0.176 0.02 251.57));
+    --surface-9: light-dark(oklch(0.724 0.01 89.806), oklch(0.144 0.02 251.57));
+    --ink-1: light-dark(oklch(0.230 0.007 326), oklch(0.677 0.006 239.831));
+    --ink-2: light-dark(oklch(0.280 0.007 326), oklch(0.727 0.006 239.831));
+    --ink-3: light-dark(oklch(0.330 0.007 326), oklch(0.777 0.006 239.831));
+    --ink-4: light-dark(oklch(0.380 0.007 326), oklch(0.827 0.006 239.831));
+    --ink-5: light-dark(oklch(0.430 0.007 326), oklch(0.877 0.006 239.831));
+    --color-error: light-dark(oklch(0.628 0.218 19.364), oklch(0.79 0.109 13.43));
+    --color-error-bg: light-dark(oklch(0.946 0.028 6.653), oklch(0.355 0.103 18.537));
+    --color-error-hover: light-dark(oklch(0.858 0.078 11.876), oklch(0.295 0.077 16.135));
 
     --default-inset: inset 0.2rem 0.2rem 0.5rem oklch(0 0 0 / 0.1);
 }
@@ -210,13 +210,13 @@ pre,
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--accent);
-    border: 1px solid var(--accent);
+    background: radial-gradient(var(--surface-3), var(--surface-4) 100%);
+    border: 1px solid var(--surface-6);
     border-radius: 2.5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--ink-5);
+    background: radial-gradient(var(--surface-5), var(--surface-7) 100%);
 }
 
 ::-webkit-scrollbar-corner {
@@ -239,8 +239,7 @@ pre,
 /*noinspection CssUnresolvedCustomProperty*/
 .cm-gutters {
     background-color: transparent !important;
-    color: var(--ink-5) !important;
-    opacity: 0.5;
+    color: oklch(from var(--ink-5) l c h / .5) !important;
     font-size: var(--font-size-mono, 14px);
     border-right: 1px solid var(--surface-6) !important;
     padding-right: 0.25rem !important;
