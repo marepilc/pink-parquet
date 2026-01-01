@@ -26,14 +26,41 @@
     let unlistenDrag: UnlistenFn | null = null
     let unlistenOpenFile: UnlistenFn | null = null
     let isDraggingValidFile = $state(false)
+    let draggedFileExtension = $state('')
     let isMacOS = $state(false)
 
     function isValidFileType(filePath: string): boolean {
-        return filePath.endsWith('.parquet') || filePath.endsWith('.sql')
+        return filePath.toLowerCase().endsWith('.parquet') || filePath.toLowerCase().endsWith('.sql')
     }
 
     function isParquetFile(filePath: string): boolean {
-        return filePath.endsWith('.parquet')
+        return filePath.toLowerCase().endsWith('.parquet')
+    }
+
+    function isSqlFile(filePath: string): boolean {
+        return filePath.toLowerCase().endsWith('.sql')
+    }
+
+    async function loadSqlFile(filePath: string) {
+        try {
+            const content = await invoke<string>('read_text_file', {path: filePath})
+            if (content) {
+                // Ensure there is an active session to load SQL into
+                if (!dataStore.activeSessionId && dataStore.sessions.length > 0) {
+                    dataStore.activeSessionId = dataStore.sessions[0].id
+                }
+
+                if (dataStore.activeSessionId) {
+                    dataStore.setQuery(content, dataStore.activeSessionId)
+                    dataStore.isSqlTabActive = true
+                    await goto('/app')
+                } else {
+                    console.warn('No active session to load SQL file into')
+                }
+            }
+        } catch (error) {
+            console.error('Error loading SQL file:', error)
+        }
     }
 
     async function loadParquetFile(filePath: string, forceReload: boolean = false) {
@@ -190,6 +217,7 @@
                     const filePath = paths[0]
                     if (isValidFileType(filePath)) {
                         isDraggingValidFile = true
+                        draggedFileExtension = filePath.split('.').pop() || ''
                     }
                 }
             } else if (payload.type === 'drop') {
@@ -200,11 +228,13 @@
                     const filePath = paths[0]
                     if (isParquetFile(filePath)) {
                         loadParquetFile(filePath)
+                    } else if (isSqlFile(filePath)) {
+                        loadSqlFile(filePath)
                     }
-                    // SQL files: do nothing for now (future implementation)
                 }
             } else if (payload.type === 'leave' || payload.type === 'cancel') {
                 isDraggingValidFile = false
+                draggedFileExtension = ''
             }
         })
     })
@@ -232,7 +262,11 @@
         <Footer/>
     </div>
 
-    <DragOverlay isVisible={isDraggingValidFile} hasData={dataStore.hasData}/>
+    <DragOverlay
+            isVisible={isDraggingValidFile}
+            hasData={dataStore.hasData}
+            fileExtension={draggedFileExtension}
+    />
     <Tooltip/>
 </main>
 

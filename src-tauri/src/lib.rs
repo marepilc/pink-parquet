@@ -740,6 +740,11 @@ fn is_maximized(window: Window) -> bool {
     window.is_maximized().unwrap_or(false)
 }
 
+#[tauri::command]
+fn read_text_file(path: String) -> Result<String, String> {
+    fs::read_to_string(path).map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -818,7 +823,8 @@ pub fn run() {
             maximize_window,
             unmaximize_window,
             close_window,
-            is_maximized
+            is_maximized,
+            read_text_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
