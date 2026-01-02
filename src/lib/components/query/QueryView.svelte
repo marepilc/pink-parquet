@@ -1,5 +1,6 @@
 <script lang="ts">
     import {dataStore} from '$lib/stores/dataStore.svelte'
+    import {tooltipStore} from '$lib/stores/tooltipStore.svelte'
     import SqlEditor from '$lib/components/SqlEditor.svelte'
     import {invoke} from '@tauri-apps/api/core'
     import {onMount} from 'svelte'
@@ -203,10 +204,18 @@
             />
         </div>
         <div class="button-group">
-            <button class="run-button" title="Run SQL (F5)" onclick={runSql}
+            <button
+                    class="run-button"
+                    onclick={runSql}
+                    onmouseenter={(e) => tooltipStore.show(e.currentTarget, "Run SQL (F5)")}
+                    onmouseleave={() => tooltipStore.hide()}
             >Run
             </button>
-            <button class="clear-button" title="Clear SQL" onclick={clearSql}
+            <button
+                    class="clear-button"
+                    onclick={clearSql}
+                    onmouseenter={(e) => tooltipStore.show(e.currentTarget, "Clear SQL")}
+                    onmouseleave={() => tooltipStore.hide()}
             >Clear
             </button>
         </div>
