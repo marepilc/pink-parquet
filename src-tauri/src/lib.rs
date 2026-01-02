@@ -762,10 +762,10 @@ pub fn run() {
         }))
         .setup(|app: &mut tauri::App| {
             // Disable window decorations for custom title bar
-            if let Some(window) = app.get_webview_window("main") {
+            if let Some(_window) = app.get_webview_window("main") {
                 #[cfg(target_os = "windows")]
                 {
-                    let _ = window.set_decorations(false);
+                    let _ = _window.set_decorations(false);
                 }
 
                 // On macOS, keep native decorations (traffic light buttons) visible
