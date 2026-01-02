@@ -88,6 +88,8 @@
     colIndex?: number
   }>({ visible: false, x: 0, y: 0, type: 'cell' })
 
+  let contextMenuElement: HTMLElement | undefined = $state()
+
   // Column stats popover
   let statsPopover = $state<{
     columnIndex: number | null
@@ -318,6 +320,8 @@
   ) {
     event.preventDefault()
     tooltipStore.hideImmediate()
+
+    // Set initial position
     contextMenu = {
       visible: true,
       x: event.clientX,
@@ -326,17 +330,65 @@
       rowIndex,
       colIndex,
     }
+
+    // Adjust position to stay within viewport
+    adjustContextMenuPosition()
   }
 
   function handleHeaderContextMenu(event: MouseEvent, colIndex: number) {
     event.preventDefault()
     tooltipStore.hideImmediate()
+
+    // Set initial position
     contextMenu = {
       visible: true,
       x: event.clientX,
       y: event.clientY,
       type: 'header',
       colIndex,
+    }
+
+    // Adjust position to stay within viewport
+    adjustContextMenuPosition()
+  }
+
+  function adjustContextMenuPosition() {
+    if (!contextMenuElement) {
+      // Menu not rendered yet, defer adjustment
+      queueMicrotask(() => adjustContextMenuPosition())
+      return
+    }
+
+    const rect = contextMenuElement.getBoundingClientRect()
+    const viewportWidth = window.innerWidth
+    const viewportHeight = window.innerHeight
+    const padding = 16
+
+    let { x, y } = contextMenu
+
+    // Adjust horizontal position if overflowing right edge
+    if (x + rect.width > viewportWidth - padding) {
+      x = viewportWidth - rect.width - padding
+    }
+
+    // Ensure not too far left
+    if (x < padding) {
+      x = padding
+    }
+
+    // Adjust vertical position if overflowing bottom edge
+    if (y + rect.height > viewportHeight - padding) {
+      y = viewportHeight - rect.height - padding
+    }
+
+    // Ensure not too far up
+    if (y < padding) {
+      y = padding
+    }
+
+    // Update position if it changed
+    if (x !== contextMenu.x || y !== contextMenu.y) {
+      contextMenu = { ...contextMenu, x, y }
     }
   }
 
@@ -873,6 +925,7 @@
   <!-- Context Menu -->
   {#if contextMenu.visible}
     <div
+      bind:this={contextMenuElement}
       class="context-menu"
       style={`left: ${contextMenu.x}px; top: ${contextMenu.y}px;`}
       role="menu"
