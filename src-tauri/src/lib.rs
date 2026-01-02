@@ -763,8 +763,7 @@ pub fn run() {
         .setup(|app: &mut tauri::App| {
             #[cfg(target_os = "macos")]
             {
-                let app_handle = app.handle().clone();
-                app.on_macos_open_urls(move |_app, urls| {
+                app.handle().on_macos_open_urls(move |app_handle, urls| {
                     for url in urls {
                         if let Ok(path) = url.to_file_path() {
                             let path_str = path.to_string_lossy().to_string();
