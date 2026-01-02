@@ -1,337 +1,397 @@
-use std::fs::{self, File};
-use std::path::Path;
 use polars::prelude::*;
-use polars::datatypes::DataType;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
-use chrono::{NaiveDateTime, DateTime, Utc};
-use parquet::file::reader::{FileReader};
-use parquet::file::serialized_reader::SerializedFileReader;
-use crate::data_loader::collect_dataframe;
+use std::collections::HashMap;
 
-#[derive(Serialize)]
-pub struct ColumnInfo {
-    pub name: String,
-    pub dtype: String,
-}
-
-#[derive(Serialize)]
-pub struct DataFrameInfo {
-    pub shape: (usize, usize),
-    pub columns: Vec<ColumnInfo>,
-    pub rows: Vec<Vec<String>>,
-    pub metadata: Option<MetadataInfo>,
-}
-
-#[derive(Serialize)]
-pub struct ColumnMetaData {
-    pub name: String,
-    pub compression: String,
-}
-
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct MetadataInfo {
-    pub file_name: String,
-    pub created_at: Option<DateTime<Utc>>,
-    pub modified_at: Option<DateTime<Utc>>,
-    pub file_size: u64,
-    pub row_groups: usize,
-    pub num_rows: usize,
-    pub columns: Vec<ColumnMetaData>,
-}
-
-#[derive(Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Sorting {
     pub column: String,
     pub ascending: bool,
 }
 
-#[derive(Deserialize)]
-pub struct Filtering {
-    pub column: String,
-    pub condition: String,
-    pub value: Value,
-}
-
-pub fn collect_dataframe_safe(lf: LazyFrame) -> Result<DataFrame, String> {
-    collect_dataframe(lf).map_err(|e| format!("Failed to collect DataFrame: {}", e))
-}
-
-pub fn sort_columns(lf: LazyFrame, sorting_info: Vec<Sorting>) -> Result<LazyFrame, String> {
-    let column_names: Vec<PlSmallStr> = sorting_info
-        .iter()
-        .map(|s| PlSmallStr::from(s.column.as_str()))
-        .collect();
-    let orders: Vec<bool> = sorting_info.iter().map(|s| s.ascending).collect();
-    let nulls_last = vec![true; column_names.len()];
-    let sorted = lf.sort(
-        column_names,
-        SortMultipleOptions {
-            descending: orders.iter().map(|&asc| !asc).collect(), // Convert ascending to descending
-            multithreaded: true,
-            nulls_last,
-            ..Default::default()
-        },
-    );
-    Ok(sorted)
-}
-
-fn anyvalue_to_string(value: AnyValue) -> String {
-    match value {
-        AnyValue::String(s) => s.to_string(),
-        AnyValue::Null => "".to_string(),
-        AnyValue::Categorical(ix, rev_mapping, ..) => {
-            rev_mapping.get(ix).to_string()
-        }
-        AnyValue::Enum(ix, rev_mapping, ..) => {
-            rev_mapping.get(ix).to_string()
-        }
-        _ => value.to_string(),
-    }
-}
-
-pub fn dataframe_to_rows(df: &DataFrame) -> Vec<Vec<String>> {
-    (0..df.height())
-        .map(|row_idx| {
-            df.get_columns()
-                .iter()
-                .map(|series| {
-                    series.get(row_idx).map_or_else(
-                        |_| "".to_string(),
-                        |v| anyvalue_to_string(v),
-                    )
-                })
-                .collect()
-        })
-        .collect()
-}
-
-
-// Function to process the DataFrame and return its info
-pub fn process_dataframe(lf: LazyFrame, file_path: &str) -> Result<DataFrameInfo, String> {
-    // Collect the DataFrame safely from the LazyFrame
-    let df = collect_dataframe_safe(lf)?;
-    let shape = df.shape();
-
-    // Get column information
-    let columns: Vec<ColumnInfo> = df
-        .get_columns()
-        .iter()
-        .map(|col| ColumnInfo {
-            name: col.name().to_string(),
-            dtype: format!("{:?}", col.dtype()),
-        })
-        .collect();
-
-    // Get the first n rows (for example, the first 250 rows)
-    let n = shape.0.min(250);
-    let df_head = df.head(Some(n));
-    let rows = dataframe_to_rows(&df_head);
-
-    // Extract metadata from the file
-    let metadata = get_file_metadata(file_path).ok();
-
-    Ok(DataFrameInfo {
-        shape,
-        columns,
-        rows,
-        metadata,
-    })
-}
-
-
-pub fn get_file_metadata(file_path: &str) -> Result<MetadataInfo, String> {
-    // Get file system metadata
-    let metadata = fs::metadata(file_path).map_err(|e| format!("Failed to get file metadata: {}", e))?;
-    let file_name = Path::new(file_path)
-        .file_name()
-        .and_then(|name| name.to_str())
-        .unwrap_or("Unknown")
-        .to_string();
-    let created_at = metadata.created().ok().map(|time| DateTime::<Utc>::from(time));
-    let modified_at = metadata.modified().ok().map(|time| DateTime::<Utc>::from(time));
-    let file_size = metadata.len();
-
-    // Open the Parquet file and read its metadata
-    let file = File::open(file_path).map_err(|e| format!("Failed to open file: {}", e))?;
-    let parquet_reader = SerializedFileReader::new(file).map_err(|e| format!("Failed to read Parquet file: {}", e))?;
-    let parquet_metadata = parquet_reader.metadata();
-
-    // Collect row group and column metadata
-    let num_row_groups = parquet_metadata.num_row_groups();
-    let num_rows = parquet_metadata.file_metadata().num_rows() as usize;
-    let mut columns = Vec::new();
-
-    for row_group_idx in 0..num_row_groups {
-        let row_group = parquet_metadata.row_group(row_group_idx);
-        for column_chunk in row_group.columns() {
-            let column_name = column_chunk.column_descr().name().to_string();
-            let compression = column_chunk.compression().to_string();
-            columns.push(ColumnMetaData {
-                name: column_name,
-                compression,
-            });
-        }
+/// Apply sorts to a LazyFrame
+pub fn apply_sorts(lf: LazyFrame, sorts: Vec<Sorting>) -> Result<LazyFrame, String> {
+    if sorts.is_empty() {
+        return Ok(lf);
     }
 
-    Ok(MetadataInfo {
-        file_name,
-        created_at,
-        modified_at,
-        file_size,
-        row_groups: num_row_groups,
-        num_rows,
-        columns,
-    })
+    let columns: Vec<String> = sorts.iter().map(|s| s.column.clone()).collect();
+    let descending: Vec<bool> = sorts.iter().map(|s| !s.ascending).collect();
+
+    let options = SortMultipleOptions::default().with_order_descending_multi(descending);
+
+    let result = lf.sort(columns, options);
+
+    Ok(result)
 }
 
+/// Convert DataFrame to rows (Vec<Vec<String>>)
+pub fn dataframe_to_rows(df: &DataFrame) -> Result<Vec<Vec<String>>, String> {
+    let height = df.height();
+    let mut rows = vec![vec![String::new(); df.width()]; height];
 
-pub fn filter_columns(mut filtered_lf: LazyFrame, filtering_info: Vec<Filtering>) -> Result<LazyFrame, String> {
-    for filter in filtering_info {
-        match filter.condition.as_str() {
-            "<" | ">" | "<=" | ">=" | "==" | "!=" => {
-                if let Value::Number(num) = &filter.value {
-                    if let Some(f) = num.as_f64() {
-                        let column_expr = col(&filter.column);
-                        filtered_lf = match filter.condition.as_str() {
-                            "<" => filtered_lf.filter(column_expr.lt(lit(f))),
-                            ">" => filtered_lf.filter(column_expr.gt(lit(f))),
-                            "<=" => filtered_lf.filter(column_expr.lt_eq(lit(f))),
-                            ">=" => filtered_lf.filter(column_expr.gt_eq(lit(f))),
-                            "==" => filtered_lf.filter(column_expr.eq(lit(f))),
-                            "!=" => filtered_lf.filter(column_expr.neq(lit(f))),
-                            _ => return Err(format!("Invalid number filter condition: {}", filter.condition)),
-                        };
-                    } else {
-                        return Err("Invalid number value for filter".to_string());
-                    }
-                } else if let Value::String(date_str) = &filter.value {
-                    let datetime_result = DateTime::parse_from_rfc3339(date_str)
-                        .map(|dt| dt.with_timezone(&Utc).naive_utc())
-                        .or_else(|_| NaiveDateTime::parse_from_str(date_str, "%Y-%m-%dT%H:%M:%S%.f"));
-
-                    if let Ok(date) = datetime_result {
-                        let column_expr = col(&filter.column).cast(DataType::Datetime(TimeUnit::Microseconds, Some("UTC".into())));
-                        let date_lit = lit(date).cast(DataType::Datetime(TimeUnit::Microseconds, Some("UTC".into())));
-
-                        filtered_lf = match filter.condition.as_str() {
-                            "<" => filtered_lf.filter(column_expr.lt(date_lit)),
-                            ">" => filtered_lf.filter(column_expr.gt(date_lit)),
-                            "<=" => filtered_lf.filter(column_expr.lt_eq(date_lit)),
-                            ">=" => filtered_lf.filter(column_expr.gt_eq(date_lit)),
-                            "==" => filtered_lf.filter(column_expr.eq(date_lit)),
-                            "!=" => filtered_lf.filter(column_expr.neq(date_lit)),
-                            _ => return Err(format!("Invalid date filter condition: {}", filter.condition)),
-                        };
-                    } else {
-                        return Err("Invalid date value for filter".to_string());
-                    }
-                } else if let Value::Bool(val) = &filter.value {
-                    filtered_lf = match filter.condition.as_str() {
-                        "==" => filtered_lf.filter(col(&filter.column).eq(lit(*val))),
-                        "!=" => filtered_lf.filter(col(&filter.column).neq(lit(*val))),
-                        _ => return Err(format!("Invalid boolean filter condition: {}", filter.condition)),
-                    };
-                } else {
-                    return Err("Invalid value type for filter".to_string());
-                }
-            }
-            "between" => {
-                if let Value::Array(values) = &filter.value {
-                    if values.len() == 2 {
-                        let lower = &values[0];
-                        let upper = &values[1];
-                        let column_expr = col(&filter.column);
-
-                        if let (Some(lower), Some(upper)) = (lower.as_f64(), upper.as_f64()) {
-                            filtered_lf = filtered_lf.filter(
-                                column_expr.clone().gt_eq(lit(lower)).and(column_expr.lt_eq(lit(upper))),
-                            );
-                        } else if let (Some(lower), Some(upper)) = (
-                            lower.as_str().and_then(|s| {
-                                DateTime::parse_from_rfc3339(s)
-                                    .map(|dt| dt.with_timezone(&Utc).naive_utc())
-                                    .or_else(|_| NaiveDateTime::parse_from_str(s, "%Y-%m-%dT%H:%M:%S%.f"))
-                                    .ok()
-                            }),
-                            upper.as_str().and_then(|s| {
-                                DateTime::parse_from_rfc3339(s)
-                                    .map(|dt| dt.with_timezone(&Utc).naive_utc())
-                                    .or_else(|_| NaiveDateTime::parse_from_str(s, "%Y-%m-%dT%H:%M:%S%.f"))
-                                    .ok()
-                            }),
-                        ) {
-                            let column_expr = col(&filter.column).cast(DataType::Datetime(TimeUnit::Microseconds, Some("UTC".into())));
-                            let lower_lit = lit(lower).cast(DataType::Datetime(TimeUnit::Microseconds, Some("UTC".into())));
-                            let upper_lit = lit(upper).cast(DataType::Datetime(TimeUnit::Microseconds, Some("UTC".into())));
-
-                            filtered_lf = filtered_lf.filter(
-                                column_expr.clone().gt_eq(lower_lit).and(column_expr.lt_eq(upper_lit)),
-                            );
+    for (col_idx, series) in df.get_columns().iter().enumerate() {
+        // Handle different data types appropriately
+        match series.dtype() {
+            DataType::Binary => {
+                // Binary data - convert to hex string representation
+                if let Ok(ca) = series.binary() {
+                    for (row_idx, opt_val) in ca.into_iter().enumerate() {
+                        rows[row_idx][col_idx] = if let Some(val) = opt_val {
+                            format!("0x{}", hex::encode(val))
                         } else {
-                            return Err("Invalid values for between filter".to_string());
-                        }
-                    } else {
-                        return Err("Invalid value count for between filter".to_string());
+                            String::new()
+                        };
                     }
-                } else {
-                    return Err("Invalid value type for between filter".to_string());
                 }
             }
-            "equals" => {
-                if let Value::String(val) = &filter.value {
-                    filtered_lf = filtered_lf.filter(col(&filter.column).eq(lit(val.as_str())));
-                } else if let Value::Bool(val) = &filter.value {
-                    filtered_lf = filtered_lf.filter(col(&filter.column).eq(lit(*val)));
-                } else {
-                    return Err("Invalid value type for equality filter".to_string());
+            DataType::List(_) => {
+                // List types - format as [item1, item2, ...]
+                for row_idx in 0..height {
+                    let value = series.get(row_idx).unwrap();
+                    rows[row_idx][col_idx] = format_list_value(&value);
                 }
             }
-            "different" => {
-                if let Value::String(val) = &filter.value {
-                    filtered_lf = filtered_lf.filter(col(&filter.column).neq(lit(val.as_str())));
-                } else if let Value::Bool(val) = &filter.value {
-                    filtered_lf = filtered_lf.filter(col(&filter.column).neq(lit(*val)));
-                } else {
-                    return Err("Invalid value type for inequality filter".to_string());
+            DataType::Array(_, _) => {
+                // Array types (fixed-size lists) - format as [item1, item2, ...]
+                for row_idx in 0..height {
+                    let value = series.get(row_idx).unwrap();
+                    rows[row_idx][col_idx] = format_list_value(&value);
                 }
             }
-            "contains_case_insensitive" => {
-                if let Value::String(val) = &filter.value {
-                    // Create a regex pattern that ignores case
-                    let pattern = format!("(?i){}", regex::escape(val));
-                    filtered_lf = filtered_lf.filter(
-                        col(&filter.column)
-                            .cast(DataType::String)
-                            .str()
-                            .contains(lit(pattern), false),
-                    );
-                } else {
-                    return Err("Invalid value type for case-insensitive contains filter".to_string());
+            DataType::Struct(_) => {
+                // Struct types - format as {field1: value1, field2: value2, ...}
+                for row_idx in 0..height {
+                    let value = series.get(row_idx).unwrap();
+                    rows[row_idx][col_idx] = format_struct_value(&value);
                 }
             }
-            "contains" => {
-                if let Value::String(val) = &filter.value {
-                    filtered_lf = filtered_lf.filter(
-                        col(&filter.column)
-                            .cast(DataType::String)
-                            .str()
-                            .contains(lit(val.as_str()), false),
-                    );
-                } else {
-                    return Err("Invalid value type for contains filter".to_string());
+            DataType::Duration(time_unit) => {
+                // Duration types - format as human-readable duration
+                for row_idx in 0..height {
+                    let value = series.get(row_idx).unwrap();
+                    rows[row_idx][col_idx] = if value.is_null() {
+                        String::new()
+                    } else if let Ok(val) = value.try_extract::<i64>() {
+                        format_duration(val, time_unit)
+                    } else {
+                        format!("{:?}", value)
+                    };
                 }
             }
-            "is_null" => {
-                filtered_lf = filtered_lf.filter(col(&filter.column).is_null());
+            _ => {
+                // For all other types, try to cast to String
+                match series.cast(&DataType::String) {
+                    Ok(s_str) => {
+                        if let Ok(ca) = s_str.str() {
+                            for (row_idx, opt_val) in ca.into_iter().enumerate() {
+                                if let Some(val) = opt_val {
+                                    rows[row_idx][col_idx] = val.to_string();
+                                } else {
+                                    rows[row_idx][col_idx] = String::new();
+                                }
+                            }
+                        } else {
+                            // Fallback to debug format if str() fails
+                            for row_idx in 0..height {
+                                rows[row_idx][col_idx] = format!("{:?}", series.get(row_idx).unwrap());
+                            }
+                        }
+                    }
+                    Err(_) => {
+                        // If cast fails, use debug format as fallback
+                        for row_idx in 0..height {
+                            rows[row_idx][col_idx] = format!("{:?}", series.get(row_idx).unwrap());
+                        }
+                    }
+                }
             }
-            "is_not_null" => {
-                filtered_lf = filtered_lf.filter(col(&filter.column).is_not_null());
-            }
-            _ => return Err(format!("Unknown filter condition: {}", filter.condition)),
         }
     }
 
-    Ok(filtered_lf)
+    Ok(rows)
+}
+
+/// Calculate statistics for all columns in a DataFrame
+pub fn calculate_statistics(
+    df: &DataFrame,
+) -> Result<HashMap<String, HashMap<String, serde_json::Value>>, String> {
+    let mut stats: HashMap<String, HashMap<String, serde_json::Value>> = HashMap::new();
+
+    for series in df.get_columns() {
+        let column_name = series.name().to_string();
+        let mut column_stats: HashMap<String, serde_json::Value> = HashMap::new();
+
+        // Null count (applicable to all types)
+        let null_count = series.null_count();
+        column_stats.insert("null_values".to_string(), serde_json::json!(null_count));
+
+        match series.dtype() {
+            DataType::Boolean => {
+                // Boolean statistics - count true/false values
+                if let Ok(ca) = series.bool() {
+                    let total = series.len() - null_count;
+                    let true_count = ca.sum().unwrap_or(0) as usize;
+                    let false_count = total - true_count;
+
+                    let true_pct = if total > 0 {
+                        (true_count as f64 / total as f64) * 100.0
+                    } else {
+                        0.0
+                    };
+                    let false_pct = if total > 0 {
+                        (false_count as f64 / total as f64) * 100.0
+                    } else {
+                        0.0
+                    };
+
+                    column_stats.insert(
+                        "true_count".to_string(),
+                        serde_json::json!(format!("{} ({:.1}%)", true_count, true_pct))
+                    );
+                    column_stats.insert(
+                        "false_count".to_string(),
+                        serde_json::json!(format!("{} ({:.1}%)", false_count, false_pct))
+                    );
+                }
+            }
+            DataType::Int8
+            | DataType::Int16
+            | DataType::Int32
+            | DataType::Int64
+            | DataType::UInt8
+            | DataType::UInt16
+            | DataType::UInt32
+            | DataType::UInt64
+            | DataType::Float32
+            | DataType::Float64 => {
+                // Numeric statistics
+                if let Ok(ca) = series.cast(&DataType::Float64) {
+                    if let Ok(series_f64) = ca.f64() {
+                        if let Some(min) = series_f64.min() {
+                            column_stats.insert("min".to_string(), serde_json::json!(min));
+                        }
+                        if let Some(max) = series_f64.max() {
+                            column_stats.insert("max".to_string(), serde_json::json!(max));
+                        }
+                        if let Some(mean) = series_f64.mean() {
+                            column_stats.insert("mean".to_string(), serde_json::json!(mean));
+                        }
+                        if let Some(median) = series_f64.median() {
+                            column_stats.insert("median".to_string(), serde_json::json!(median));
+                        }
+                        if let Some(q25) = series_f64
+                            .quantile(0.25, QuantileMethod::Linear)
+                            .ok()
+                            .flatten()
+                        {
+                            column_stats
+                                .insert("percentile_25".to_string(), serde_json::json!(q25));
+                        }
+                        if let Some(q75) = series_f64
+                            .quantile(0.75, QuantileMethod::Linear)
+                            .ok()
+                            .flatten()
+                        {
+                            column_stats
+                                .insert("percentile_75".to_string(), serde_json::json!(q75));
+                        }
+                    }
+                }
+            }
+            DataType::Date | DataType::Datetime(_, _) | DataType::Time | DataType::Duration(_) => {
+                // Date/time statistics (min, max) - simplified for now
+                // These can be improved with proper datetime handling
+            }
+            _ => {
+                // String and other types - unique count
+                if let Ok(unique_count) = series.unique().map(|u| u.len()) {
+                    column_stats
+                        .insert("unique_values".to_string(), serde_json::json!(unique_count));
+                }
+            }
+        }
+
+        stats.insert(column_name, column_stats);
+    }
+
+    Ok(stats)
+}
+
+/// Format duration value as human-readable string (e.g., "21 days 12:00:00")
+fn format_duration(value: i64, time_unit: &polars::prelude::TimeUnit) -> String {
+    // Convert to microseconds for consistent handling
+    let microseconds = match time_unit {
+        polars::prelude::TimeUnit::Nanoseconds => value / 1_000,
+        polars::prelude::TimeUnit::Microseconds => value,
+        polars::prelude::TimeUnit::Milliseconds => value * 1_000,
+    };
+
+    let is_negative = microseconds < 0;
+    let abs_microseconds = microseconds.abs();
+
+    // Calculate components
+    let total_seconds = abs_microseconds / 1_000_000;
+    let days = total_seconds / 86400;
+    let hours = (total_seconds % 86400) / 3600;
+    let minutes = (total_seconds % 3600) / 60;
+    let seconds = total_seconds % 60;
+
+    let sign = if is_negative { "-" } else { "" };
+
+    if days > 0 {
+        format!("{}{} days {:02}:{:02}:{:02}", sign, days, hours, minutes, seconds)
+    } else {
+        format!("{}{:02}:{:02}:{:02}", sign, hours, minutes, seconds)
+    }
+}
+
+/// Format List/Array value as simple array notation (e.g., "[1, 2, 3]")
+fn format_list_value(value: &polars::prelude::AnyValue) -> String {
+    use polars::prelude::AnyValue;
+
+    match value {
+        AnyValue::List(series) => {
+            let items: Vec<String> = (0..series.len())
+                .map(|i| {
+                    let item = series.get(i).unwrap();
+                    format_any_value(&item)
+                })
+                .collect();
+            format!("[{}]", items.join(", "))
+        }
+        // Handle Array type (fixed-size list) - extract from debug format or convert
+        _ => {
+            // Check if it's an array by converting to string and parsing
+            let debug_str = format!("{:?}", value);
+            if debug_str.starts_with("Array(") {
+                // Extract just the values from the Array debug format
+                // Try to extract the series and format it
+                if let AnyValue::Null = value {
+                    String::new()
+                } else {
+                    // For arrays, we'll use a simpler approach - just show the type
+                    // since extracting values from Array AnyValue is complex
+                    debug_str
+                        .split("Series: '' [")
+                        .nth(1)
+                        .and_then(|s| s.split(']').next())
+                        .map(|type_str| {
+                            // Try to extract the values
+                            if let Some(values_part) = debug_str.split("[\n").nth(1) {
+                                let values: Vec<String> = values_part
+                                    .lines()
+                                    .filter_map(|line| {
+                                        let trimmed = line.trim();
+                                        if !trimmed.is_empty() && trimmed != "]" && !trimmed.starts_with("],") {
+                                            Some(trimmed.to_string())
+                                        } else {
+                                            None
+                                        }
+                                    })
+                                    .collect();
+                                format!("[{}]", values.join(", "))
+                            } else {
+                                format!("array<{}>", type_str)
+                            }
+                        })
+                        .unwrap_or_else(|| debug_str)
+                }
+            } else if let AnyValue::Null = value {
+                String::new()
+            } else {
+                format!("{:?}", value)
+            }
+        }
+    }
+}
+
+/// Format Struct value as object notation (e.g., "{x: 42, y: 3.14}")
+fn format_struct_value(value: &polars::prelude::AnyValue) -> String {
+    use polars::prelude::AnyValue;
+
+    match value {
+        AnyValue::Struct(idx, arr, fields) => {
+            let mut field_strs = Vec::new();
+            let values = arr.values();
+            for (field_idx, field) in fields.iter().enumerate() {
+                if field_idx < values.len() {
+                    // Convert Arrow array to Polars Series for easier value extraction
+                    let arrow_array = &values[field_idx];
+                    if let Ok(series) = polars::prelude::Series::try_from((field.name().clone(), arrow_array.clone())) {
+                        if let Ok(field_value) = series.get(*idx) {
+                            field_strs.push(format!("{}: {}", field.name(), format_any_value_simple(&field_value)));
+                        }
+                    }
+                }
+            }
+            format!("{{{}}}", field_strs.join(", "))
+        }
+        AnyValue::StructOwned(_) => {
+            // For StructOwned, use simplified format
+            format!("{:?}", value)
+        }
+        AnyValue::Null => String::new(),
+        _ => format!("{:?}", value)
+    }
+}
+
+/// Simplified formatting for nested values (avoids recursion issues)
+fn format_any_value_simple(value: &polars::prelude::AnyValue) -> String {
+    use polars::prelude::AnyValue;
+
+    match value {
+        AnyValue::Null => "null".to_string(),
+        AnyValue::Boolean(b) => b.to_string(),
+        AnyValue::String(s) => s.to_string(),
+        AnyValue::StringOwned(s) => s.to_string(),
+        AnyValue::Int8(v) => v.to_string(),
+        AnyValue::Int16(v) => v.to_string(),
+        AnyValue::Int32(v) => v.to_string(),
+        AnyValue::Int64(v) => v.to_string(),
+        AnyValue::UInt8(v) => v.to_string(),
+        AnyValue::UInt16(v) => v.to_string(),
+        AnyValue::UInt32(v) => v.to_string(),
+        AnyValue::UInt64(v) => v.to_string(),
+        AnyValue::Float32(v) => format!("{:.6}", v),
+        AnyValue::Float64(v) => format!("{:.6}", v),
+        _ => format!("{:?}", value)
+    }
+}
+
+/// Format a single AnyValue for display in lists/structs
+fn format_any_value(value: &polars::prelude::AnyValue) -> String {
+    use polars::prelude::AnyValue;
+
+    match value {
+        AnyValue::Null => "null".to_string(),
+        AnyValue::Boolean(b) => b.to_string(),
+        AnyValue::String(s) => format!("\"{}\"", s),
+        AnyValue::StringOwned(s) => format!("\"{}\"", s),
+        AnyValue::Binary(_) | AnyValue::BinaryOwned(_) => "binary".to_string(),
+        AnyValue::Int8(v) => v.to_string(),
+        AnyValue::Int16(v) => v.to_string(),
+        AnyValue::Int32(v) => v.to_string(),
+        AnyValue::Int64(v) => v.to_string(),
+        AnyValue::UInt8(v) => v.to_string(),
+        AnyValue::UInt16(v) => v.to_string(),
+        AnyValue::UInt32(v) => v.to_string(),
+        AnyValue::UInt64(v) => v.to_string(),
+        AnyValue::Float32(v) => v.to_string(),
+        AnyValue::Float64(v) => v.to_string(),
+        AnyValue::List(series) => {
+            let items: Vec<String> = (0..series.len().min(3))
+                .map(|i| format_any_value(&series.get(i).unwrap()))
+                .collect();
+            if series.len() > 3 {
+                format!("[{}, ...]", items.join(", "))
+            } else {
+                format!("[{}]", items.join(", "))
+            }
+        }
+        AnyValue::Struct(_, _, _) => {
+            // For nested structs in lists, use simplified format
+            "struct".to_string()
+        }
+        _ => format!("{:?}", value)
+    }
 }
