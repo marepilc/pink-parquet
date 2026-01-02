@@ -765,6 +765,8 @@ pub fn run() {
         .setup(|app: &mut tauri::App| {
             #[cfg(target_os = "macos")]
             {
+                // The MacosApp trait is required for on_macos_open_urls and is only available
+                // when the "macos-private-api" feature is enabled in Cargo.toml
                 use tauri::MacosApp;
                 app.on_macos_open_urls(
                     move |app_handle: &tauri::AppHandle, urls: Vec<tauri::Url>| {
