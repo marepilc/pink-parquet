@@ -747,7 +747,7 @@ fn read_text_file(path: String) -> Result<String, String> {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let builder = tauri::Builder::default()
+    let mut builder = tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_os::init())
@@ -761,29 +761,26 @@ pub fn run() {
             }
         }));
 
+    #[cfg(target_os = "macos")]
+    {
+        builder = builder.on_macos_open_urls(
+            move |app_handle: &tauri::AppHandle, urls: Vec<tauri::Url>| {
+                for url in urls {
+                    if let Ok(path) = url.to_file_path() {
+                        let path_str: String = path.to_string_lossy().to_string();
+                        let app_handle_clone = app_handle.clone();
+                        std::thread::spawn(move || {
+                            std::thread::sleep(std::time::Duration::from_millis(1000));
+                            let _ = app_handle_clone.emit("open-file", path_str);
+                        });
+                    }
+                }
+            },
+        );
+    }
+
     builder
         .setup(|app: &mut tauri::App| {
-            #[cfg(target_os = "macos")]
-            {
-                // The MacosApp trait is required for on_macos_open_urls and is only available
-                // when the "macos-private-api" feature is enabled in Cargo.toml
-                use tauri::MacosApp;
-                app.on_macos_open_urls(
-                    move |app_handle: &tauri::AppHandle, urls: Vec<tauri::Url>| {
-                        for url in urls {
-                            if let Ok(path) = url.to_file_path() {
-                                let path_str: String = path.to_string_lossy().to_string();
-                                let app_handle_clone = app_handle.clone();
-                                std::thread::spawn(move || {
-                                    std::thread::sleep(std::time::Duration::from_millis(1000));
-                                    let _ = app_handle_clone.emit("open-file", path_str);
-                                });
-                            }
-                        }
-                    },
-                );
-            }
-
             // Disable window decorations for custom title bar
             if let Some(window) = app.get_webview_window("main") {
                 #[cfg(target_os = "windows")]
