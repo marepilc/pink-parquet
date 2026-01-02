@@ -2,13 +2,12 @@
     import {dataStore} from '$lib/stores/dataStore.svelte'
     import SqlEditor from '$lib/components/SqlEditor.svelte'
     import {invoke} from '@tauri-apps/api/core'
+    import {onMount} from 'svelte'
 
     let {visible = false} = $props<{ visible?: boolean }>()
 
-    let sqlText = $state(dataStore.currentQuery || '')
-
-    $effect(() => {
-        sqlText = dataStore.currentQuery || ''
+    onMount(() => {
+        return dataStore.onQueryRequest(runSql)
     })
 
     const keywordCompletions = [
@@ -131,7 +130,7 @@
         return {tableCompletions, columnCompletions, tableToColumns, aliasToTable}
     }
 
-    const completionsData = $derived(getTableAndColumnCompletions(sqlText))
+    const completionsData = $derived(getTableAndColumnCompletions(dataStore.currentQuery || ''))
     const {tableCompletions, columnCompletions, tableToColumns, aliasToTable} =
         $derived(completionsData)
 
@@ -144,7 +143,7 @@
 
     async function runSql() {
         if (!dataStore.activeSession?.path) return
-        const q = sqlText.trim()
+        const q = (dataStore.currentQuery || '').trim()
         if (!q) return
 
         dataStore.setQuery(q)
@@ -175,7 +174,6 @@
     }
 
     async function clearSql() {
-        sqlText = ''
         dataStore.setQuery(null)
         // When clearing SQL, we just want to clear the queryData in the store,
         // not fetch raw data again into the rawData slot which might be confusing.
@@ -190,9 +188,9 @@
     <div class="query-content">
         <div class="editor-wrapper">
             <SqlEditor
-                    bind:value={sqlText}
+                    value={dataStore.currentQuery || ''}
                     onChange={(v) => {
-          dataStore.setQuery(v)
+          dataStore.currentQuery = v
         }}
                     placeholder="Enter SQL query here"
                     tableName={tableCompletions.map((t) => t.label)}

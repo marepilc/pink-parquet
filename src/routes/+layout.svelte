@@ -51,7 +51,8 @@
                 }
 
                 if (dataStore.activeSessionId) {
-                    dataStore.setQuery(content, dataStore.activeSessionId)
+                    dataStore.setQuery(content)
+                    dataStore.resetQueryResults()
                     dataStore.isSqlTabActive = true
                     await goto('/app')
                 } else {
@@ -185,6 +186,14 @@
             // Only save if there's data available
             if (dataStore.data) {
                 handleSaveAs()
+            }
+        } else if (event.key === 'F5') {
+            event.preventDefault()
+            // F5 is handled by SqlEditor if focused.
+            // If we're here, it means focus is elsewhere.
+            // We prevent default to avoid page reload which clears state.
+            if (dataStore.isSqlTabActive) {
+                dataStore.triggerQuery()
             }
         }
     }
