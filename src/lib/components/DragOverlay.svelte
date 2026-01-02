@@ -1,6 +1,6 @@
 <script lang="ts">
     import IconParquetFile from '$lib/components/icons/IconParquetFile.svelte'
-    import SqlIcon from '$lib/components/icons/SqlIcon.svelte'
+    import IconSqlFile from '$lib/components/icons/IconSqlFile.svelte'
 
     interface Props {
         isVisible: boolean
@@ -16,7 +16,7 @@
         <div class="content">
       <span class="icon">
         {#if fileExtension.toLowerCase() === 'sql'}
-          <SqlIcon size={128}/>
+          <IconSqlFile size={128}/>
         {:else}
           <IconParquetFile/>
         {/if}
