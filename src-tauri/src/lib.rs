@@ -763,18 +763,21 @@ pub fn run() {
         .setup(|app: &mut tauri::App| {
             #[cfg(target_os = "macos")]
             {
-                app.handle().on_macos_open_urls(move |app_handle, urls| {
-                    for url in urls {
-                        if let Ok(path) = url.to_file_path() {
-                            let path_str = path.to_string_lossy().to_string();
-                            let app_handle = app_handle.clone();
-                            std::thread::spawn(move || {
-                                std::thread::sleep(std::time::Duration::from_millis(1000));
-                                let _ = app_handle.emit("open-file", path_str);
-                            });
+                use tauri::MacosApp;
+                app.on_macos_open_urls(
+                    move |app_handle: &tauri::AppHandle, urls: Vec<tauri::Url>| {
+                        for url in urls {
+                            if let Ok(path) = url.to_file_path() {
+                                let path_str: String = path.to_string_lossy().to_string();
+                                let app_handle_clone = app_handle.clone();
+                                std::thread::spawn(move || {
+                                    std::thread::sleep(std::time::Duration::from_millis(1000));
+                                    let _ = app_handle_clone.emit("open-file", path_str);
+                                });
+                            }
                         }
-                    }
-                });
+                    },
+                );
             }
 
             // Disable window decorations for custom title bar
