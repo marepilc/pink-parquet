@@ -71,12 +71,8 @@
   // Track header cells to measure natural widths
   let headerCells: HTMLTableCellElement[] = $state([])
 
-  // Column sorting - multiple columns support
-  interface SortState {
-    column: string
-    ascending: boolean
-  }
-  let sortStates = $state<SortState[]>([])
+  // Column sorting - multiple columns support handled in dataStore
+  const sortStates = $derived(dataStore.sortStates)
 
   // Context menu
   let contextMenu = $state<{
@@ -200,22 +196,24 @@
     if (!dataStore.activeSession?.path) return
 
     const existingIndex = sortStates.findIndex((s) => s.column === columnName)
+    let newSortStates = [...sortStates]
 
     if (existingIndex !== -1) {
       const currentSort = sortStates[existingIndex]
 
       if (currentSort.ascending === ascending) {
         // Clicking the same direction toggles off (remove this column from multi-sort)
-        sortStates = sortStates.filter((s) => s.column !== columnName)
+        newSortStates = newSortStates.filter((s) => s.column !== columnName)
       } else {
         // Change direction for this column, keep its position in the ordering
-        sortStates[existingIndex] = { column: columnName, ascending }
-        sortStates = [...sortStates]
+        newSortStates[existingIndex] = { column: columnName, ascending }
       }
     } else {
       // Add a new column to the end for multi-sorting
-      sortStates = [...sortStates, { column: columnName, ascending }]
+      newSortStates.push({ column: columnName, ascending })
     }
+
+    dataStore.sortStates = newSortStates
 
     // Reload data with a new sort
     await reloadData()
@@ -241,6 +239,12 @@
 
   async function reloadData() {
     if (!dataStore.activeSession?.path) return
+
+    // Reset scroll position when reloading data (e.g. after sort change)
+    if (tableContainer) {
+      tableContainer.scrollTop = 0
+    }
+
     const isQuery = dataStore.isSqlTabActive && dataStore.isQueryMode
     dataStore.setLoading(true, undefined, isQuery)
 
@@ -598,6 +602,7 @@
   }
 
   function handleScroll() {
+    tooltipStore.hideImmediate()
     if (!tableContainer) return
 
     const { scrollTop, scrollHeight, clientHeight } = tableContainer
@@ -627,7 +632,6 @@
     untrack(() => {
       if (tableContainer) {
         tableContainer.scrollTop = 0
-        tableContainer.scrollLeft = 0
       }
     })
   })
@@ -787,7 +791,14 @@
                       <!-- svelte-ignore a11y_no_static_element_interactions -->
                       <span
                         class="column-name-text"
-                        onmouseenter={(e) => tooltipStore.show(e.currentTarget, column.name)}
+                        onmouseenter={(e) => tooltipStore.show(e.currentTarget, column.name, e.clientX, e.clientY)}
+                        onmousemove={(e) => {
+                          if (tooltipStore.visible) {
+                            tooltipStore.hide()
+                          } else {
+                            tooltipStore.show(e.currentTarget, column.name, e.clientX, e.clientY)
+                          }
+                        }}
                         onmouseleave={() => tooltipStore.hide()}
                         >{column.name}</span
                       >
@@ -801,7 +812,14 @@
                         <!-- svelte-ignore a11y_no_static_element_interactions -->
                         <span
                           class="dtype-text"
-                          onmouseenter={(e) => tooltipStore.show(e.currentTarget, column.dtype)}
+                          onmouseenter={(e) => tooltipStore.show(e.currentTarget, column.dtype, e.clientX, e.clientY)}
+                          onmousemove={(e) => {
+                            if (tooltipStore.visible) {
+                              tooltipStore.hide()
+                            } else {
+                              tooltipStore.show(e.currentTarget, column.dtype, e.clientX, e.clientY)
+                            }
+                          }}
                           onmouseleave={() => tooltipStore.hide()}
                           >{column.dtype}</span
                         >
@@ -877,7 +895,14 @@
                   <td
                     class="data-cell"
                     style={`min-width:${MIN_COL_WIDTH}px`}
-                    onmouseenter={(e) => tooltipStore.show(e.currentTarget, cell)}
+                    onmouseenter={(e) => tooltipStore.show(e.currentTarget, cell, e.clientX, e.clientY)}
+                    onmousemove={(e) => {
+                      if (tooltipStore.visible) {
+                        tooltipStore.hide()
+                      } else {
+                        tooltipStore.show(e.currentTarget, cell, e.clientX, e.clientY)
+                      }
+                    }}
                     onmouseleave={() => tooltipStore.hide()}
                     oncontextmenu={(e) =>
                       handleCellContextMenu(e, index, colIndex)}

@@ -20,6 +20,11 @@ export interface ParquetData {
     metadata?: MetadataInfo
 }
 
+export interface SortState {
+    column: string
+    ascending: boolean
+}
+
 export interface FileSession {
     id: string
     path: string
@@ -34,6 +39,7 @@ export interface FileSession {
     currentQuery: string | null
     baseColumns: ColumnInfo[] | null
     columnWidths: Record<number, number>
+    sortStates: SortState[]
     tableLayout: 'auto' | 'fixed'
     lastMeasuredColumnsJson: string | null
     dataTag: number // Used to trigger updates without deep proxying rawData/queryData
@@ -124,6 +130,15 @@ export const dataStore = {
             session.columnWidths = value
         }
     },
+    get sortStates() {
+        return this.activeSession?.sortStates || []
+    },
+    set sortStates(value: SortState[]) {
+        const session = this.activeSession
+        if (session) {
+            session.sortStates = value
+        }
+    },
     get tableLayout() {
         return this.activeSession?.tableLayout || 'auto'
     },
@@ -167,6 +182,7 @@ export const dataStore = {
             currentQuery: sharedQuery,
             baseColumns: null,
             columnWidths: {},
+            sortStates: [],
             tableLayout: 'auto',
             lastMeasuredColumnsJson: null,
             dataTag: 0,

@@ -191,6 +191,17 @@
         })
     }
 
+    const tableNames = $derived.by(() => {
+        if (Array.isArray(tableNameProp)) return tableNameProp
+        return tableNameProp ? [tableNameProp] : []
+    })
+    const columnNames = $derived(columnsProp.map(c => typeof c === 'string' ? c : (c.name || c.label || '')))
+
+    const EXCLUDED_NAMES = $derived(new Set([
+        ...tableNames.map(n => n.toUpperCase()),
+        ...columnNames.map(n => n.toUpperCase())
+    ]))
+
     function buildExtensions() {
         const base = [
             lineNumbers(),
@@ -270,7 +281,7 @@
             highlightActiveLine(),
             syntaxHighlighting(sqlHighlightStyle, {fallback: true}),
             // Auto-uppercase SQL keywords before onChange runs
-            uppercaseComp.of(keywordUppercaseExtension()),
+            uppercaseComp.of(keywordUppercaseExtension(EXCLUDED_NAMES)),
             EditorView.updateListener.of((u: ViewUpdate) => {
                 if (u.docChanged) {
                     const val = u.state.doc.toString()
@@ -366,7 +377,7 @@
         }
     })
 
-    // Reconfigure autocompletion when completion-related props change
+    // Update completions, placeholder and uppercase extension when props change
     $effect(() => {
         if (!view) return
 
@@ -376,43 +387,27 @@
         columnsProp
         tableToColumns
         aliasToTable
+        EXCLUDED_NAMES
 
+        const plain = String(placeholder || '')
         view.dispatch({
-            effects: completionComp.reconfigure(
-                autocompletion({
-                    override: [completionSource],
-                    activateOnTyping: true,
-                    closeOnBlur: false,
-                    maxRenderedOptions: 200,
-                })
-            ),
+            effects: [
+                completionComp.reconfigure(
+                    autocompletion({
+                        override: [completionSource],
+                        activateOnTyping: true,
+                        closeOnBlur: false,
+                        maxRenderedOptions: 200,
+                    })
+                ),
+                placeholderComp.reconfigure(cmPlaceholder(plain)),
+                uppercaseComp.reconfigure(keywordUppercaseExtension(EXCLUDED_NAMES))
+            ]
         })
     })
 
-    // Reconfigure placeholder when prop changes
-    $effect(() => {
-        if (!view) return
-
-        const currentPlaceholder = placeholder || ''
-        view.dispatch({
-            effects: placeholderComp.reconfigure(cmPlaceholder(currentPlaceholder)),
-        })
-    })
-
-    // Focus the editor when it becomes visible
-    $effect(() => {
-        if (!view) return
-
-        if (visible) {
-            // Use requestAnimationFrame to ensure the editor is fully visible before focusing
-            requestAnimationFrame(() => {
-                view?.focus()
-            })
-        }
-    })
-
-    // Extension: auto-uppercase SQL keywords as user types, excluding strings
-    function keywordUppercaseExtension() {
+    // Extension: auto-uppercase SQL keywords as user types, excluding strings and table/column names
+    function keywordUppercaseExtension(excluded: Set<string>) {
         const KEYWORDS = new Set([
             // Core SQL keywords
             'SELECT',
@@ -661,7 +656,7 @@
                     if (tokenStart === -1) return
                     const token = text.slice(tokenStart, end)
                     const upper = token.toUpperCase()
-                    if (KEYWORDS.has(upper) && token !== upper) {
+                    if (KEYWORDS.has(upper) && !excluded.has(upper) && token !== upper) {
                         const absFrom = scanFrom + tokenStart
                         const absTo = scanFrom + end
                         changes.push({from: absFrom, to: absTo, insert: upper})
