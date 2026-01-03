@@ -239,6 +239,12 @@
 
   async function reloadData() {
     if (!dataStore.activeSession?.path) return
+
+    // Reset scroll position when reloading data (e.g. after sort change)
+    if (tableContainer) {
+      tableContainer.scrollTop = 0
+    }
+
     const isQuery = dataStore.isSqlTabActive && dataStore.isQueryMode
     dataStore.setLoading(true, undefined, isQuery)
 
@@ -626,7 +632,6 @@
     untrack(() => {
       if (tableContainer) {
         tableContainer.scrollTop = 0
-        tableContainer.scrollLeft = 0
       }
     })
   })
