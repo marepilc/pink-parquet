@@ -598,6 +598,7 @@
   }
 
   function handleScroll() {
+    tooltipStore.hideImmediate()
     if (!tableContainer) return
 
     const { scrollTop, scrollHeight, clientHeight } = tableContainer
@@ -787,7 +788,14 @@
                       <!-- svelte-ignore a11y_no_static_element_interactions -->
                       <span
                         class="column-name-text"
-                        onmouseenter={(e) => tooltipStore.show(e.currentTarget, column.name)}
+                        onmouseenter={(e) => tooltipStore.show(e.currentTarget, column.name, e.clientX, e.clientY)}
+                        onmousemove={(e) => {
+                          if (tooltipStore.visible) {
+                            tooltipStore.hide()
+                          } else {
+                            tooltipStore.show(e.currentTarget, column.name, e.clientX, e.clientY)
+                          }
+                        }}
                         onmouseleave={() => tooltipStore.hide()}
                         >{column.name}</span
                       >
@@ -801,7 +809,14 @@
                         <!-- svelte-ignore a11y_no_static_element_interactions -->
                         <span
                           class="dtype-text"
-                          onmouseenter={(e) => tooltipStore.show(e.currentTarget, column.dtype)}
+                          onmouseenter={(e) => tooltipStore.show(e.currentTarget, column.dtype, e.clientX, e.clientY)}
+                          onmousemove={(e) => {
+                            if (tooltipStore.visible) {
+                              tooltipStore.hide()
+                            } else {
+                              tooltipStore.show(e.currentTarget, column.dtype, e.clientX, e.clientY)
+                            }
+                          }}
                           onmouseleave={() => tooltipStore.hide()}
                           >{column.dtype}</span
                         >
@@ -877,7 +892,14 @@
                   <td
                     class="data-cell"
                     style={`min-width:${MIN_COL_WIDTH}px`}
-                    onmouseenter={(e) => tooltipStore.show(e.currentTarget, cell)}
+                    onmouseenter={(e) => tooltipStore.show(e.currentTarget, cell, e.clientX, e.clientY)}
+                    onmousemove={(e) => {
+                      if (tooltipStore.visible) {
+                        tooltipStore.hide()
+                      } else {
+                        tooltipStore.show(e.currentTarget, cell, e.clientX, e.clientY)
+                      }
+                    }}
                     onmouseleave={() => tooltipStore.hide()}
                     oncontextmenu={(e) =>
                       handleCellContextMenu(e, index, colIndex)}

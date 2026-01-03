@@ -7,51 +7,68 @@ let showTimeout: ReturnType<typeof setTimeout> | null = null
 let hideTimeout: ReturnType<typeof setTimeout> | null = null
 
 export const tooltipStore = {
-  get text() {
-    return text
-  },
-  get x() {
-    return x
-  },
-  get y() {
-    return y
-  },
-  get visible() {
-    return visible
-  },
+    get text() {
+        return text
+    },
+    get x() {
+        return x
+    },
+    get y() {
+        return y
+    },
+    get visible() {
+        return visible
+    },
 
-  show(targetElement: HTMLElement, tooltipText: string) {
-    if (hideTimeout) {
-      clearTimeout(hideTimeout)
-      hideTimeout = null
-    }
+    show(targetElement: HTMLElement, tooltipText: string, mouseX?: number, mouseY?: number) {
+        if (hideTimeout) {
+            clearTimeout(hideTimeout)
+            hideTimeout = null
+        }
 
-    showTimeout = setTimeout(() => {
-      const rect = targetElement.getBoundingClientRect()
-      text = tooltipText
-      x = rect.left + rect.width / 2
-      y = rect.bottom + 8
-      visible = true
-    }, 500) // Show after 500ms hover
-  },
+        if (visible) {
+            return
+        }
 
-  hide() {
-    if (showTimeout) {
-      clearTimeout(showTimeout)
-      showTimeout = null
-    }
+        if (showTimeout) {
+            clearTimeout(showTimeout)
+        }
 
-    if (hideTimeout) {
-      clearTimeout(hideTimeout)
-      hideTimeout = null
-    }
+        showTimeout = setTimeout(() => {
+            const rect = targetElement.getBoundingClientRect()
+            text = tooltipText
+            if (mouseX !== undefined && mouseY !== undefined) {
+                x = mouseX
+                y = mouseY + 15 // Slightly less offset
+            } else {
+                x = rect.left + rect.width / 2
+                y = rect.bottom + 8
+            }
+            visible = true
+        }, 1000) // Show after 1000ms hover
+    },
 
-    visible = false
-  },
+    hide() {
+        if (showTimeout) {
+            clearTimeout(showTimeout)
+            showTimeout = null
+        }
 
-  hideImmediate() {
-    if (showTimeout) clearTimeout(showTimeout)
-    if (hideTimeout) clearTimeout(hideTimeout)
-    visible = false
-  },
+        if (hideTimeout) {
+            clearTimeout(hideTimeout)
+            hideTimeout = null
+        }
+
+        if (visible) {
+            hideTimeout = setTimeout(() => {
+                visible = false
+            }, 100)
+        }
+    },
+
+    hideImmediate() {
+        if (showTimeout) clearTimeout(showTimeout)
+        if (hideTimeout) clearTimeout(hideTimeout)
+        visible = false
+    },
 }

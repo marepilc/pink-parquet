@@ -1,11 +1,34 @@
 <script lang="ts">
   import { tooltipStore } from '$lib/stores/tooltipStore.svelte'
+
+  let tooltipElement = $state<HTMLElement | null>(null)
+  let adjustedX = $state(0)
+
+  $effect(() => {
+    if (tooltipStore.visible && tooltipElement) {
+      const rect = tooltipElement.getBoundingClientRect()
+      const windowWidth = window.innerWidth
+      const padding = 10 // Minimum distance from the right edge
+
+      // tooltipStore.x is the base position (mouse position)
+      // .tooltip has transform: translateX(10px) in CSS
+      const currentX = tooltipStore.x + 10
+
+      if (currentX + rect.width > windowWidth - padding) {
+        // Shift left to fit within window
+        adjustedX = windowWidth - rect.width - padding - 10 // -10 to account for translateX
+      } else {
+        adjustedX = tooltipStore.x
+      }
+    }
+  })
 </script>
 
 {#if tooltipStore.visible}
   <div
+    bind:this={tooltipElement}
     class="tooltip"
-    style="left: {tooltipStore.x}px; top: {tooltipStore.y}px;"
+    style="left: {adjustedX}px; top: {tooltipStore.y}px;"
     role="tooltip"
   >
     {tooltipStore.text}
@@ -24,7 +47,7 @@
     font-size: var(--text-sm);
     white-space: nowrap;
     pointer-events: none;
-    transform: translateX(-50%);
+    transform: translateX(10px);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
     max-width: 300px;
     overflow: hidden;

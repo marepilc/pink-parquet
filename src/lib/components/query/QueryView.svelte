@@ -207,14 +207,24 @@
             <button
                     class="run-button"
                     onclick={runSql}
-                    onmouseenter={(e) => tooltipStore.show(e.currentTarget, "Run SQL (F5)")}
+                    onmouseenter={(e) => tooltipStore.show(e.currentTarget, "Run SQL (F5)", e.clientX, e.clientY)}
+                    onmousemove={() => {
+                        if (tooltipStore.visible) {
+                            tooltipStore.hide()
+                        }
+                    }}
                     onmouseleave={() => tooltipStore.hide()}
             >Run
             </button>
             <button
                     class="clear-button"
                     onclick={clearSql}
-                    onmouseenter={(e) => tooltipStore.show(e.currentTarget, "Clear SQL")}
+                    onmouseenter={(e) => tooltipStore.show(e.currentTarget, "Clear SQL", e.clientX, e.clientY)}
+                    onmousemove={() => {
+                        if (tooltipStore.visible) {
+                            tooltipStore.hide()
+                        }
+                    }}
                     onmouseleave={() => tooltipStore.hide()}
             >Clear
             </button>
