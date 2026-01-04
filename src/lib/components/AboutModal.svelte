@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {invoke} from '@tauri-apps/api/core'
-  import AppLogo from '$lib/components/AppLogo.svelte'
+    import {invoke} from '@tauri-apps/api/core'
+    import AppLogo from '$lib/components/AppLogo.svelte'
 
-  // Version is hardcoded for now, could be injected at build time
-    const version = '2.0.1'
+    // Version is hardcoded for now, could be injected at build time
+    const version = '2.0.2'
 
     let {isOpen = $bindable(false)} = $props<{ isOpen?: boolean }>()
 
