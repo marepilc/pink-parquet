@@ -327,6 +327,7 @@
             extensions: buildExtensions(),
         })
         view = new EditorView({state, parent: host})
+        view.focus()
     })
 
     onDestroy(() => view?.destroy())
@@ -370,6 +371,10 @@
     // Update completions, placeholder and uppercase extension when props change
     $effect(() => {
         if (!view) return
+
+        if (visible) {
+            view.focus()
+        }
 
         // Explicitly track these dependencies by reading them
         completions
