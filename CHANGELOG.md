@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.2] - 2026-01-04
+
+### Changed
+
+- **SQL Editor**:
+    - Simplified automatic capitalization of keywords using CSS `text-transform: uppercase` instead of JavaScript-based
+      text replacement.
+    - SQL editor now automatically focuses when the component is mounted or becomes visible.
+
 ## [2.0.1] - 2026-01-03
 
 ### Added
