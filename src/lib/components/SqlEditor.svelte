@@ -64,7 +64,6 @@
     let view: EditorView
     const completionComp = new Compartment()
     const placeholderComp = new Compartment()
-    const uppercaseComp = new Compartment()
     const sqlHighlightStyle = HighlightStyle.define([
         {
             tag: [
@@ -80,6 +79,7 @@
             tag: [t.keyword, t.function(t.name), t.standard(t.name)],
             color: 'var(--accent)',
             fontWeight: '600',
+            textTransform: 'uppercase',
         },
         {
             tag: [t.atom, t.bool, t.url, t.contentSeparator, t.labelName],
@@ -87,20 +87,17 @@
         },
         {
             tag: [t.literal, t.number],
-            color: 'var(--accent)',
             color:
                 'light-dark(oklch(from var(--accent) 0.55 c h), oklch(from var(--accent) 0.85 c h))',
         },
         {
             tag: [t.string, t.regexp, t.escape, t.special(t.string)],
-            color: 'var(--accent)',
             color:
                 'light-dark(oklch(from var(--accent) 0.65 c h), oklch(from var(--accent) 0.95 c h))',
             fontStyle: 'italic',
         },
         {
             tag: [t.comment, t.meta],
-            color: 'var(--accent)',
             color:
                 'light-dark(oklch(from var(--accent) 0.45 c h), oklch(from var(--accent) 0.65 c h))',
         },
@@ -195,12 +192,7 @@
         if (Array.isArray(tableNameProp)) return tableNameProp
         return tableNameProp ? [tableNameProp] : []
     })
-    const columnNames = $derived(columnsProp.map(c => typeof c === 'string' ? c : (c.name || c.label || '')))
-
-    const EXCLUDED_NAMES = $derived(new Set([
-        ...tableNames.map(n => n.toUpperCase()),
-        ...columnNames.map(n => n.toUpperCase())
-    ]))
+    const columnNames = $derived(columnsProp.map((c: any) => typeof c === 'string' ? c : (c.name || c.label || '')))
 
     function buildExtensions() {
         const base = [
@@ -280,8 +272,6 @@
             ),
             highlightActiveLine(),
             syntaxHighlighting(sqlHighlightStyle, {fallback: true}),
-            // Auto-uppercase SQL keywords before onChange runs
-            uppercaseComp.of(keywordUppercaseExtension(EXCLUDED_NAMES)),
             EditorView.updateListener.of((u: ViewUpdate) => {
                 if (u.docChanged) {
                     const val = u.state.doc.toString()
@@ -387,7 +377,6 @@
         columnsProp
         tableToColumns
         aliasToTable
-        EXCLUDED_NAMES
 
         const plain = String(placeholder || '')
         view.dispatch({
@@ -401,291 +390,9 @@
                     })
                 ),
                 placeholderComp.reconfigure(cmPlaceholder(plain)),
-                uppercaseComp.reconfigure(keywordUppercaseExtension(EXCLUDED_NAMES))
             ]
         })
     })
-
-    // Extension: auto-uppercase SQL keywords as user types, excluding strings and table/column names
-    function keywordUppercaseExtension(excluded: Set<string>) {
-        const KEYWORDS = new Set([
-            // Core SQL keywords
-            'SELECT',
-            'FROM',
-            'WHERE',
-            'AND',
-            'OR',
-            'ORDER',
-            'BY',
-            'LIMIT',
-            'OFFSET',
-            'GROUP',
-            'HAVING',
-            'ASC',
-            'DESC',
-            'AS',
-            'IN',
-            'IS',
-            'NOT',
-            'NULL',
-            'BETWEEN',
-            'LIKE',
-            'ILIKE',
-            'JOIN',
-            'ON',
-            'INNER',
-            'LEFT',
-            'RIGHT',
-            'FULL',
-            'OUTER',
-            'UNION',
-            'INTERSECT',
-            'EXCEPT',
-            'USING',
-            'ALL',
-            'DISTINCT',
-            'CROSS',
-            'NATURAL',
-            'EXISTS',
-            'ANY',
-            'SOME',
-            'TRUE',
-            'FALSE',
-            'INTO',
-            'VALUES',
-            'INSERT',
-            'UPDATE',
-            'DELETE',
-            'SET',
-            'CREATE',
-            'DROP',
-            'ALTER',
-            'TABLE',
-            'VIEW',
-            'INDEX',
-            'PRIMARY',
-            'FOREIGN',
-            'KEY',
-            'UNIQUE',
-            'CONSTRAINT',
-            'REFERENCES',
-            'DEFAULT',
-            'CHECK',
-
-            // Control flow
-            'CASE',
-            'WHEN',
-            'THEN',
-            'ELSE',
-            'END',
-            'IF',
-
-            // CTEs and subqueries
-            'WITH',
-            'RECURSIVE',
-            'LATERAL',
-
-            // Aggregate functions
-            'COUNT',
-            'SUM',
-            'AVG',
-            'MIN',
-            'MAX',
-            'STDDEV',
-            'STDDEV_POP',
-            'STDDEV_SAMP',
-            'VARIANCE',
-            'VAR_POP',
-            'VAR_SAMP',
-            'EVERY',
-            'BOOL_AND',
-            'BOOL_OR',
-            'STRING_AGG',
-            'ARRAY_AGG',
-
-            // String functions
-            'REPLACE',
-            'SUBSTRING',
-            'SUBSTR',
-            'UPPER',
-            'LOWER',
-            'TRIM',
-            'LTRIM',
-            'RTRIM',
-            'BTRIM',
-            'CONCAT',
-            'CONCAT_WS',
-            'LENGTH',
-            'CHAR_LENGTH',
-            'CHARACTER_LENGTH',
-            'POSITION',
-            'TRANSLATE',
-            'OVERLAY',
-            'SPLIT_PART',
-            'REPEAT',
-            'LPAD',
-            'RPAD',
-            'INITCAP',
-            'REVERSE',
-            'ASCII',
-            'CHR',
-            'MD5',
-            'REGEXP_REPLACE',
-            'REGEXP_MATCH',
-            'REGEXP_MATCHES',
-            'REGEXP_SPLIT_TO_ARRAY',
-            'REGEXP_SPLIT_TO_TABLE',
-
-            // Date/time functions
-            'NOW',
-            'CURRENT_DATE',
-            'CURRENT_TIME',
-            'CURRENT_TIMESTAMP',
-            'DATE_TRUNC',
-            'DATE_PART',
-            'EXTRACT',
-            'TO_CHAR',
-            'TO_DATE',
-            'TO_TIMESTAMP',
-            'INTERVAL',
-            'EPOCH',
-            // Note: YEAR, MONTH, DAY, HOUR, MINUTE, SECOND, AGE removed
-            // as they're commonly used as column names
-
-            // Math functions
-            'ABS',
-            'CEIL',
-            'CEILING',
-            'FLOOR',
-            'ROUND',
-            'TRUNC',
-            'TRUNCATE',
-            'POWER',
-            'SQRT',
-            'EXP',
-            'LN',
-            'LOG',
-            'LOG10',
-            'MOD',
-            'SIGN',
-            'RANDOM',
-            'GREATEST',
-            'LEAST',
-
-            // Type conversion and casting
-            'CAST',
-            'CONVERT',
-            'COALESCE',
-            'NULLIF',
-
-            // Window functions
-            'OVER',
-            'PARTITION',
-            'ROW_NUMBER',
-            'RANK',
-            'DENSE_RANK',
-            'PERCENT_RANK',
-            'CUME_DIST',
-            'LAG',
-            'LEAD',
-            'FIRST_VALUE',
-            'LAST_VALUE',
-            'NTH_VALUE',
-            'NTILE',
-            'ROWS',
-            'RANGE',
-            'UNBOUNDED',
-            'PRECEDING',
-            'FOLLOWING',
-            'CURRENT',
-            'ROW',
-
-            // Data types (commonly used in DDL, less likely as column names)
-            'INTEGER',
-            'INT',
-            'BIGINT',
-            'SMALLINT',
-            'NUMERIC',
-            'DECIMAL',
-            'REAL',
-            'DOUBLE',
-            'FLOAT',
-            'TEXT',
-            'VARCHAR',
-            'CHAR',
-            'CHARACTER',
-            'VARYING',
-            'BOOLEAN',
-            'BOOL',
-            'DATE',
-            'TIME',
-            'TIMESTAMP',
-            'TIMESTAMPTZ',
-            'INTERVAL',
-            'JSON',
-            'JSONB',
-            'ARRAY',
-            'UUID',
-
-            // Conditional and comparison
-            'SIMILAR',
-            // Note: FILTER, TO, PRECISION removed as they're commonly used as column names
-        ])
-
-        return EditorState.transactionFilter.of((tr) => {
-            // Only apply when the user is typing (not on programmatic changes or deletes that don't add text)
-            if (!tr.docChanged || !tr.isUserEvent('input.type')) return tr
-            const changes: { from: number; to: number; insert: string }[] = []
-
-            tr.changes.iterChangedRanges((fromA, toA, fromB, toB) => {
-                // Only scan if something was added (fromB < toB means something was inserted)
-                // If fromB === toB, it's a pure deletion, so we skip to avoid feedback loops.
-                if (fromB >= toB) return
-
-                // Expand to the line to re-scan safely
-                const line = tr.newDoc.lineAt(fromB)
-                const toLine = tr.newDoc.lineAt(toB)
-                const scanFrom = line.from
-                const scanTo = toLine.to
-                const text = tr.newDoc.sliceString(scanFrom, scanTo)
-
-                // Simple lexer: skip content inside single quotes
-                let inString = false
-                let tokenStart = -1
-                const flush = (end: number) => {
-                    if (tokenStart === -1) return
-                    const token = text.slice(tokenStart, end)
-                    const upper = token.toUpperCase()
-                    if (KEYWORDS.has(upper) && !excluded.has(upper) && token !== upper) {
-                        const absFrom = scanFrom + tokenStart
-                        const absTo = scanFrom + end
-                        changes.push({from: absFrom, to: absTo, insert: upper})
-                    }
-                    tokenStart = -1
-                }
-
-                for (let i = 0; i < text.length; i++) {
-                    const ch = text[i]
-                    if (ch === "'") {
-                        inString = !inString
-                        // boundary: flush any token before entering/leaving a string
-                        flush(i)
-                        continue
-                    }
-                    if (inString) continue
-                    if (/[A-Za-z0-9_]/.test(ch)) {
-                        if (tokenStart === -1) tokenStart = i
-                    } else {
-                        flush(i)
-                    }
-                }
-                flush(text.length)
-            })
-
-            if (changes.length === 0) return tr
-            return [tr, {changes, sequential: true}]
-        })
-    }
 </script>
 
 <div
