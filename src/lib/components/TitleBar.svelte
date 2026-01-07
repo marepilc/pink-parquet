@@ -11,10 +11,13 @@
 
     let isMaximized = $state(false)
     let isMacOS = $state(false)
+    let isLinux = $state(false)
     const appWindow = getCurrentWindow()
 
     onMount(async () => {
-        isMacOS = (await type()) === 'macos'
+        const osType = await type()
+        isMacOS = osType === 'macos'
+        isLinux = osType === 'linux'
     })
 
     // Check initially maximized state
@@ -51,9 +54,21 @@
         toggleMaximize()
     }
 
-    function handleMouseDown(event: MouseEvent) {
+    async function handleMouseDown(event: MouseEvent) {
+        // Only use JavaScript dragging on Linux (Windows/Mac use CSS data-tauri-drag-region)
+        if (!isLinux) return
+
         if (event.button === 0) { // Left click
-            appWindow.startDragging()
+            // Prevent dragging if clicking on buttons
+            const target = event.target as HTMLElement
+            if (target.closest('#app-buttons-container')) {
+                return
+            }
+            try {
+                await appWindow.startDragging()
+            } catch (error) {
+                console.error('Failed to start dragging:', error)
+            }
         }
     }
 </script>
