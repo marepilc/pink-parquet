@@ -761,15 +761,15 @@ pub fn run() {
             }
         }))
         .setup(|app: &mut tauri::App| {
-            // Disable window decorations for custom title bar
+            // Disable window decorations for custom title bar on Windows only
             if let Some(_window) = app.get_webview_window("main") {
-                #[cfg(any(target_os = "windows", target_os = "linux"))]
+                #[cfg(target_os = "windows")]
                 {
                     let _ = _window.set_decorations(false);
                 }
 
-                // On macOS, keep native decorations (traffic light buttons) visible
-                // The titleBarStyle: "Overlay" in tauri.conf.json allows content under the title bar
+                // On macOS and Linux, keep native decorations (system title bar)
+                // The titleBarStyle: "Overlay" in tauri.conf.json allows content under the title bar on macOS
             }
 
             // Handle file association on Windows

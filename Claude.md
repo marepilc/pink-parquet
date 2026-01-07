@@ -17,7 +17,8 @@ Original application: [pink-parquet](https://github.com/marepilc/pink-parquet) (
 
 ## Current Features
 
-- ✅ Custom title bar with window controls (minimize, maximize, close)
+- ✅ Custom title bar with window controls on Windows (minimize, maximize, close)
+- ✅ Native system title bar on macOS and Linux for better OS integration
 - ✅ File upload via file dialog or drag-and-drop
 - ✅ Parquet file reading using Polars
 - ✅ Basic data display (file info, columns, data preview)
