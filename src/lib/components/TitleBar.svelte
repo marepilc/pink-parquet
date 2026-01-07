@@ -79,6 +79,7 @@
         ondblclick={handleDoubleClick}
         onmousedown={handleMouseDown}
         data-tauri-drag-region
+        tabindex="-1"
 >
     <div class="title-bar-content" class:macos={isMacOS} data-tauri-drag-region>
         <div class="logo-container" data-tauri-drag-region>
