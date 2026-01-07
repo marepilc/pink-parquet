@@ -308,6 +308,7 @@
         grid-template-areas:
       'toolbar main-area'
       'footer footer';
+        padding-top: 0.25rem;
     }
 
 
