@@ -3,7 +3,7 @@
     import AppLogo from '$lib/components/AppLogo.svelte'
 
     // Version is hardcoded for now, could be injected at build time
-    const version = '2.0.2'
+    const version = '2.0.3'
 
     let {isOpen = $bindable(false)} = $props<{ isOpen?: boolean }>()
 
