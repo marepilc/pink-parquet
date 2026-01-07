@@ -763,7 +763,7 @@ pub fn run() {
         .setup(|app: &mut tauri::App| {
             // Disable window decorations for custom title bar
             if let Some(_window) = app.get_webview_window("main") {
-                #[cfg(target_os = "windows")]
+                #[cfg(any(target_os = "windows", target_os = "linux"))]
                 {
                     let _ = _window.set_decorations(false);
                 }
