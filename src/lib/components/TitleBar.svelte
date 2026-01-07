@@ -56,10 +56,11 @@
         id="title-bar-container"
         role="banner"
         ondblclick={handleDoubleClick}
+        data-tauri-drag-region
 >
-    <div class="title-bar-content" class:macos={isMacOS}>
-        <div class="logo-container">
-            <div id="app-logo">
+    <div class="title-bar-content" class:macos={isMacOS} data-tauri-drag-region>
+        <div class="logo-container" data-tauri-drag-region>
+            <div id="app-logo" data-tauri-drag-region>
                 <AppLogo/>
             </div>
         </div>

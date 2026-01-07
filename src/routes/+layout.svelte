@@ -258,7 +258,7 @@
 
 <main class="main-window" class:macos={isMacOS}>
     {#if !isMacOS}
-        <header id="title-bar-panel">
+        <header id="title-bar-panel" data-tauri-drag-region>
             <TitleBar/>
         </header>
     {/if}

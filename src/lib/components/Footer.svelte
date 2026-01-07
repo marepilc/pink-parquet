@@ -51,6 +51,7 @@
             bind:this={containerElement}
             class="path-container"
             class:can-scroll={isOverflowing}
+            role="status"
             onmouseenter={(e) => {
       if (dataStore.hasData && dataStore.activeSession) {
         tooltipStore.show(e.currentTarget, dataStore.activeSession.path, e.clientX, e.clientY)
