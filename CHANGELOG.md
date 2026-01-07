@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.3] - 2026-01-07
+
+### Fixed
+
+- **Window Management**:
+    - Improved window dragging on Linux (WSL2) by implementing a manual drag handler using Tauri's `startDragging` API.
+    - Added `role="status"` to the footer path container to satisfy accessibility requirements.
+
 ## [2.0.2] - 2026-01-04
 
 ### Changed

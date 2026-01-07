@@ -50,12 +50,19 @@
     function handleDoubleClick() {
         toggleMaximize()
     }
+
+    function handleMouseDown(event: MouseEvent) {
+        if (event.button === 0) { // Left click
+            appWindow.startDragging()
+        }
+    }
 </script>
 
 <div
         id="title-bar-container"
         role="banner"
         ondblclick={handleDoubleClick}
+        onmousedown={handleMouseDown}
         data-tauri-drag-region
 >
     <div class="title-bar-content" class:macos={isMacOS} data-tauri-drag-region>
@@ -114,7 +121,6 @@
     .logo-container {
         display: flex;
         align-items: center;
-        pointer-events: none;
         height: 100%;
     }
 
@@ -122,7 +128,6 @@
         display: flex;
         align-items: center;
         width: 10rem;
-        pointer-events: none;
     }
 
     #app-logo :global(svg) {
