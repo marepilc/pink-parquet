@@ -1,19 +1,29 @@
+use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use parquet::file::reader::FileReader;
 use polars::prelude::*;
 use polars_sql::SQLContext;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Mutex;
-use tauri::{Emitter, Manager, Window};
+use tauri::{AppHandle, Emitter, Manager, Window};
 
 mod data_loader;
 use data_loader::{apply_sorts, calculate_statistics, dataframe_to_rows, open_parquet, Sorting};
 
-#[derive(Default)]
 pub struct AppState {
     cache: Mutex<Option<CacheEntry>>,
+    watchers: Mutex<HashMap<String, RecommendedWatcher>>,
+}
+
+impl Default for AppState {
+    fn default() -> Self {
+        Self {
+            cache: Mutex::new(None),
+            watchers: Mutex::new(HashMap::new()),
+        }
+    }
 }
 
 struct CacheEntry {
@@ -741,6 +751,95 @@ fn is_maximized(window: Window) -> bool {
 }
 
 #[tauri::command]
+fn start_watching(
+    state: tauri::State<AppState>,
+    app_handle: AppHandle,
+    file_path: String,
+) -> Result<(), String> {
+    let mut watchers = state.watchers.lock().unwrap();
+
+    // Already watching this file
+    if watchers.contains_key(&file_path) {
+        return Ok(());
+    }
+
+    let path = Path::new(&file_path);
+    if !path.exists() {
+        return Err(format!("File does not exist: {}", file_path));
+    }
+
+    let parent = path.parent().ok_or("Could not get parent directory")?;
+    let path_to_watch = parent.to_owned();
+    let file_path_clone = file_path.clone();
+    let file_name = path
+        .file_name()
+        .ok_or("Could not get file name")?
+        .to_os_string();
+
+    let (tx, rx) = std::sync::mpsc::channel();
+
+    let mut watcher = RecommendedWatcher::new(tx, Config::default()).map_err(|e| e.to_string())?;
+
+    watcher
+        .watch(&path_to_watch, RecursiveMode::NonRecursive)
+        .map_err(|e| e.to_string())?;
+
+    watchers.insert(file_path.clone(), watcher);
+
+    std::thread::spawn(move || {
+        let state = app_handle.state::<AppState>();
+        for res in rx {
+            match res {
+                Ok(event) => {
+                    let matches_path = event
+                        .paths
+                        .iter()
+                        .any(|p| p.file_name() == Some(&file_name));
+
+                    if matches_path {
+                        if event.kind.is_modify() || event.kind.is_create() {
+                            println!(
+                                "File event detected for {}: {:?}",
+                                file_path_clone, event.kind
+                            );
+                            // Invalidate cache if it matches this file
+                            {
+                                let mut cache = state.cache.lock().unwrap();
+                                if let Some(entry) = cache.as_ref() {
+                                    if entry.file_path.as_deref() == Some(&file_path_clone) {
+                                        println!("Invalidating cache for {}", file_path_clone);
+                                        *cache = None;
+                                    }
+                                }
+                            }
+
+                            // Small delay to let the file system settle
+                            std::thread::sleep(std::time::Duration::from_millis(100));
+                            let _ = app_handle.emit("file-changed", &file_path_clone);
+                        }
+                    }
+                }
+                Err(e) => println!("watch error: {:?}", e),
+            }
+        }
+    });
+
+    Ok(())
+}
+
+#[tauri::command]
+fn stop_watching(state: tauri::State<AppState>, file_path: String) -> Result<(), String> {
+    let mut watchers = state.watchers.lock().unwrap();
+    if let Some(mut watcher) = watchers.remove(&file_path) {
+        let path = Path::new(&file_path);
+        if let Some(parent) = path.parent() {
+            let _ = watcher.unwatch(parent);
+        }
+    }
+    Ok(())
+}
+
+#[tauri::command]
 fn read_text_file(path: String) -> Result<String, String> {
     fs::read_to_string(path).map_err(|e| e.to_string())
 }
@@ -807,7 +906,9 @@ pub fn run() {
             unmaximize_window,
             close_window,
             is_maximized,
-            read_text_file
+            read_text_file,
+            start_watching,
+            stop_watching
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

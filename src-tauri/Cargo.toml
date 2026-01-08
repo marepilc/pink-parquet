@@ -30,4 +30,5 @@ parquet = "53"
 chrono = "0.4"
 polars-sql = "0.51.0"
 hex = "0.4"
+notify = "8"
 

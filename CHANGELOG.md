@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- **File Watching**:
+    - Implemented real-time file watching for opened Parquet files.
+    - Added automatic reloading of data when the underlying file is modified on disk.
+
 ### Changed
 
 ### Fixed

@@ -192,13 +192,25 @@ export const dataStore = {
         return id
     },
 
-    removeSession(id: string) {
+    async removeSession(id: string) {
         const index = sessions.findIndex((s) => s.id === id)
         if (index !== -1) {
+            const path = sessions[index].path
             sessions.splice(index, 1)
             if (activeSessionId === id) {
                 activeSessionId =
                     sessions.length > 0 ? sessions[sessions.length - 1].id : null
+            }
+
+            // Stop watching the file if no other session is using it
+            const otherSessionUsingFile = sessions.some((s) => s.path === path)
+            if (!otherSessionUsingFile && path.toLowerCase().endsWith('.parquet')) {
+                try {
+                    const {invoke} = await import('@tauri-apps/api/core')
+                    await invoke('stop_watching', {filePath: path})
+                } catch (e) {
+                    console.error('Failed to stop watching file:', e)
+                }
             }
         }
     },
@@ -370,6 +382,43 @@ export const dataStore = {
         const session = sessions.find((s) => s.id === id)
         if (session) {
             session.name = newName
+        }
+    },
+
+    async loadParquetFile(
+        filePath: string,
+        forceReload: boolean = false,
+        gotoFn?: (url: string) => Promise<void>
+    ) {
+        const existingSession = sessions.find((s) => s.path === filePath)
+        if (existingSession && !forceReload) {
+            activeSessionId = existingSession.id
+            if (gotoFn) await gotoFn('/app')
+            return
+        }
+
+        const sessionId = existingSession
+            ? existingSession.id
+            : this.addSession(filePath)
+        this.setLoading(true, sessionId, false)
+
+        try {
+            const {invoke} = await import('@tauri-apps/api/core')
+            const data = await invoke('get_data', {
+                filePath,
+                sorting: null,
+            })
+            this.setData(data as any, sessionId, false)
+
+            if (gotoFn) await gotoFn('/app')
+
+            // Start watching the file for changes
+            if (filePath.toLowerCase().endsWith('.parquet')) {
+                await invoke('start_watching', {filePath})
+            }
+        } catch (error) {
+            console.error('Error loading Parquet file:', error)
+            this.setError(String(error), sessionId)
         }
     },
 

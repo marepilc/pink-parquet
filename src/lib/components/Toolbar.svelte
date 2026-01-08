@@ -50,32 +50,7 @@
     }
 
     async function loadParquetFile(filePath: string, forceReload: boolean = false) {
-        // Check if file is already open
-        const existingSession = dataStore.sessions.find((s) => s.path === filePath)
-        if (existingSession && !forceReload) {
-            // File already open, just switch to it
-            dataStore.activeSessionId = existingSession.id
-            // Navigate to /app if not already there
-            await goto('/app')
-            return
-        }
-
-        const sessionId = existingSession ? existingSession.id : dataStore.addSession(filePath)
-        dataStore.setLoading(true, sessionId, false)
-
-        try {
-            const data = await invoke('get_data', {
-                filePath,
-                sorting: null,
-            })
-            dataStore.setData(data as any, sessionId, false)
-
-            // Navigate to /app after successful load
-            await goto('/app')
-        } catch (error) {
-            console.error('Error loading Parquet file:', error)
-            dataStore.setError(String(error), sessionId)
-        }
+        await dataStore.loadParquetFile(filePath, forceReload, goto)
     }
 
     async function handleOpenFile() {
