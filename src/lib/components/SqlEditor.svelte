@@ -98,8 +98,8 @@
         },
         {
             tag: [t.comment, t.meta],
-            color:
-                'light-dark(oklch(from var(--accent) 0.45 c h), oklch(from var(--accent) 0.65 c h))',
+            color: 'var(--sql-comments)',
+            fontStyle: 'italic',
         },
         {
             tag: [t.variableName, t.typeName, t.namespace, t.className, t.changed],
@@ -305,7 +305,8 @@
                         color: 'white',
                     },
                 },
-                '.cm-content': {caretColor: 'var(--ink-5)'},
+                '.cm-content': {caretColor: 'var(--accent)'},
+                '.cm-cursor, .cm-dropCursor': {borderLeftColor: 'var(--accent)'},
                 '.cm-selectionBackground, .cm-content ::selection': {
                     backgroundColor: 'var(--accent) !important',
                     color: 'black !important',
