@@ -4,6 +4,8 @@
 
     // Version is hardcoded for now, could be injected at build time
     const version = '2.0.3'
+    const currentYear = new Date().getFullYear()
+    const copyrightYear = currentYear > 2024 ? `2024–${currentYear}` : '2024'
 
     let {isOpen = $bindable(false)} = $props<{ isOpen?: boolean }>()
 
@@ -120,7 +122,7 @@
                 </div>
 
                 <div class="footer">
-                    <p>© 2024 Marek Pilczuk. Licensed under MIT.</p>
+                    <p>© {copyrightYear} Marek Pilczuk. Licensed under MIT.</p>
                 </div>
             </div>
         </div>
