@@ -12,6 +12,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- **SQL Editor**:
+    - Removed automatic uppercase styling for keywords to avoid confusion when column names match keywords.
 - **Info Bar**:
     - File size information is now context-aware: it is displayed in the table view (representing the file size on
       disk) and hidden in the SQL query view to avoid confusion.

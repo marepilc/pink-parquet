@@ -79,7 +79,6 @@
             tag: [t.keyword, t.function(t.name), t.standard(t.name)],
             color: 'var(--accent)',
             fontWeight: '600',
-            textTransform: 'uppercase',
         },
         {
             tag: [t.atom, t.bool, t.url, t.contentSeparator, t.labelName],
@@ -260,7 +259,6 @@
             ]),
             sql({
                 dialect: PostgreSQL,
-                upperCaseKeywords: true,
             }),
             completionComp.of(
                 autocompletion({
