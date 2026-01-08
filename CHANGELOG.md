@@ -2,24 +2,35 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.4] - 2026-01-08
+
+### Added
+
+### Changed
+
+### Fixed
+
 ## [2.0.3] - 2026-01-07
 
 ### Added
 
 - **Linux Support**:
     - Added Linux build target to the project.
-    - Implemented platform-specific title bar handling: custom title bar on Windows, native system title bar on macOS and Linux for better OS integration and reliability.
+    - Implemented platform-specific title bar handling: custom title bar on Windows, native system title bar on macOS
+      and Linux for better OS integration and reliability.
 
 ### Changed
 
 - **Window Management**:
-    - Refactored title bar implementation to use native system decorations on Linux and macOS, while maintaining custom title bar on Windows.
+    - Refactored title bar implementation to use native system decorations on Linux and macOS, while maintaining custom
+      title bar on Windows.
     - Added appropriate padding for macOS and Linux layouts to account for native title bar spacing.
 
 ### Fixed
 
 - **Window Management**:
-    - Fixed window dragging reliability across all platforms by using platform-appropriate methods (CSS-based on Windows, native decorations on Linux/macOS).
+    - Fixed window dragging reliability across all platforms by using platform-appropriate methods (CSS-based on
+      Windows, native decorations on Linux/macOS).
     - Added `role="status"` to the footer path container to satisfy accessibility requirements.
 
 ## [2.0.2] - 2026-01-04

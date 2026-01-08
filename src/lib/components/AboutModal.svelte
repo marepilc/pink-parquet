@@ -3,7 +3,7 @@
     import AppLogo from '$lib/components/AppLogo.svelte'
 
     // Version is hardcoded for now, could be injected at build time
-    const version = '2.0.3'
+    const version = '2.0.4'
     const currentYear = new Date().getFullYear()
     const copyrightYear = currentYear > 2024 ? `2024–${currentYear}` : '2024'
 
