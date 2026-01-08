@@ -11,10 +11,13 @@
 
     let isMaximized = $state(false)
     let isMacOS = $state(false)
+    let isLinux = $state(false)
     const appWindow = getCurrentWindow()
 
     onMount(async () => {
-        isMacOS = (await type()) === 'macos'
+        const osType = await type()
+        isMacOS = osType === 'macos'
+        isLinux = osType === 'linux'
     })
 
     // Check initially maximized state
@@ -50,16 +53,38 @@
     function handleDoubleClick() {
         toggleMaximize()
     }
+
+    async function handleMouseDown(event: MouseEvent) {
+        // Only use JavaScript dragging on Linux (Windows/Mac use CSS data-tauri-drag-region)
+        if (!isLinux) return
+
+        if (event.button === 0) { // Left click
+            // Prevent dragging if clicking on buttons
+            const target = event.target as HTMLElement
+            if (target.closest('#app-buttons-container')) {
+                return
+            }
+            try {
+                await appWindow.startDragging()
+            } catch (error) {
+                console.error('Failed to start dragging:', error)
+            }
+        }
+    }
 </script>
 
+<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 <div
         id="title-bar-container"
         role="banner"
         ondblclick={handleDoubleClick}
+        onmousedown={handleMouseDown}
+        data-tauri-drag-region
+        tabindex="-1"
 >
-    <div class="title-bar-content" class:macos={isMacOS}>
-        <div class="logo-container">
-            <div id="app-logo">
+    <div class="title-bar-content" class:macos={isMacOS} data-tauri-drag-region>
+        <div class="logo-container" data-tauri-drag-region>
+            <div id="app-logo" data-tauri-drag-region>
                 <AppLogo/>
             </div>
         </div>
@@ -113,7 +138,6 @@
     .logo-container {
         display: flex;
         align-items: center;
-        pointer-events: none;
         height: 100%;
     }
 
@@ -121,7 +145,6 @@
         display: flex;
         align-items: center;
         width: 10rem;
-        pointer-events: none;
     }
 
     #app-logo :global(svg) {

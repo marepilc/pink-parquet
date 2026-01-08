@@ -28,6 +28,7 @@
     let isDraggingValidFile = $state(false)
     let draggedFileExtension = $state('')
     let isMacOS = $state(false)
+    let isLinux = $state(false)
 
     function isValidFileType(filePath: string): boolean {
         return filePath.toLowerCase().endsWith('.parquet') || filePath.toLowerCase().endsWith('.sql')
@@ -205,7 +206,9 @@
 
     onMount(async () => {
         // Detect OS
-        isMacOS = (await type()) === 'macos'
+        const osType = await type()
+        isMacOS = osType === 'macos'
+        isLinux = osType === 'linux'
 
         // Initialize settings
         await settingsStore.init()
@@ -256,8 +259,8 @@
 
 <svelte:window onkeydown={handleKeyDown} oncontextmenu={handleContextMenu}/>
 
-<main class="main-window" class:macos={isMacOS}>
-    {#if !isMacOS}
+<main class="main-window" class:macos={isMacOS} class:linux={!isMacOS && isLinux}>
+    {#if !isMacOS && !isLinux}
         <header id="title-bar-panel">
             <TitleBar/>
         </header>
@@ -299,11 +302,13 @@
         );
     }
 
-    main.macos {
+    main.macos,
+    main.linux {
         grid-template-rows: 1fr 3.75rem;
         grid-template-areas:
       'toolbar main-area'
       'footer footer';
+        padding-top: 0.25rem;
     }
 
 
