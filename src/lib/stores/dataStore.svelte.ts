@@ -149,7 +149,9 @@ export const dataStore = {
         }
     },
     get metadata() {
-        return this.activeSession?.rawData?.metadata || null
+        const session = this.activeSession
+        if (!session) return null
+        return (this.isSqlTabActive ? session.queryData?.metadata : session.rawData?.metadata) || null
     },
     get totalRows() {
         const d = this.data
