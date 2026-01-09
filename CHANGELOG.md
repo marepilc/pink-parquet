@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 
 - **SQL Editor**:
     - Removed automatic uppercase styling for keywords to avoid confusion when column names match keywords.
+    - Added missing SQL keywords (`OVER`, `PARTITION`) and common window functions to autocompletion hints.
 - **Info Bar**:
     - File size information is now context-aware: it is displayed in the table view (representing the file size on
       disk) and hidden in the SQL query view to avoid confusion.
