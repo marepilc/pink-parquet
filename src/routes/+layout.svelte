@@ -138,7 +138,6 @@
 
             if (filePath) {
                 await invoke('save_parquet', {filePath})
-                console.log('File saved successfully to:', filePath)
 
                 // If the saved file is already open in any session, reload that session
                 const existingSession = dataStore.sessions.find((s) => s.path === filePath)
@@ -201,7 +200,6 @@
 
         unlistenFileChanged = await listen<string>('file-changed', async (event) => {
             const filePath = event.payload
-            console.log('File changed on disk:', filePath)
             // Reload the file
             await loadParquetFile(filePath, true)
         })
