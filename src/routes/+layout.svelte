@@ -7,12 +7,10 @@
     import Tooltip from '$lib/components/Tooltip.svelte'
     import type {Snippet} from 'svelte'
     import {onDestroy, onMount} from 'svelte'
-    import {getCurrentWebview} from '@tauri-apps/api/webview'
-    import {invoke} from '@tauri-apps/api/core'
     import {dataStore} from '$lib/stores/dataStore.svelte'
     import {settingsStore} from '$lib/stores/settingsStore.svelte'
     import {goto} from '$app/navigation'
-    import {listen, type UnlistenFn} from '@tauri-apps/api/event'
+    import type {UnlistenFn} from '@tauri-apps/api/event'
     import InfoBar from '$lib/components/InfoBar.svelte'
     import {open, save} from '@tauri-apps/plugin-dialog'
     import {type} from '@tauri-apps/plugin-os'
@@ -45,6 +43,7 @@
 
     async function loadSqlFile(filePath: string) {
         try {
+            const {invoke} = await import('@tauri-apps/api/core')
             const content = await invoke<string>('read_text_file', {path: filePath})
             if (content) {
                 // Ensure there is an active session to load SQL into
@@ -137,6 +136,7 @@
             })
 
             if (filePath) {
+                const {invoke} = await import('@tauri-apps/api/core')
                 await invoke('save_parquet', {filePath})
 
                 // If the saved file is already open in any session, reload that session
@@ -180,6 +180,9 @@
     }
 
     onMount(async () => {
+        const {listen} = await import('@tauri-apps/api/event')
+        const {getCurrentWebview} = await import('@tauri-apps/api/webview')
+
         // Detect OS
         const osType = await type()
         isMacOS = osType === 'macos'

@@ -1,11 +1,10 @@
 <script lang="ts">
-  import {open} from '@tauri-apps/plugin-dialog'
-  import {dataStore} from '$lib/stores/dataStore.svelte'
-  import {invoke} from '@tauri-apps/api/core'
-  import {goto} from '$app/navigation'
-  import FileOpenIcon from '$lib/components/icons/FileOpenIcon.svelte'
+    import {open} from '@tauri-apps/plugin-dialog'
+    import {dataStore} from '$lib/stores/dataStore.svelte'
+    import {goto} from '$app/navigation'
+    import FileOpenIcon from '$lib/components/icons/FileOpenIcon.svelte'
 
-  async function loadParquetFile(filePath: string) {
+    async function loadParquetFile(filePath: string) {
         // Check if file is already open
         const existingSession = dataStore.sessions.find((s) => s.path === filePath)
         if (existingSession) {
@@ -20,6 +19,7 @@
         dataStore.setLoading(true, sessionId, false)
 
         try {
+            const {invoke} = await import('@tauri-apps/api/core')
             const data = await invoke('get_data', {
                 filePath,
                 sorting: null,

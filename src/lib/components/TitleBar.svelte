@@ -1,8 +1,6 @@
 <script lang="ts">
-    import {invoke} from '@tauri-apps/api/core'
     import {type} from '@tauri-apps/plugin-os'
     import {onMount} from 'svelte'
-    import {getCurrentWindow} from '@tauri-apps/api/window'
     import AppLogo from '$lib/components/AppLogo.svelte'
     import RoundBtn from '$lib/components/RoundBtn.svelte'
     import CloseIcon from '$lib/components/icons/CloseIcon.svelte'
@@ -12,32 +10,32 @@
     let isMaximized = $state(false)
     let isMacOS = $state(false)
     let isLinux = $state(false)
-    const appWindow = getCurrentWindow()
 
     onMount(async () => {
+        const {getCurrentWindow} = await import('@tauri-apps/api/window')
+        const {invoke} = await import('@tauri-apps/api/core')
+        const appWindow = getCurrentWindow()
+
         const osType = await type()
         isMacOS = osType === 'macos'
         isLinux = osType === 'linux'
-    })
 
-    // Check initially maximized state
-    async function checkMaximized() {
+        // Check initially maximized state
         isMaximized = await invoke('is_maximized')
-    }
 
-    // Listen for window resize events to update the maximize button
-    appWindow.listen('tauri://resize', async () => {
-        isMaximized = await invoke('is_maximized')
+        // Listen for window resize events to update the maximize button
+        appWindow.listen('tauri://resize', async () => {
+            isMaximized = await invoke('is_maximized')
+        })
     })
-
-    // Initialize
-    checkMaximized()
 
     async function minimize() {
+        const {invoke} = await import('@tauri-apps/api/core')
         await invoke('minimize_window')
     }
 
     async function toggleMaximize() {
+        const {invoke} = await import('@tauri-apps/api/core')
         if (isMaximized) {
             await invoke('unmaximize_window')
         } else {
@@ -46,6 +44,7 @@
     }
 
     async function close() {
+        const {invoke} = await import('@tauri-apps/api/core')
         await invoke('close_window')
     }
 
@@ -65,6 +64,8 @@
                 return
             }
             try {
+                const {getCurrentWindow} = await import('@tauri-apps/api/window')
+                const appWindow = getCurrentWindow()
                 await appWindow.startDragging()
             } catch (error) {
                 console.error('Failed to start dragging:', error)

@@ -18,7 +18,6 @@
     import PlusIcon from '$lib/components/icons/PlusIcon.svelte'
     import AboutModal from '$lib/components/AboutModal.svelte'
     import {open, save} from '@tauri-apps/plugin-dialog'
-    import {invoke} from '@tauri-apps/api/core'
     import {goto} from '$app/navigation'
 
     let showAboutModal = $state(false)
@@ -123,6 +122,7 @@
             })
 
             if (filePath) {
+                const {invoke} = await import('@tauri-apps/api/core')
                 await invoke('save_parquet', {filePath})
 
                 // If the saved file is already open in any session, reload that session

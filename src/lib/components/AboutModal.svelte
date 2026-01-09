@@ -1,5 +1,4 @@
 <script lang="ts">
-    import {invoke} from '@tauri-apps/api/core'
     import AppLogo from '$lib/components/AppLogo.svelte'
     import {dataStore} from '$lib/stores/dataStore.svelte'
 
@@ -33,6 +32,7 @@
     async function openLink(url: string) {
         try {
             // Use Tauri's opener plugin via invoke
+            const {invoke} = await import('@tauri-apps/api/core')
             await invoke('plugin:opener|open_url', {url})
         } catch (error) {
             console.error('Failed to open link:', error)
