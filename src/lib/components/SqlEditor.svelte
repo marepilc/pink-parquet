@@ -24,10 +24,16 @@
     } from '@codemirror/commands'
     import {autocompletion, startCompletion} from '@codemirror/autocomplete'
     import {search, searchKeymap, selectNextOccurrence, selectSelectionMatches} from '@codemirror/search'
-    import {PostgreSQL, sql} from '@codemirror/lang-sql'
+    import {PostgreSQL, sql, SQLDialect} from '@codemirror/lang-sql'
     import {linter} from '@codemirror/lint'
     import {HighlightStyle, indentUnit, syntaxHighlighting} from '@codemirror/language'
     import {tags as t} from '@lezer/highlight'
+
+    const PolarsSQL = SQLDialect.define({
+        ...PostgreSQL.spec,
+        keywords: (PostgreSQL.spec.keywords || '') + ' starts_with ends_with contains regexp_like ilike rank dense_rank row_number lag lead recursive',
+        builtin: (PostgreSQL.spec.builtin || '') + ' starts_with ends_with contains regexp_like ilike rank dense_rank row_number lag lead',
+    })
 
     let {
         value = $bindable(''),
@@ -258,7 +264,7 @@
                 },
             ]),
             sql({
-                dialect: PostgreSQL,
+                dialect: PolarsSQL,
             }),
             completionComp.of(
                 autocompletion({
