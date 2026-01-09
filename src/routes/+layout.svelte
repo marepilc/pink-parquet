@@ -189,6 +189,9 @@
         // Initialize settings
         await settingsStore.init()
 
+        // Check for updates
+        dataStore.checkUpdates()
+
         unlistenOpenFile = await listen<string>('open-file', (event) => {
             const filePath = event.payload
             if (isParquetFile(filePath)) {

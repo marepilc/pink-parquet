@@ -161,7 +161,9 @@
     </ToolbarBtn>
 
     <ToolbarBtn ariaLabel="About" onClick={openAbout}>
-        <InfoIcon size={32}/>
+        <div class:has-update={dataStore.updateCount > 0 && !dataStore.updateSeen}>
+            <InfoIcon size={32}/>
+        </div>
     </ToolbarBtn>
 
     <div class="font-controls">
@@ -290,6 +292,20 @@
 
         &:disabled {
             opacity: 0.3;
+        }
+    }
+
+    .has-update {
+        color: var(--accent);
+        animation: blink 2s infinite ease-in-out;
+    }
+
+    @keyframes blink {
+        0%, 100% {
+            color: var(--accent);
+        }
+        50% {
+            color: var(--ink-5);
         }
     }
 </style>
