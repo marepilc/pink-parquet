@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.5] - 2026-01-10
+
+### Added
+
+- **CSV Support**:
+    - Added support for opening and viewing CSV files alongside Parquet files.
+    - CSV files are automatically scanned with schema inference.
+    - Added ability to save CSV data or SQL query results as both Parquet and CSV files.
+- **SQL Editor**:
+    - Added ability to vertically resize the SQL editor by dragging the bottom handle.
+    - Resized height is now preserved while the application is running.
+    - CSV files are now registered as tables in the SQL context, allowing queries across both Parquet and CSV files.
+
+### Fixed
+
+- **SQL Editor**:
+    - Fixed an issue where the SQL editor would reset to its original height when typing after being resized.
+    - Fixed an issue where the SQL editor would exceed the application window's width when containing long lines by
+      enabling line wrapping and improving layout stability.
+
 ## [2.0.4] - 2026-01-08
 
 ### Added

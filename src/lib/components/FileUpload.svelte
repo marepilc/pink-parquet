@@ -5,33 +5,7 @@
     import FileOpenIcon from '$lib/components/icons/FileOpenIcon.svelte'
 
     async function loadParquetFile(filePath: string) {
-        // Check if file is already open
-        const existingSession = dataStore.sessions.find((s) => s.path === filePath)
-        if (existingSession) {
-            // File already open, just switch to it
-            dataStore.activeSessionId = existingSession.id
-            // Navigate to /app if not already there
-            await goto('/app')
-            return
-        }
-
-        const sessionId = dataStore.addSession(filePath)
-        dataStore.setLoading(true, sessionId, false)
-
-        try {
-            const {invoke} = await import('@tauri-apps/api/core')
-            const data = await invoke('get_data', {
-                filePath,
-                sorting: null,
-            })
-            dataStore.setData(data as any, sessionId, false)
-
-            // Navigate to /app after successful load
-            await goto('/app')
-        } catch (error) {
-            console.error('Error loading Parquet file:', error)
-            dataStore.setError(String(error), sessionId)
-        }
+        await dataStore.loadParquetFile(filePath, false, goto)
     }
 
     async function handleFileSelect() {
@@ -40,8 +14,8 @@
                 multiple: true,
                 filters: [
                     {
-                        name: 'Parquet',
-                        extensions: ['parquet'],
+                        name: 'Data Files',
+                        extensions: ['parquet', 'csv'],
                     },
                 ],
             })
@@ -61,7 +35,7 @@
 
 <div class="file-upload-container">
     <p>
-        To open a Parquet file, click the <span class="no-wrap"
+        To open a Parquet or CSV file, click the <span class="no-wrap"
     >button <span class="icon"><FileOpenIcon size={32}/></span></span
     > in the toolbar or drag and drop a file into the application window.
     </p>

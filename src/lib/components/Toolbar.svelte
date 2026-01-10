@@ -58,8 +58,8 @@
                 multiple: true,
                 filters: [
                     {
-                        name: 'Parquet',
-                        extensions: ['parquet'],
+                        name: 'Data Files',
+                        extensions: ['parquet', 'csv'],
                     },
                 ],
             })
@@ -97,16 +97,25 @@
 
                     if (lastSeparatorIndex >= 0) {
                         const directory = originalPath.substring(0, lastSeparatorIndex + 1)
-                        // Ensure the name has .parquet extension
-                        const name = activeSession.name.endsWith('.parquet')
-                            ? activeSession.name
-                            : `${activeSession.name}.parquet`
+                        // Ensure the name has .parquet extension (even if it was .csv)
+                        let name = activeSession.name
+                        if (name.toLowerCase().endsWith('.csv')) {
+                            name = name.substring(0, name.length - 4)
+                        }
+                        if (!name.toLowerCase().endsWith('.parquet')) {
+                            name = `${name}.parquet`
+                        }
                         defaultPath = directory + name
                     } else {
                         // Fallback if no separator found
-                        defaultPath = activeSession.name.endsWith('.parquet')
-                            ? activeSession.name
-                            : `${activeSession.name}.parquet`
+                        let name = activeSession.name
+                        if (name.toLowerCase().endsWith('.csv')) {
+                            name = name.substring(0, name.length - 4)
+                        }
+                        if (!name.toLowerCase().endsWith('.parquet')) {
+                            name = `${name}.parquet`
+                        }
+                        defaultPath = name
                     }
                 }
             }
@@ -118,12 +127,17 @@
                         name: 'Parquet',
                         extensions: ['parquet'],
                     },
+                    {
+                        name: 'CSV',
+                        extensions: ['csv'],
+                    },
                 ],
             })
 
             if (filePath) {
                 const {invoke} = await import('@tauri-apps/api/core')
-                await invoke('save_parquet', {filePath})
+                const command = filePath.toLowerCase().endsWith('.csv') ? 'save_csv' : 'save_parquet'
+                await invoke(command, {filePath})
 
                 // If the saved file is already open in any session, reload that session
                 const existingSession = dataStore.sessions.find((s) => s.path === filePath)

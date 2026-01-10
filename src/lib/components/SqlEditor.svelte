@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {onDestroy, onMount} from 'svelte'
+    import {onMount} from 'svelte'
     import {Compartment, EditorState} from '@codemirror/state'
     import {
         drawSelection,
@@ -50,6 +50,7 @@
         minRows = 4,
         resizable = true,
         visible = false,
+        height = $bindable(0),
     } = $props<{
         value?: string
         placeholder?: string
@@ -64,6 +65,7 @@
         minRows?: number
         resizable?: boolean
         visible?: boolean
+        height?: number
     }>()
 
     let host: HTMLDivElement
@@ -266,6 +268,7 @@
             sql({
                 dialect: PolarsSQL,
             }),
+            EditorView.lineWrapping,
             completionComp.of(
                 autocompletion({
                     override: [completionSource],
@@ -290,8 +293,8 @@
                     fontSize: 'var(--font-size-mono, 14px)',
                 },
                 // Make the editor stretch to its container height; container controls min/max and resize
-                '.cm-editor': {height: '100%', overflow: 'visible'},
-                '.cm-scroller': {overflow: 'visible', color: 'var(--ink-5)'},
+                '.cm-editor': {height: '100%'},
+                '.cm-scroller': {color: 'var(--ink-5)'},
                 '.cm-tooltip': {
                     zIndex: 10000,
                     backgroundColor: 'var(--surface-2)',
@@ -326,6 +329,8 @@
         return base
     }
 
+    let container: HTMLDivElement
+
     onMount(() => {
         const state = EditorState.create({
             doc: value,
@@ -333,9 +338,32 @@
         })
         view = new EditorView({state, parent: host})
         view.focus()
-    })
 
-    onDestroy(() => view?.destroy())
+        // Sync initial height if provided
+        if (height > 0 && container) {
+            container.style.height = `${height}px`
+        }
+
+        const resizeObserver = new ResizeObserver(entries => {
+            for (let entry of entries) {
+                if (entry.target === container) {
+                    // Use offsetHeight to include padding and border, matching what we set in style.height
+                    const newHeight = (entry.target as HTMLElement).offsetHeight
+                    if (newHeight > 0 && Math.abs(height - newHeight) > 1) {
+                        height = newHeight
+                    }
+                }
+            }
+        })
+        if (container) {
+            resizeObserver.observe(container)
+        }
+
+        return () => {
+            resizeObserver.disconnect()
+            view?.destroy()
+        }
+    })
 
     function handleContainerClick() {
         // Focus editor when clicking anywhere in the container
@@ -381,6 +409,11 @@
             view.focus()
         }
 
+        // Apply height if it changes from outside
+        if (height > 0 && container && Math.abs(container.offsetHeight - height) > 1) {
+            container.style.height = `${height}px`
+        }
+
         // Explicitly track these dependencies by reading them
         completions
         tableNameProp
@@ -406,6 +439,7 @@
 </script>
 
 <div
+        bind:this={container}
         class="sql-editor-container"
         class:resizable
         style={`min-height: ${Math.max(1, Math.floor(minRows)) * 1.5}rem;`}
@@ -424,10 +458,10 @@
         border: 1px solid var(--surface-4);
         border-radius: 0.25rem;
         padding: 0.25rem;
-        max-height: 24rem;
-        overflow: auto;
+        max-height: 80vh;
         display: flex;
         flex-direction: column;
+        overflow: hidden;
     }
 
     .sql-editor-container.resizable {
@@ -437,5 +471,7 @@
     .editor-host {
         flex: 1;
         min-height: 0;
+        min-width: 0;
+        overflow: auto;
     }
 </style>

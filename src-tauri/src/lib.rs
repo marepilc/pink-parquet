@@ -1,7 +1,7 @@
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use parquet::file::reader::FileReader;
 use polars::prelude::*;
-use polars_sql::SQLContext;
+use polars::sql::SQLContext;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
@@ -10,7 +10,9 @@ use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, Window};
 
 mod data_loader;
-use data_loader::{apply_sorts, calculate_statistics, dataframe_to_rows, open_parquet, Sorting};
+use data_loader::{
+    apply_sorts, calculate_statistics, dataframe_to_rows, open_csv, open_parquet, Sorting,
+};
 
 pub struct AppState {
     cache: Mutex<Option<CacheEntry>>,
@@ -137,8 +139,12 @@ fn get_data(
         }
     }
 
-    // Open Parquet file
-    let mut lf = open_parquet(&file_path)?;
+    // Open file
+    let mut lf = if file_path.to_lowercase().ends_with(".csv") {
+        open_csv(&file_path)?
+    } else {
+        open_parquet(&file_path)?
+    };
 
     // Apply sorts if provided
     if let Some(sorts) = sorting.clone() {
@@ -207,8 +213,12 @@ fn get_more_rows(
         }
     }
 
-    // Open Parquet file
-    let mut lf = open_parquet(&file_path)?;
+    // Open file
+    let mut lf = if file_path.to_lowercase().ends_with(".csv") {
+        open_csv(&file_path)?
+    } else {
+        open_parquet(&file_path)?
+    };
 
     // Apply sorts if provided
     if let Some(sorts) = sorting {
@@ -269,7 +279,11 @@ fn execute_sql(
 
     // Register all open files as tables
     for path in &all_files {
-        let lf = open_parquet(path)?;
+        let lf = if path.to_lowercase().ends_with(".csv") {
+            open_csv(path)?
+        } else {
+            open_parquet(path)?
+        };
         let table_name = if let Some(ref names) = table_names {
             names
                 .get(path)
@@ -428,6 +442,19 @@ fn extract_metadata(file_path: &str) -> Result<MetadataInfo, String> {
             .into()
     });
 
+    // Handle CSV files differently as they don't have Parquet metadata
+    if file_path.to_lowercase().ends_with(".csv") {
+        return Ok(MetadataInfo {
+            name,
+            created,
+            modified,
+            size,
+            row_groups: 0,
+            compression: "NONE".to_string(),
+            total_nulls: 0,
+        });
+    }
+
     // Open the Parquet file to get row groups and compression info
     let file = fs::File::open(file_path).map_err(|e| format!("Failed to open file: {}", e))?;
 
@@ -489,6 +516,33 @@ fn save_parquet(state: tauri::State<AppState>, file_path: String) -> Result<(), 
     polars::prelude::ParquetWriter::new(file)
         .finish(&mut df.clone())
         .map_err(|e| format!("Failed to write Parquet file: {}", e))?;
+
+    Ok(())
+}
+
+// Save DataFrame to CSV file
+#[tauri::command]
+fn save_csv(state: tauri::State<AppState>, file_path: String) -> Result<(), String> {
+    // Get the cached DataFrame
+    let cache = state.cache.lock().unwrap();
+    let df = cache
+        .as_ref()
+        .map(|entry| &entry.df)
+        .ok_or_else(|| "No data to save".to_string())?;
+
+    // Create parent directories if they don't exist
+    if let Some(parent) = std::path::Path::new(&file_path).parent() {
+        fs::create_dir_all(parent).map_err(|e| format!("Failed to create directory: {}", e))?;
+    }
+
+    // Open file for writing
+    let file = fs::File::create(&file_path).map_err(|e| format!("Failed to create file: {}", e))?;
+
+    // Write DataFrame to CSV
+    polars::prelude::CsvWriter::new(file)
+        .include_header(true)
+        .finish(&mut df.clone())
+        .map_err(|e| format!("Failed to write CSV file: {}", e))?;
 
     Ok(())
 }
@@ -898,6 +952,7 @@ pub fn run() {
             get_column_histogram,
             get_query_column_histogram,
             save_parquet,
+            save_csv,
             copy_full_table,
             load_settings,
             save_settings,
