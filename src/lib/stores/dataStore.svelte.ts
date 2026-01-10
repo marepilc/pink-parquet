@@ -190,7 +190,6 @@ export const dataStore = {
     },
 
     async checkUpdates() {
-        console.log('Checking for updates...')
         checkingUpdates = true
         updateCheckError = null
         try {
@@ -215,14 +214,12 @@ export const dataStore = {
 
             const releases = await response.json()
             if (!Array.isArray(releases) || releases.length === 0) {
-                console.log('No releases found on GitHub.')
                 latestVersion = appVersion // Assume up to date if no releases
                 updateCount = 0
                 return
             }
 
             latestVersion = releases[0].tag_name.replace(/^v/, '')
-            console.log(`Current version: ${appVersion}, Latest version: ${latestVersion}`)
 
             // Simple version comparison for semantic versioning
             function parseVersion(v: string) {
@@ -255,7 +252,6 @@ export const dataStore = {
                 }
             }
             updateCount = count
-            console.log(`Update check complete. ${updateCount} updates behind.`)
         } catch (error) {
             const errorMsg = `Failed to check for updates: ${error}`
             console.error(errorMsg)

@@ -2,7 +2,6 @@
     import {dataStore} from '$lib/stores/dataStore.svelte'
     import {tooltipStore} from '$lib/stores/tooltipStore.svelte'
     import SqlEditor from '$lib/components/SqlEditor.svelte'
-    import {invoke} from '@tauri-apps/api/core'
     import {onMount} from 'svelte'
 
     let {visible = false} = $props<{ visible?: boolean }>()
@@ -162,6 +161,7 @@
         dataStore.setLoading(true, undefined, true)
 
         try {
+            const {invoke} = await import('@tauri-apps/api/core')
             // Ensure we are in SQL tab mode
             dataStore.isSqlTabActive = true
 
