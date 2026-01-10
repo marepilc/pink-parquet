@@ -520,12 +520,12 @@ export const dataStore = {
 
             if (gotoFn) await gotoFn('/app')
 
-            // Start watching the file for changes
+            // Start watching the file for changes (only for Parquet files)
             if (filePath.toLowerCase().endsWith('.parquet')) {
                 await invoke('start_watching', {filePath})
             }
         } catch (error) {
-            console.error('Error loading Parquet file:', error)
+            console.error('Error loading data file:', error)
             this.setError(String(error), sessionId)
         }
     },

@@ -10,7 +10,9 @@ use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, Window};
 
 mod data_loader;
-use data_loader::{apply_sorts, calculate_statistics, dataframe_to_rows, open_parquet, Sorting};
+use data_loader::{
+    apply_sorts, calculate_statistics, dataframe_to_rows, open_csv, open_parquet, Sorting,
+};
 
 pub struct AppState {
     cache: Mutex<Option<CacheEntry>>,
@@ -137,8 +139,12 @@ fn get_data(
         }
     }
 
-    // Open Parquet file
-    let mut lf = open_parquet(&file_path)?;
+    // Open file
+    let mut lf = if file_path.to_lowercase().ends_with(".csv") {
+        open_csv(&file_path)?
+    } else {
+        open_parquet(&file_path)?
+    };
 
     // Apply sorts if provided
     if let Some(sorts) = sorting.clone() {
@@ -207,8 +213,12 @@ fn get_more_rows(
         }
     }
 
-    // Open Parquet file
-    let mut lf = open_parquet(&file_path)?;
+    // Open file
+    let mut lf = if file_path.to_lowercase().ends_with(".csv") {
+        open_csv(&file_path)?
+    } else {
+        open_parquet(&file_path)?
+    };
 
     // Apply sorts if provided
     if let Some(sorts) = sorting {
@@ -269,7 +279,11 @@ fn execute_sql(
 
     // Register all open files as tables
     for path in &all_files {
-        let lf = open_parquet(path)?;
+        let lf = if path.to_lowercase().ends_with(".csv") {
+            open_csv(path)?
+        } else {
+            open_parquet(path)?
+        };
         let table_name = if let Some(ref names) = table_names {
             names
                 .get(path)
@@ -427,6 +441,19 @@ fn extract_metadata(file_path: &str) -> Result<MetadataInfo, String> {
             .to_string()
             .into()
     });
+
+    // Handle CSV files differently as they don't have Parquet metadata
+    if file_path.to_lowercase().ends_with(".csv") {
+        return Ok(MetadataInfo {
+            name,
+            created,
+            modified,
+            size,
+            row_groups: 0,
+            compression: "NONE".to_string(),
+            total_nulls: 0,
+        });
+    }
 
     // Open the Parquet file to get row groups and compression info
     let file = fs::File::open(file_path).map_err(|e| format!("Failed to open file: {}", e))?;

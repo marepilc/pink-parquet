@@ -30,11 +30,13 @@
     let isLinux = $state(false)
 
     function isValidFileType(filePath: string): boolean {
-        return filePath.toLowerCase().endsWith('.parquet') || filePath.toLowerCase().endsWith('.sql')
+        const lower = filePath.toLowerCase()
+        return lower.endsWith('.parquet') || lower.endsWith('.csv') || lower.endsWith('.sql')
     }
 
-    function isParquetFile(filePath: string): boolean {
-        return filePath.toLowerCase().endsWith('.parquet')
+    function isDataFile(filePath: string): boolean {
+        const lower = filePath.toLowerCase()
+        return lower.endsWith('.parquet') || lower.endsWith('.csv')
     }
 
     function isSqlFile(filePath: string): boolean {
@@ -76,8 +78,8 @@
                 multiple: true,
                 filters: [
                     {
-                        name: 'Parquet',
-                        extensions: ['parquet'],
+                        name: 'Data Files',
+                        extensions: ['parquet', 'csv'],
                     },
                 ],
             })
@@ -113,14 +115,25 @@
 
                     if (lastSeparatorIndex >= 0) {
                         const directory = originalPath.substring(0, lastSeparatorIndex + 1)
-                        const name = activeSession.name.endsWith('.parquet')
-                            ? activeSession.name
-                            : `${activeSession.name}.parquet`
+                        // Ensure the name has .parquet extension (even if it was .csv)
+                        let name = activeSession.name
+                        if (name.toLowerCase().endsWith('.csv')) {
+                            name = name.substring(0, name.length - 4)
+                        }
+                        if (!name.toLowerCase().endsWith('.parquet')) {
+                            name = `${name}.parquet`
+                        }
                         defaultPath = directory + name
                     } else {
-                        defaultPath = activeSession.name.endsWith('.parquet')
-                            ? activeSession.name
-                            : `${activeSession.name}.parquet`
+                        // Fallback if no separator found
+                        let name = activeSession.name
+                        if (name.toLowerCase().endsWith('.csv')) {
+                            name = name.substring(0, name.length - 4)
+                        }
+                        if (!name.toLowerCase().endsWith('.parquet')) {
+                            name = `${name}.parquet`
+                        }
+                        defaultPath = name
                     }
                 }
             }
@@ -196,7 +209,7 @@
 
         unlistenOpenFile = await listen<string>('open-file', (event) => {
             const filePath = event.payload
-            if (isParquetFile(filePath)) {
+            if (isDataFile(filePath)) {
                 loadParquetFile(filePath)
             }
         })
@@ -225,7 +238,7 @@
 
                 if (paths && paths.length > 0) {
                     const filePath = paths[0]
-                    if (isParquetFile(filePath)) {
+                    if (isDataFile(filePath)) {
                         loadParquetFile(filePath)
                     } else if (isSqlFile(filePath)) {
                         loadSqlFile(filePath)

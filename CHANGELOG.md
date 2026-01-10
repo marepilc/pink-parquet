@@ -6,9 +6,14 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- **CSV Support**:
+    - Added support for opening and viewing CSV files alongside Parquet files.
+    - CSV files are automatically scanned with schema inference.
+    - Added ability to save CSV data or SQL query results as Parquet files ("CSV to Parquet" conversion).
 - **SQL Editor**:
     - Added ability to vertically resize the SQL editor by dragging the bottom handle.
     - Resized height is now preserved while the application is running.
+    - CSV files are now registered as tables in the SQL context, allowing queries across both Parquet and CSV files.
 
 ### Fixed
 
