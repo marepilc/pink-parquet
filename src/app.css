@@ -53,7 +53,9 @@ html.dark,
     --ink-3: #545454;
     --ink-4: #616161;
     --ink-5: #6e6e6e;
+    --sql-comments: #6e6e6e;
     --color-error: #dc2626;
+    --color-warning: #dc9326;
     --color-error-bg: #fee2e2;
     --color-error-hover: #b91c1c;
     --default-inset: inset 0.2rem 0.2rem 0.5rem rgba(0, 0, 0, 0.1);
@@ -77,7 +79,9 @@ html.dark,
         --ink-3: light-dark(oklch(0.330 0.007 326), oklch(0.777 0.006 239.831));
         --ink-4: light-dark(oklch(0.380 0.007 326), oklch(0.827 0.006 239.831));
         --ink-5: light-dark(oklch(0.430 0.007 326), oklch(0.877 0.006 239.831));
+        --sql-comments: light-dark(oklch(0.617 0.006 325.645), oklch(0.550 0.006 239.831));
         --color-error: light-dark(oklch(0.628 0.218 19.364), oklch(0.79 0.109 13.43));
+        --color-warning: light-dark(oklch(0.565 0.1 76.278), oklch(0.795 0.098 84.021));
         --color-error-bg: light-dark(oklch(0.946 0.028 6.653), oklch(0.355 0.103 18.537));
         --color-error-hover: light-dark(oklch(0.858 0.078 11.876), oklch(0.295 0.077 16.135));
         --default-inset: inset 0.2rem 0.2rem 0.5rem oklch(0 0 0 / 0.1);
@@ -88,7 +92,6 @@ html.dark,
 :root {
     --color-info: oklch(57.404% 0.21786 261.458);
     --color-success: oklch(60.4% 0.2 120.5);
-    --color-warning: oklch(60.4% 0.2 60.5);
     --color-accent: oklch(60.4% 0.2 300.5);
 
     --font-sans: 'Nunito Sans', system-ui, -apple-system, sans-serif;

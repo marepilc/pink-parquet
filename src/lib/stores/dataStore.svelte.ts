@@ -48,6 +48,12 @@ export interface FileSession {
 let sessions = $state<FileSession[]>([])
 let activeSessionId = $state<string | null>(null)
 let isSqlTabActive = $state(false)
+let appVersion = $state<string>('0.0.0')
+let latestVersion = $state<string | null>(null)
+let updateCount = $state<number>(0)
+let checkingUpdates = $state<boolean>(false)
+let updateCheckError = $state<string | null>(null)
+let updateSeen = $state<boolean>(false)
 const queryListeners = new Set<() => void>()
 
 export const dataStore = {
@@ -149,7 +155,9 @@ export const dataStore = {
         }
     },
     get metadata() {
-        return this.activeSession?.rawData?.metadata || null
+        const session = this.activeSession
+        if (!session) return null
+        return (this.isSqlTabActive ? session.queryData?.metadata : session.rawData?.metadata) || null
     },
     get totalRows() {
         const d = this.data
@@ -158,6 +166,103 @@ export const dataStore = {
     get loadedRows() {
         const d = this.data
         return d?.rows.length || 0
+    },
+    get appVersion() {
+        return appVersion
+    },
+    get latestVersion() {
+        return latestVersion
+    },
+    get updateCount() {
+        return updateCount
+    },
+    get checkingUpdates() {
+        return checkingUpdates
+    },
+    get updateCheckError() {
+        return updateCheckError
+    },
+    get updateSeen() {
+        return updateSeen
+    },
+    set updateSeen(value: boolean) {
+        updateSeen = value
+    },
+
+    async checkUpdates() {
+        console.log('Checking for updates...')
+        checkingUpdates = true
+        updateCheckError = null
+        try {
+            const {getVersion} = await import('@tauri-apps/api/app')
+            appVersion = await getVersion()
+
+            const response = await fetch(
+                'https://api.github.com/repos/marepilc/pink-parquet/releases',
+                {
+                    headers: {
+                        'Accept': 'application/vnd.github.v3+json',
+                        'User-Agent': 'Pink-Parquet-App'
+                    }
+                }
+            )
+            if (!response.ok) {
+                const errorMsg = `GitHub releases fetch failed: ${response.statusText}`
+                console.warn(errorMsg)
+                updateCheckError = errorMsg
+                return
+            }
+
+            const releases = await response.json()
+            if (!Array.isArray(releases) || releases.length === 0) {
+                console.log('No releases found on GitHub.')
+                latestVersion = appVersion // Assume up to date if no releases
+                updateCount = 0
+                return
+            }
+
+            latestVersion = releases[0].tag_name.replace(/^v/, '')
+            console.log(`Current version: ${appVersion}, Latest version: ${latestVersion}`)
+
+            // Simple version comparison for semantic versioning
+            function parseVersion(v: string) {
+                return v.replace(/^v/, '').split('.').map(Number)
+            }
+
+            const current = parseVersion(appVersion)
+
+            let count = 0
+            for (const release of releases) {
+                const releaseVer = parseVersion(release.tag_name)
+                // Compare releaseVer with current
+                let isNewer = false
+                for (let i = 0; i < Math.max(current.length, releaseVer.length); i++) {
+                    const c = current[i] || 0
+                    const r = releaseVer[i] || 0
+                    if (r > c) {
+                        isNewer = true
+                        break
+                    }
+                    if (r < c) {
+                        break
+                    }
+                }
+                if (isNewer) {
+                    count++
+                } else {
+                    // Assuming releases are sorted by date/version descending
+                    break
+                }
+            }
+            updateCount = count
+            console.log(`Update check complete. ${updateCount} updates behind.`)
+        } catch (error) {
+            const errorMsg = `Failed to check for updates: ${error}`
+            console.error(errorMsg)
+            updateCheckError = errorMsg
+        } finally {
+            checkingUpdates = false
+        }
     },
 
     addSession(path: string) {
@@ -192,13 +297,25 @@ export const dataStore = {
         return id
     },
 
-    removeSession(id: string) {
+    async removeSession(id: string) {
         const index = sessions.findIndex((s) => s.id === id)
         if (index !== -1) {
+            const path = sessions[index].path
             sessions.splice(index, 1)
             if (activeSessionId === id) {
                 activeSessionId =
                     sessions.length > 0 ? sessions[sessions.length - 1].id : null
+            }
+
+            // Stop watching the file if no other session is using it
+            const otherSessionUsingFile = sessions.some((s) => s.path === path)
+            if (!otherSessionUsingFile && path.toLowerCase().endsWith('.parquet')) {
+                try {
+                    const {invoke} = await import('@tauri-apps/api/core')
+                    await invoke('stop_watching', {filePath: path})
+                } catch (e) {
+                    console.error('Failed to stop watching file:', e)
+                }
             }
         }
     },
@@ -370,6 +487,43 @@ export const dataStore = {
         const session = sessions.find((s) => s.id === id)
         if (session) {
             session.name = newName
+        }
+    },
+
+    async loadParquetFile(
+        filePath: string,
+        forceReload: boolean = false,
+        gotoFn?: (url: string) => Promise<void>
+    ) {
+        const existingSession = sessions.find((s) => s.path === filePath)
+        if (existingSession && !forceReload) {
+            activeSessionId = existingSession.id
+            if (gotoFn) await gotoFn('/app')
+            return
+        }
+
+        const sessionId = existingSession
+            ? existingSession.id
+            : this.addSession(filePath)
+        this.setLoading(true, sessionId, false)
+
+        try {
+            const {invoke} = await import('@tauri-apps/api/core')
+            const data = await invoke('get_data', {
+                filePath,
+                sorting: null,
+            })
+            this.setData(data as any, sessionId, false)
+
+            if (gotoFn) await gotoFn('/app')
+
+            // Start watching the file for changes
+            if (filePath.toLowerCase().endsWith('.parquet')) {
+                await invoke('start_watching', {filePath})
+            }
+        } catch (error) {
+            console.error('Error loading Parquet file:', error)
+            this.setError(String(error), sessionId)
         }
     },
 

@@ -1,13 +1,18 @@
 <script lang="ts">
     import {invoke} from '@tauri-apps/api/core'
     import AppLogo from '$lib/components/AppLogo.svelte'
+    import {dataStore} from '$lib/stores/dataStore.svelte'
 
-    // Version is hardcoded for now, could be injected at build time
-    const version = '2.0.3'
     const currentYear = new Date().getFullYear()
     const copyrightYear = currentYear > 2024 ? `2024–${currentYear}` : '2024'
 
     let {isOpen = $bindable(false)} = $props<{ isOpen?: boolean }>()
+
+    $effect(() => {
+        if (isOpen && dataStore.updateCount > 0) {
+            dataStore.updateSeen = true
+        }
+    })
 
     function closeModal() {
         isOpen = false
@@ -72,7 +77,32 @@
                     <AppLogo/>
                 </div>
 
-                <p class="version">Version {version}</p>
+                <div class="version-info">
+                    <p class="version">Version {dataStore.appVersion}</p>
+                    {#if dataStore.checkingUpdates}
+                        <p class="update-status checking">Checking for updates...</p>
+                    {:else if dataStore.updateCheckError}
+                        <div class="error-container">
+                            <p class="update-status error">Update check failed</p>
+                            <button class="retry-button" onclick={() => dataStore.checkUpdates()}>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/>
+                                </svg>
+                                Retry
+                            </button>
+                        </div>
+                    {:else if dataStore.updateCount > 0}
+                        <p class="update-status warning">
+                            {dataStore.updateCount} {dataStore.updateCount === 1 ? 'update' : 'updates'} behind latest
+                            release ({dataStore.latestVersion})
+                        </p>
+                    {:else if dataStore.latestVersion}
+                        <p class="update-status success">
+                            You are using the latest version
+                        </p>
+                    {/if}
+                </div>
 
                 <div class="info-section">
                     <p class="description">A user-friendly Parquet file viewer.</p>
@@ -86,7 +116,7 @@
                 <div class="links">
                     <button
                             class="link-button"
-                            onclick={() => openLink('https://github.com/marepilc/pinkparquet')}
+                            onclick={() => openLink('https://github.com/marepilc/pink-parquet')}
                     >
                         <svg
                                 width="20"
@@ -227,6 +257,62 @@
         font-size: 0.875rem;
         color: var(--ink-3);
         margin: 0;
+    }
+
+    .version-info {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .update-status {
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    .update-status.warning {
+        color: var(--color-warning);
+    }
+
+    .update-status.success {
+        color: var(--surface-9);
+    }
+
+    .update-status.checking {
+        color: var(--ink-2);
+        font-style: italic;
+    }
+
+    .update-status.error {
+        color: var(--color-error);
+    }
+
+    .error-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .retry-button {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: var(--surface-3);
+        border: 1px solid var(--surface-5);
+        border-radius: 0.25rem;
+        color: var(--ink-3);
+        padding: 0.25rem 0.5rem;
+        font-size: 0.7rem;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &:hover {
+            background: var(--surface-4);
+            color: var(--accent);
+        }
     }
 
     .info-section {

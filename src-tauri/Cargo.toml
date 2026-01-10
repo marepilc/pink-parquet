@@ -1,6 +1,6 @@
 [package]
 name = "pinkparquet"
-version = "2.0.3"
+version = "2.0.4"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
@@ -30,4 +30,5 @@ parquet = "53"
 chrono = "0.4"
 polars-sql = "0.51.0"
 hex = "0.4"
+notify = "8"
 

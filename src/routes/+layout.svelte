@@ -25,6 +25,7 @@
 
     let unlistenDrag: UnlistenFn | null = null
     let unlistenOpenFile: UnlistenFn | null = null
+    let unlistenFileChanged: UnlistenFn | null = null
     let isDraggingValidFile = $state(false)
     let draggedFileExtension = $state('')
     let isMacOS = $state(false)
@@ -66,32 +67,7 @@
     }
 
     async function loadParquetFile(filePath: string, forceReload: boolean = false) {
-        // Check if a file is already open
-        const existingSession = dataStore.sessions.find((s) => s.path === filePath)
-        if (existingSession && !forceReload) {
-            // File already open, just switch to it
-            dataStore.activeSessionId = existingSession.id
-            // Navigate to /app if not already there
-            await goto('/app')
-            return
-        }
-
-        const sessionId = existingSession ? existingSession.id : dataStore.addSession(filePath)
-        dataStore.setLoading(true, sessionId, false)
-
-        try {
-            const data = await invoke('get_data', {
-                filePath,
-                sorting: null,
-            })
-            dataStore.setData(data as any, sessionId, false)
-
-            // Navigate to /app after a successful load
-            await goto('/app')
-        } catch (error) {
-            console.error('Error loading Parquet file:', error)
-            dataStore.setError(String(error), sessionId)
-        }
+        await dataStore.loadParquetFile(filePath, forceReload, goto)
     }
 
     // Keyboard shortcuts
@@ -213,11 +189,21 @@
         // Initialize settings
         await settingsStore.init()
 
+        // Check for updates
+        dataStore.checkUpdates()
+
         unlistenOpenFile = await listen<string>('open-file', (event) => {
             const filePath = event.payload
             if (isParquetFile(filePath)) {
                 loadParquetFile(filePath)
             }
+        })
+
+        unlistenFileChanged = await listen<string>('file-changed', async (event) => {
+            const filePath = event.payload
+            console.log('File changed on disk:', filePath)
+            // Reload the file
+            await loadParquetFile(filePath, true)
         })
 
         unlistenDrag = await getCurrentWebview().onDragDropEvent((event) => {
@@ -254,6 +240,7 @@
     onDestroy(() => {
         if (unlistenDrag) unlistenDrag()
         if (unlistenOpenFile) unlistenOpenFile()
+        if (unlistenFileChanged) unlistenFileChanged()
     })
 </script>
 

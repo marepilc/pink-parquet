@@ -2,24 +2,46 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.4] - 2026-01-08
+
+### Added
+
+- **File Watching**:
+    - Implemented real-time file watching for opened Parquet files.
+    - Added automatic reloading of data when the underlying file is modified on disk.
+
+### Changed
+
+- **SQL Editor**:
+    - Removed automatic uppercase styling for keywords to avoid confusion when column names match keywords.
+    - Added missing SQL keywords to autocompletion hints.
+- **Info Bar**:
+    - File size information is now context-aware: it is displayed in the table view (representing the file size on
+      disk) and hidden in the SQL query view to avoid confusion.
+
+### Fixed
+
 ## [2.0.3] - 2026-01-07
 
 ### Added
 
 - **Linux Support**:
     - Added Linux build target to the project.
-    - Implemented platform-specific title bar handling: custom title bar on Windows, native system title bar on macOS and Linux for better OS integration and reliability.
+    - Implemented platform-specific title bar handling: custom title bar on Windows, native system title bar on macOS
+      and Linux for better OS integration and reliability.
 
 ### Changed
 
 - **Window Management**:
-    - Refactored title bar implementation to use native system decorations on Linux and macOS, while maintaining custom title bar on Windows.
+    - Refactored title bar implementation to use native system decorations on Linux and macOS, while maintaining custom
+      title bar on Windows.
     - Added appropriate padding for macOS and Linux layouts to account for native title bar spacing.
 
 ### Fixed
 
 - **Window Management**:
-    - Fixed window dragging reliability across all platforms by using platform-appropriate methods (CSS-based on Windows, native decorations on Linux/macOS).
+    - Fixed window dragging reliability across all platforms by using platform-appropriate methods (CSS-based on
+      Windows, native decorations on Linux/macOS).
     - Added `role="status"` to the footer path container to satisfy accessibility requirements.
 
 ## [2.0.2] - 2026-01-04

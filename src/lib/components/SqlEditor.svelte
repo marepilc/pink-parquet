@@ -24,10 +24,16 @@
     } from '@codemirror/commands'
     import {autocompletion, startCompletion} from '@codemirror/autocomplete'
     import {search, searchKeymap, selectNextOccurrence, selectSelectionMatches} from '@codemirror/search'
-    import {PostgreSQL, sql} from '@codemirror/lang-sql'
+    import {PostgreSQL, sql, SQLDialect} from '@codemirror/lang-sql'
     import {linter} from '@codemirror/lint'
     import {HighlightStyle, indentUnit, syntaxHighlighting} from '@codemirror/language'
     import {tags as t} from '@lezer/highlight'
+
+    const PolarsSQL = SQLDialect.define({
+        ...PostgreSQL.spec,
+        keywords: (PostgreSQL.spec.keywords || '') + ' starts_with ends_with contains regexp_like ilike rank dense_rank row_number lag lead recursive',
+        builtin: (PostgreSQL.spec.builtin || '') + ' starts_with ends_with contains regexp_like ilike rank dense_rank row_number lag lead',
+    })
 
     let {
         value = $bindable(''),
@@ -79,7 +85,6 @@
             tag: [t.keyword, t.function(t.name), t.standard(t.name)],
             color: 'var(--accent)',
             fontWeight: '600',
-            textTransform: 'uppercase',
         },
         {
             tag: [t.atom, t.bool, t.url, t.contentSeparator, t.labelName],
@@ -98,8 +103,8 @@
         },
         {
             tag: [t.comment, t.meta],
-            color:
-                'light-dark(oklch(from var(--accent) 0.45 c h), oklch(from var(--accent) 0.65 c h))',
+            color: 'var(--sql-comments)',
+            fontStyle: 'italic',
         },
         {
             tag: [t.variableName, t.typeName, t.namespace, t.className, t.changed],
@@ -259,8 +264,7 @@
                 },
             ]),
             sql({
-                dialect: PostgreSQL,
-                upperCaseKeywords: true,
+                dialect: PolarsSQL,
             }),
             completionComp.of(
                 autocompletion({
@@ -305,7 +309,8 @@
                         color: 'white',
                     },
                 },
-                '.cm-content': {caretColor: 'var(--ink-5)'},
+                '.cm-content': {caretColor: 'var(--accent)'},
+                '.cm-cursor, .cm-dropCursor': {borderLeftColor: 'var(--accent)'},
                 '.cm-selectionBackground, .cm-content ::selection': {
                     backgroundColor: 'var(--accent) !important',
                     color: 'black !important',
