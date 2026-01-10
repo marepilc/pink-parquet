@@ -4,6 +4,10 @@ version = "2.0.5"
 description = "A Tauri App"
 authors = ["you"]
 edition = "2021"
+default-run = "pinkparquet"
+
+[profile.dev]
+debug = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -25,10 +29,9 @@ tauri-plugin-single-instance = "2"
 tauri-plugin-os = "2"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-polars = { version = "0.51.0", features = ["lazy", "parquet", "csv", "dtype-date", "dtype-datetime", "dtype-time", "dtype-duration", "strings", "dtype-u8", "dtype-u16", "dtype-i8", "dtype-i16", "dtype-struct", "dtype-decimal", "dtype-categorical", "binary_encoding", "dtype-array", "object", "list_eval"] }
-parquet = "53"
+polars = { version = "0.52.0", features = ["full", "sql"] }
+parquet = "57.1.0"
 chrono = "0.4"
-polars-sql = "0.51.0"
 hex = "0.4"
 notify = "8"
 

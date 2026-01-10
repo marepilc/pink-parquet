@@ -1,7 +1,7 @@
 use notify::{Config, RecommendedWatcher, RecursiveMode, Watcher};
 use parquet::file::reader::FileReader;
 use polars::prelude::*;
-use polars_sql::SQLContext;
+use polars::sql::SQLContext;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
