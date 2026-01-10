@@ -266,6 +266,7 @@
             sql({
                 dialect: PolarsSQL,
             }),
+            EditorView.lineWrapping,
             completionComp.of(
                 autocompletion({
                     override: [completionSource],
@@ -290,8 +291,8 @@
                     fontSize: 'var(--font-size-mono, 14px)',
                 },
                 // Make the editor stretch to its container height; container controls min/max and resize
-                '.cm-editor': {height: '100%', overflow: 'visible'},
-                '.cm-scroller': {overflow: 'visible', color: 'var(--ink-5)'},
+                '.cm-editor': {height: '100%'},
+                '.cm-scroller': {color: 'var(--ink-5)'},
                 '.cm-tooltip': {
                     zIndex: 10000,
                     backgroundColor: 'var(--surface-2)',
@@ -425,7 +426,6 @@
         border-radius: 0.25rem;
         padding: 0.25rem;
         max-height: 24rem;
-        overflow: auto;
         display: flex;
         flex-direction: column;
     }
@@ -437,5 +437,7 @@
     .editor-host {
         flex: 1;
         min-height: 0;
+        min-width: 0;
+        overflow: auto;
     }
 </style>
