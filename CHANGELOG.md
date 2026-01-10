@@ -18,8 +18,6 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 
 - **SQL Editor**:
-    - Fixed an issue where window functions like `RANK()` would fail with "unsupported function" error by enabling
-      required Polars features and updating to Polars 0.52.0.
     - Fixed an issue where the SQL editor would reset to its original height when typing after being resized.
     - Fixed an issue where the SQL editor would exceed the application window's width when containing long lines by
       enabling line wrapping and improving layout stability.
