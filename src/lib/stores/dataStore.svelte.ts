@@ -54,6 +54,7 @@ let updateCount = $state<number>(0)
 let checkingUpdates = $state<boolean>(false)
 let updateCheckError = $state<string | null>(null)
 let updateSeen = $state<boolean>(false)
+let sqlEditorHeight = $state<number>(0)
 const queryListeners = new Set<() => void>()
 
 export const dataStore = {
@@ -187,6 +188,12 @@ export const dataStore = {
     },
     set updateSeen(value: boolean) {
         updateSeen = value
+    },
+    get sqlEditorHeight() {
+        return sqlEditorHeight
+    },
+    set sqlEditorHeight(value: number) {
+        sqlEditorHeight = value
     },
 
     async checkUpdates() {

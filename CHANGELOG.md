@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.5] - 2026-01-10
+
+### Added
+
+- **SQL Editor**:
+    - Added ability to vertically resize the SQL editor by dragging the bottom handle.
+    - Resized height is now preserved while the application is running.
+
+### Fixed
+
+- **SQL Editor**:
+    - Fixed an issue where the SQL editor would reset to its original height when typing after being resized.
+    - Fixed an issue where the SQL editor would exceed the application window's width when containing long lines by
+      enabling line wrapping and improving layout stability.
+
 ## [2.0.4] - 2026-01-08
 
 ### Added

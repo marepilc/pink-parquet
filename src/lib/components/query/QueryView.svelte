@@ -213,6 +213,7 @@
                     onRun={runSql}
                     completions={getAllCompletions()}
                     {visible}
+                    bind:height={dataStore.sqlEditorHeight}
             />
         </div>
         <div class="button-group">
