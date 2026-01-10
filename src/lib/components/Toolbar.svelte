@@ -127,12 +127,17 @@
                         name: 'Parquet',
                         extensions: ['parquet'],
                     },
+                    {
+                        name: 'CSV',
+                        extensions: ['csv'],
+                    },
                 ],
             })
 
             if (filePath) {
                 const {invoke} = await import('@tauri-apps/api/core')
-                await invoke('save_parquet', {filePath})
+                const command = filePath.toLowerCase().endsWith('.csv') ? 'save_csv' : 'save_parquet'
+                await invoke(command, {filePath})
 
                 // If the saved file is already open in any session, reload that session
                 const existingSession = dataStore.sessions.find((s) => s.path === filePath)

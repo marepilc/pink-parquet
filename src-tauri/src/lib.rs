@@ -520,6 +520,33 @@ fn save_parquet(state: tauri::State<AppState>, file_path: String) -> Result<(), 
     Ok(())
 }
 
+// Save DataFrame to CSV file
+#[tauri::command]
+fn save_csv(state: tauri::State<AppState>, file_path: String) -> Result<(), String> {
+    // Get the cached DataFrame
+    let cache = state.cache.lock().unwrap();
+    let df = cache
+        .as_ref()
+        .map(|entry| &entry.df)
+        .ok_or_else(|| "No data to save".to_string())?;
+
+    // Create parent directories if they don't exist
+    if let Some(parent) = std::path::Path::new(&file_path).parent() {
+        fs::create_dir_all(parent).map_err(|e| format!("Failed to create directory: {}", e))?;
+    }
+
+    // Open file for writing
+    let file = fs::File::create(&file_path).map_err(|e| format!("Failed to create file: {}", e))?;
+
+    // Write DataFrame to CSV
+    polars::prelude::CsvWriter::new(file)
+        .include_header(true)
+        .finish(&mut df.clone())
+        .map_err(|e| format!("Failed to write CSV file: {}", e))?;
+
+    Ok(())
+}
+
 // Legacy command for backward compatibility
 #[tauri::command]
 fn read_parquet(state: tauri::State<AppState>, file_path: String) -> Result<DataFrameInfo, String> {
@@ -925,6 +952,7 @@ pub fn run() {
             get_column_histogram,
             get_query_column_histogram,
             save_parquet,
+            save_csv,
             copy_full_table,
             load_settings,
             save_settings,
