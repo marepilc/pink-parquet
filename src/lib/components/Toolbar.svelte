@@ -36,7 +36,7 @@
     let isMaxFontSize = $derived(fontStore.currentFontSize >= 18)
 
     function toggleSql() {
-        dataStore.isSqlTabActive = !dataStore.isSqlTabActive
+        dataStore.addQueryEditorSession()
     }
 
     function openAbout() {
@@ -167,7 +167,7 @@
     <ToolbarBtn
             ariaLabel="SQL Editor"
             onClick={toggleSql}
-            active={dataStore.isSqlTabActive}
+            active={false}
             disabled={!dataStore.hasData}
     >
         <SqlIcon size={32}/>

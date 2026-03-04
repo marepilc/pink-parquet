@@ -228,16 +228,10 @@
     return sort ? sort.ascending : null
   }
 
-  function sanitizeTableName(name: string): string {
-    let sanitized = name.replace(/[^A-Za-z0-9_]/g, '_')
-    if (/^[0-9]/.test(sanitized)) {
-      sanitized = '_' + sanitized
-    }
-    return sanitized || 'table'
-  }
 
   async function reloadData() {
-    if (!dataStore.activeSession?.path) return
+    const session = dataStore.activeSession
+    if (!session) return
 
     // Reset scroll position when reloading data (e.g. after sort change)
     if (tableContainer) {
@@ -253,21 +247,21 @@
 
       let newData: any
       if (isQuery && dataStore.currentQuery) {
-        const tableNames = Object.fromEntries(
-          dataStore.sessions.map((s) => [s.path, sanitizeTableName(s.name)])
-        )
+        const tableNames = dataStore.getTableNames()
+        const queryResults = dataStore.getQueryResults()
 
         newData = await invoke('execute_sql', {
-          activeFilePath: dataStore.activeSession?.path,
-          allFiles: dataStore.sessions.map((s) => s.path),
+          activeFilePath: session.path || session.id,
+          allFiles: dataStore.sessions.filter((s) => s.path).map((s) => s.path!),
           tableNames,
           query: dataStore.currentQuery,
+          queryResults,
           offset: 0,
           limit: BATCH_SIZE,
         })
-      } else {
+      } else if (session.path) {
         newData = await invoke('get_data', {
-          filePath: dataStore.activeSession?.path,
+          filePath: session.path,
           sorting,
         })
       }
@@ -280,7 +274,8 @@
   }
 
   async function loadMoreRows() {
-    if (isLoadingMore || !hasMoreRows || !dataStore.activeSession?.path) return
+    const session = dataStore.activeSession
+    if (isLoadingMore || !hasMoreRows || !session) return
 
     const isQuery = dataStore.isSqlTabActive && dataStore.isQueryMode
     dataStore.setLoadingMore(true, undefined, isQuery)
@@ -291,24 +286,26 @@
 
       let newRows: string[][]
       if (isQuery && dataStore.currentQuery) {
-        const tableNames = Object.fromEntries(
-          dataStore.sessions.map((s) => [s.path, sanitizeTableName(s.name)])
-        )
+        const tableNames = dataStore.getTableNames()
+        const queryResults = dataStore.getQueryResults()
 
         newRows = await invoke<string[][]>('get_more_sql_rows', {
-          allFiles: dataStore.sessions.map((s) => s.path),
+          allFiles: dataStore.sessions.filter((s) => s.path).map((s) => s.path!),
           tableNames,
           query: dataStore.currentQuery,
+          queryResults,
           offset: loadedRows,
           limit: BATCH_SIZE,
         })
-      } else {
+      } else if (session.path) {
         newRows = await invoke<string[][]>('get_more_rows', {
-          filePath: dataStore.activeSession?.path,
+          filePath: session.path,
           offset: loadedRows,
           limit: BATCH_SIZE,
           sorting,
         })
+      } else {
+        newRows = []
       }
 
       dataStore.appendRows(newRows, undefined, isQuery)
@@ -750,7 +747,9 @@
     </div>
   {/if}
 
-  {#if dataStore.isSqlTabActive && !data}
+  {#if dataStore.activeSession?.isQueryEditor && !data}
+    <QueryGuide />
+  {:else if !data}
     <QueryGuide />
   {:else}
     <!-- Table container with scroll -->

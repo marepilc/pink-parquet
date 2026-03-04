@@ -181,13 +181,18 @@
             if (dataStore.data) {
                 handleSaveAs()
             }
-        } else if (event.key === 'F5' || (isModifier && event.key === 'Enter')) {
-            event.preventDefault()
-            // F5 or Ctrl/Cmd+Enter is handled by SqlEditor if focused.
+        } else if (event.key === 'F5' || (event.shiftKey && event.key === 'Enter')) {
+            // F5 or Shift + Enter is handled by SqlEditor if focused.
             // If we're here, it means focus is elsewhere.
             // We prevent default to avoid page reload which clears state.
             if (dataStore.isSqlTabActive) {
-                dataStore.triggerQuery()
+                event.preventDefault()
+                // Only trigger if focus is NOT in an input/textarea (which SqlEditor uses)
+                // Actually CodeMirror handles its own events, but let's be safe.
+                const target = event.target as HTMLElement
+                if (target.tagName !== 'TEXTAREA' && target.tagName !== 'INPUT') {
+                    dataStore.triggerQuery()
+                }
             }
         }
     }

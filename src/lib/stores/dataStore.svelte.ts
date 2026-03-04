@@ -27,7 +27,7 @@ export interface SortState {
 
 export interface FileSession {
     id: string
-    path: string
+    path: string | null
     name: string
     rawData: ParquetData | null
     queryData: ParquetData | null
@@ -36,18 +36,23 @@ export interface FileSession {
     loadingMoreRaw: boolean
     loadingMoreQuery: boolean
     error: string | null
-    currentQuery: string | null
     baseColumns: ColumnInfo[] | null
     columnWidths: Record<number, number>
     sortStates: SortState[]
     tableLayout: 'auto' | 'fixed'
     lastMeasuredColumnsJson: string | null
     dataTag: number // Used to trigger updates without deep proxying rawData/queryData
+    isQueryResult: boolean
+    isQueryEditor: boolean
+    sqlQuery: string | null
+    lastSuccessfulQuery: string | null
+    originalName: string | null
 }
 
 let sessions = $state<FileSession[]>([])
 let activeSessionId = $state<string | null>(null)
 let isSqlTabActive = $state(false)
+let showSqlEditor = $state(false)
 let appVersion = $state<string>('0.0.0')
 let latestVersion = $state<string | null>(null)
 let updateCount = $state<number>(0)
@@ -78,6 +83,12 @@ export const dataStore = {
     set isSqlTabActive(value: boolean) {
         isSqlTabActive = value
     },
+    get showSqlEditor() {
+        return showSqlEditor
+    },
+    set showSqlEditor(value: boolean) {
+        showSqlEditor = value
+    },
     onQueryRequest(cb: () => void) {
         queryListeners.add(cb)
         return () => queryListeners.delete(cb)
@@ -93,6 +104,10 @@ export const dataStore = {
         // while keeping the actual data non-reactive to avoid deep proxying
         this.isSqlTabActive
         session.dataTag
+
+        if (session.isQueryResult) {
+            return session.rawData
+        }
 
         return this.isSqlTabActive ? session.queryData : session.rawData
     },
@@ -113,10 +128,13 @@ export const dataStore = {
         return sessions.length > 0
     },
     get currentQuery() {
-        return this.activeSession?.currentQuery || null
+        return this.activeSession?.sqlQuery || null
     },
     set currentQuery(value: string | null) {
-        this.setQuery(value)
+        const session = this.activeSession
+        if (session) {
+            session.sqlQuery = value
+        }
     },
     get isQueryMode() {
         return (
@@ -196,6 +214,31 @@ export const dataStore = {
         sqlEditorHeight = value
     },
 
+    sanitizeTableName(name: string): string {
+        let sanitized = name.replace(/[^A-Za-z0-9_]/g, '_')
+        if (/^[0-9]/.test(sanitized)) {
+            sanitized = '_' + sanitized
+        }
+        return sanitized || 'table'
+    },
+
+    getTableNames(): Record<string, string> {
+        return Object.fromEntries(
+            sessions
+                .filter((s) => s.path || s.isQueryResult)
+                .map((s) => [s.path || s.id, this.sanitizeTableName(s.name)])
+        )
+    },
+
+    getQueryResults(): { name: string; query: string }[] {
+        return sessions
+            .filter((s) => s.isQueryResult && s.lastSuccessfulQuery)
+            .map((s) => ({
+                name: this.sanitizeTableName(s.name),
+                query: s.lastSuccessfulQuery!,
+            }))
+    },
+
     async checkUpdates() {
         checkingUpdates = true
         updateCheckError = null
@@ -273,9 +316,6 @@ export const dataStore = {
         const fileName = path.split('\\').pop()?.split('/').pop() || path
         const name = fileName.split('.').slice(0, -1).join('.') || fileName
 
-        // Inherit query from any existing session (they all have the same query now)
-        const sharedQuery = sessions.length > 0 ? sessions[0].currentQuery : null
-
         const newSession: FileSession = {
             id,
             path,
@@ -287,16 +327,132 @@ export const dataStore = {
             loadingMoreRaw: false,
             loadingMoreQuery: false,
             error: null,
-            currentQuery: sharedQuery,
             baseColumns: null,
             columnWidths: {},
             sortStates: [],
             tableLayout: 'auto',
             lastMeasuredColumnsJson: null,
             dataTag: 0,
+            isQueryResult: false,
+            isQueryEditor: false,
+            sqlQuery: null,
+            lastSuccessfulQuery: null,
+            originalName: name,
         }
         sessions.push(newSession)
         activeSessionId = id
+        return id
+    },
+
+    addQueryEditorSession() {
+        const id = crypto.randomUUID()
+
+        // Generate unique name query1, query2, ...
+        let index = 1
+        let name = `query${index}`
+        while (sessions.some((s) => s.name === name)) {
+            index++
+            name = `query${index}`
+        }
+
+        const newSession: FileSession = {
+            id,
+            path: null,
+            name,
+            rawData: null,
+            queryData: null,
+            loadingRaw: false,
+            loadingQuery: false,
+            loadingMoreRaw: false,
+            loadingMoreQuery: false,
+            error: null,
+            baseColumns: null,
+            columnWidths: {},
+            sortStates: [],
+            tableLayout: 'auto',
+            lastMeasuredColumnsJson: null,
+            dataTag: 0,
+            isQueryResult: false,
+            isQueryEditor: true,
+            sqlQuery: null,
+            lastSuccessfulQuery: null,
+            originalName: name,
+        }
+
+        sessions.push(newSession)
+        activeSessionId = id
+        isSqlTabActive = true
+        return id
+    },
+
+    addQuerySession(query: string, data: ParquetData, sessionId?: string) {
+        const id = sessionId || crypto.randomUUID()
+        const existingSession = sessions.find((s) => s.id === id)
+
+        if (existingSession) {
+            // Keep the editor name if it's already an editor
+            if (!existingSession.isQueryEditor) {
+                // Generate unique name query1 results, query2 results, ...
+                let index = 1
+                let name = `query${index} results`
+                while (sessions.some((s) => s.name === name)) {
+                    index++
+                    name = `query${index} results`
+                }
+                existingSession.name = name
+                existingSession.originalName = name
+            }
+
+            existingSession.rawData = data
+            existingSession.baseColumns = data.columns
+            existingSession.sqlQuery = query
+            existingSession.lastSuccessfulQuery = query
+            existingSession.isQueryResult = true
+            existingSession.error = null
+            existingSession.dataTag++
+            activeSessionId = id
+            // Do not hide the SQL editor if it's already an editor
+            if (!existingSession.isQueryEditor) {
+                isSqlTabActive = false
+            }
+            return id
+        }
+
+        // Generate unique name query1 results, query2 results, ...
+        let index = 1
+        let name = `query${index} results`
+        while (sessions.some((s) => s.name === name)) {
+            index++
+            name = `query${index} results`
+        }
+
+        const newSession: FileSession = {
+            id,
+            path: null,
+            name,
+            rawData: data,
+            queryData: null,
+            loadingRaw: false,
+            loadingQuery: false,
+            loadingMoreRaw: false,
+            loadingMoreQuery: false,
+            error: null,
+            baseColumns: data.columns,
+            columnWidths: {},
+            sortStates: [],
+            tableLayout: 'auto',
+            lastMeasuredColumnsJson: null,
+            dataTag: 0,
+            isQueryResult: true,
+            isQueryEditor: false,
+            sqlQuery: query,
+            lastSuccessfulQuery: query,
+            originalName: name,
+        }
+
+        sessions.push(newSession)
+        activeSessionId = id
+        isSqlTabActive = false
         return id
     },
 
@@ -312,7 +468,7 @@ export const dataStore = {
 
             // Stop watching the file if no other session is using it
             const otherSessionUsingFile = sessions.some((s) => s.path === path)
-            if (!otherSessionUsingFile && path.toLowerCase().endsWith('.parquet')) {
+            if (path && !otherSessionUsingFile && path.toLowerCase().endsWith('.parquet')) {
                 try {
                     const {invoke} = await import('@tauri-apps/api/core')
                     await invoke('stop_watching', {filePath: path})
@@ -333,20 +489,17 @@ export const dataStore = {
 
         if (session) {
             if (effectiveIsSql) {
-                // SQL results are shared across all sessions (global SQL state)
-                sessions.forEach((s) => {
-                    s.queryData = newData
-                    s.loadingQuery = false
-                    s.error = null
-                    s.dataTag++
-                })
+                session.queryData = newData
+                session.loadingQuery = false
+                session.error = null
+                session.dataTag++
             } else {
                 // Raw file data is per-session
                 session.rawData = newData
                 session.loadingRaw = false
                 if (
-                    session.currentQuery === null ||
-                    session.currentQuery.trim().length === 0
+                    session.sqlQuery === null ||
+                    session.sqlQuery.trim().length === 0
                 ) {
                     session.baseColumns = newData.columns
                 }
@@ -357,28 +510,26 @@ export const dataStore = {
     },
 
     setQuery(query: string | null) {
-        const normalizedQuery = query && query.trim().length > 0 ? query : null
-
-        // Update all sessions with the same query to keep them in sync
-        // This ensures the query is visible regardless of which session is active
-        sessions.forEach((session) => {
-            session.currentQuery = normalizedQuery
-            if (normalizedQuery === null) {
+        const session = this.activeSession
+        if (session) {
+            session.sqlQuery = query && query.trim().length > 0 ? query : null
+            if (session.sqlQuery === null) {
                 session.queryData = null
                 session.loadingQuery = false
                 session.loadingMoreQuery = false
                 session.dataTag++
             }
-        })
+        }
     },
 
     resetQueryResults() {
-        sessions.forEach((session) => {
+        const session = this.activeSession
+        if (session) {
             session.queryData = null
             session.loadingQuery = false
             session.loadingMoreQuery = false
             session.dataTag++
-        })
+        }
     },
 
     appendRows(newRows: string[][], sessionId?: string, isSql?: boolean) {
@@ -390,16 +541,12 @@ export const dataStore = {
 
         if (session) {
             if (effectiveIsSql && session.queryData) {
-                // SQL results are shared across all sessions
-                const updatedQueryData = {
+                session.queryData = {
                     ...session.queryData,
                     rows: [...session.queryData.rows, ...newRows],
                 }
-                sessions.forEach((s) => {
-                    s.queryData = updatedQueryData
-                    s.loadingMoreQuery = false
-                    s.dataTag++
-                })
+                session.loadingMoreQuery = false
+                session.dataTag++
             } else if (!effectiveIsSql && session.rawData) {
                 // Raw file data is per-session
                 session.rawData = {
@@ -419,10 +566,7 @@ export const dataStore = {
         if (session) {
             const effectiveIsSql = isSql !== undefined ? isSql : this.isSqlTabActive
             if (effectiveIsSql) {
-                // SQL loading state is shared across all sessions
-                sessions.forEach((s) => {
-                    s.loadingQuery = isLoading
-                })
+                session.loadingQuery = isLoading
             } else {
                 // Raw file loading is per-session
                 session.loadingRaw = isLoading
@@ -437,10 +581,7 @@ export const dataStore = {
         if (session) {
             const effectiveIsSql = isSql !== undefined ? isSql : this.isSqlTabActive
             if (effectiveIsSql) {
-                // SQL loading state is shared across all sessions
-                sessions.forEach((s) => {
-                    s.loadingMoreQuery = isLoading
-                })
+                session.loadingMoreQuery = isLoading
             } else {
                 // Raw file loading is per-session
                 session.loadingMoreRaw = isLoading
@@ -460,13 +601,11 @@ export const dataStore = {
             session.loadingMoreQuery = false
             // Clear previous results when error occurs
             if (isSqlTabActive) {
-                sessions.forEach((s) => {
-                    s.queryData = null
-                    s.error = newError
-                    s.loadingQuery = false
-                    s.loadingMoreQuery = false
-                    s.dataTag++
-                })
+                session.queryData = null
+                session.error = newError
+                session.loadingQuery = false
+                session.loadingMoreQuery = false
+                session.dataTag++
             }
         }
     },
@@ -476,13 +615,7 @@ export const dataStore = {
             ? sessions.find((s) => s.id === sessionId)
             : this.activeSession
         if (session) {
-            if (isSqlTabActive) {
-                sessions.forEach((s) => {
-                    s.error = null
-                })
-            } else {
-                session.error = null
-            }
+            session.error = null
         }
     },
 

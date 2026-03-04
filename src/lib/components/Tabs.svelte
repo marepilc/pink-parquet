@@ -1,9 +1,9 @@
 <script lang="ts">
-  import {dataStore} from '$lib/stores/dataStore.svelte'
-  import Tab from '$lib/components/Tab.svelte'
-  import {onMount} from 'svelte'
+    import {dataStore} from '$lib/stores/dataStore.svelte'
+    import Tab from '$lib/components/Tab.svelte'
+    import {onMount} from 'svelte'
 
-  let containerElement: HTMLDivElement
+    let containerElement: HTMLDivElement
     let showScrollButtons = $state(false)
     let canScrollLeft = $state(false)
     let canScrollRight = $state(false)
@@ -85,12 +85,13 @@
             {#each dataStore.sessions as session (session.id)}
                 <Tab
                         {session}
-                        isActive={!dataStore.isSqlTabActive &&
-            dataStore.activeSessionId === session.id}
+                        isActive={dataStore.activeSessionId === session.id}
                         onClick={() => {
-            dataStore.activeSessionId = session.id
-            dataStore.isSqlTabActive = false
-          }}
+                            dataStore.activeSessionId = session.id
+                            // Ensure data view is shown for non-editor sessions,
+                            // and SQL view is shown for editor sessions
+                            dataStore.isSqlTabActive = !!session.isQueryEditor
+                        }}
                         onClose={() => {
             const wasLastSession = dataStore.sessions.length === 1
             dataStore.removeSession(session.id)

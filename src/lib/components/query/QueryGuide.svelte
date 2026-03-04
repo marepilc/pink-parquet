@@ -10,19 +10,16 @@
         isMacOS = osType === 'macos'
     })
 
-    function sanitizeTableName(name: string): string {
-        let sanitized = name.replace(/[^A-Za-z0-9_]/g, '_')
-        if (/^[0-9]/.test(sanitized)) {
-            sanitized = '_' + sanitized
-        }
-        return sanitized || 'table'
-    }
-
     const availableTables = $derived(
-        dataStore.sessions.map((session) => ({
-            tableName: sanitizeTableName(session.name),
-            columns: session.baseColumns || session.rawData?.columns || [],
-        }))
+        dataStore.sessions
+            .filter((s) => s.path || s.isQueryResult)
+            .map((session) => {
+                const tableName = dataStore.sanitizeTableName(session.name)
+                return {
+                    tableName,
+                    columns: session.baseColumns || session.rawData?.columns || [],
+                }
+            })
     )
 </script>
 
@@ -61,7 +58,7 @@
             <h3 class="section-title">Keyboard Shortcuts</h3>
             <div class="shortcuts">
                 <div class="shortcut-item">
-                    <kbd class="kbd">F5</kbd>, <kbd class="kbd">{isMacOS ? 'Cmd' : 'Ctrl'}</kbd> + <kbd class="kbd">Enter</kbd>
+                    <kbd class="kbd">F5</kbd>, <kbd class="kbd">Shift</kbd> + <kbd class="kbd">Enter</kbd>
                     <span class="shortcut-desc">Execute query</span>
                 </div>
                 <div class="shortcut-item">
@@ -137,10 +134,14 @@
     }
 
     .table-name {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
         margin-bottom: 0.75rem;
         padding-bottom: 0.75rem;
         border-bottom: 1px solid var(--surface-4);
     }
+
 
     .columns-list {
         display: flex;

@@ -76,32 +76,26 @@
         'with',
     ].map((k) => ({label: k.toUpperCase(), type: 'keyword'}))
 
-    function sanitizeTableName(name: string): string {
-        let sanitized = name.replace(/[^A-Za-z0-9_]/g, '_')
-        if (/^[0-9]/.test(sanitized)) {
-            sanitized = '_' + sanitized
-        }
-        return sanitized || 'table'
-    }
-
     function getTableAndColumnCompletions(sql: string) {
         const tableCompletions: { label: string; type: string }[] = []
         const columnNamesSet = new Set<string>()
         const tableToColumns: Record<string, string[]> = {}
         const aliasToTable: Record<string, string> = {}
 
-        dataStore.sessions.forEach((session) => {
-            const name = sanitizeTableName(session.name)
-            tableCompletions.push({label: name, type: 'class'})
+        dataStore.sessions
+            .filter((s) => s.path || s.isQueryResult)
+            .forEach((session) => {
+                const name = dataStore.sanitizeTableName(session.name)
+                tableCompletions.push({label: name, type: 'class'})
 
-            const cols = (session.baseColumns || session.rawData?.columns || []).map(
-                (c) => c.name
-            )
-            tableToColumns[name] = cols
-            cols.forEach((c) => {
-                columnNamesSet.add(c)
+                const cols = (session.baseColumns || session.rawData?.columns || []).map(
+                    (c) => c.name
+                )
+                tableToColumns[name] = cols
+                cols.forEach((c) => {
+                    columnNamesSet.add(c)
+                })
             })
-        })
 
         // Very basic alias extraction: FROM table AS alias or FROM table alias
         // Matches: FROM/JOIN <tableName> (AS)? <alias>
@@ -157,35 +151,35 @@
     }
 
     async function runSql() {
-        if (!dataStore.activeSession?.path) return
+        const session = dataStore.activeSession
+        if (!session) return
         const q = (dataStore.currentQuery || '').trim()
         if (!q) return
 
-        dataStore.setQuery(q)
-        dataStore.setLoading(true, undefined, true)
+        dataStore.setLoading(true, session.id, true)
 
         try {
             const {invoke} = await import('@tauri-apps/api/core')
-            // Ensure we are in SQL tab mode
-            dataStore.isSqlTabActive = true
 
-            const tableNames = Object.fromEntries(
-                dataStore.sessions.map((s) => [s.path, sanitizeTableName(s.name)])
-            )
+            const tableNames = dataStore.getTableNames()
+            const queryResults = dataStore.getQueryResults()
 
             const newData = await invoke('execute_sql', {
-                activeFilePath: dataStore.activeSession?.path,
-                allFiles: dataStore.sessions.map((s) => s.path),
+                activeFilePath: session.path || session.id,
+                allFiles: dataStore.sessions.filter((s) => s.path).map((s) => s.path!),
                 tableNames,
                 query: q,
+                queryResults,
                 offset: 0,
                 limit: 100,
             })
 
-            dataStore.setData(newData as any, undefined, true)
+            dataStore.addQuerySession(q, newData as any, session.id)
+            dataStore.setLoading(false, session.id, true)
         } catch (error) {
             console.error('QueryView: SQL execution failed', error)
-            dataStore.setError(String(error))
+            dataStore.setError(String(error), session.id)
+            dataStore.setLoading(false, session.id, true)
         }
     }
 
@@ -224,7 +218,7 @@
             <button
                     class="run-button"
                     onclick={runSql}
-                    onmouseenter={(e) => tooltipStore.show(e.currentTarget, `Run SQL (F5, ${isMacOS ? 'Cmd' : 'Ctrl'}+Enter)`, e.clientX, e.clientY)}
+                    onmouseenter={(e) => tooltipStore.show(e.currentTarget, `Run SQL (F5, Shift+Enter)`, e.clientX, e.clientY)}
                     onmousemove={() => {
                         if (tooltipStore.visible) {
                             tooltipStore.hide()

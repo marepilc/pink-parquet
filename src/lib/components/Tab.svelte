@@ -1,11 +1,12 @@
 <script lang="ts">
-  import CloseIcon from '$lib/components/icons/CloseIcon.svelte'
-  import {dataStore} from '$lib/stores/dataStore.svelte'
+    import CloseIcon from '$lib/components/icons/CloseIcon.svelte'
+    import SqlIcon from '$lib/components/icons/SqlIcon.svelte'
+    import {dataStore} from '$lib/stores/dataStore.svelte'
 
-  // import ParquetIcon from '$lib/components/icons/ParquetIcon.svelte'
+    // import ParquetIcon from '$lib/components/icons/ParquetIcon.svelte'
 
     interface Props {
-        session: { id: string; path: string; name: string }
+        session: { id: string; path: string | null; name: string; isQueryResult?: boolean; isQueryEditor?: boolean }
         isActive: boolean
         onClick: () => void
         onClose: () => void
@@ -84,7 +85,12 @@
     {/snippet}
 
     {#snippet displayMode()}
-        {session.name}
+        <div class="display-mode-container">
+            {#if session.isQueryResult || session.isQueryEditor}
+                <SqlIcon size={12} className="query-icon"/>
+            {/if}
+            <span class="name-text">{session.name}</span>
+        </div>
     {/snippet}
 
     <span
@@ -159,12 +165,30 @@
         left: 0.75rem;
         flex: 1;
         overflow: hidden;
+        transition: all 200ms ease;
+    }
+
+    .display-mode-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
+        width: 100%;
+    }
+
+    .query-icon {
+        flex-shrink: 0;
+        color: var(--accent);
+        opacity: 0.8;
+    }
+
+    .name-text {
+        overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         text-align: center;
         font-size: 0.75rem;
         font-weight: 500;
-        transition: all 200ms ease;
     }
 
     .rename-input {

@@ -242,7 +242,7 @@
                     run: copyLineDown,
                 },
                 {
-                    key: 'Mod-Enter',
+                    key: 'Shift-Enter',
                     run: () => {
                         onRun?.()
                         return true

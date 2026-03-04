@@ -104,6 +104,27 @@ fn execute_sql_query(
         .map_err(|e| format!("SQL execution error: {}", e))
 }
 
+fn register_query_results(ctx: &mut SQLContext, results: Vec<QueryResult>) {
+    let mut pending = results;
+    let mut changed = true;
+    while changed && !pending.is_empty() {
+        changed = false;
+        let mut still_pending = Vec::new();
+        for res in pending {
+            match execute_sql_query(ctx, &res.query) {
+                Ok(qlf) => {
+                    ctx.register(&res.name, qlf);
+                    changed = true;
+                }
+                Err(_) => {
+                    still_pending.push(res);
+                }
+            }
+        }
+        pending = still_pending;
+    }
+}
+
 // Get initial data with metadata (returns first 100 rows)
 #[tauri::command]
 fn get_data(
@@ -238,6 +259,12 @@ fn get_more_rows(
 }
 
 // Execute SQL and return preview (paginated first page) replacing current table
+#[derive(Deserialize)]
+struct QueryResult {
+    name: String,
+    query: String,
+}
+
 #[tauri::command]
 fn execute_sql(
     state: tauri::State<AppState>,
@@ -245,6 +272,7 @@ fn execute_sql(
     all_files: Vec<String>,
     table_names: Option<HashMap<String, String>>,
     query: String,
+    query_results: Option<Vec<QueryResult>>,
     offset: Option<usize>,
     limit: Option<usize>,
 ) -> Result<DataFrameInfo, String> {
@@ -262,14 +290,20 @@ fn execute_sql(
 
                 let df_page = df.slice(offset as i64, limit);
                 let rows = dataframe_to_rows(&df_page)?;
-                let mut metadata = extract_metadata(&active_file_path)?;
-                metadata.total_nulls = calculate_total_nulls(df);
+
+                let metadata = if fs::metadata(&active_file_path).is_ok() {
+                    let mut m = extract_metadata(&active_file_path)?;
+                    m.total_nulls = calculate_total_nulls(df);
+                    Some(m)
+                } else {
+                    None
+                };
 
                 return Ok(DataFrameInfo {
                     shape,
                     columns,
                     rows,
-                    metadata: Some(metadata),
+                    metadata,
                 });
             }
         }
@@ -293,6 +327,11 @@ fn execute_sql(
             table_name_from_path(path)
         };
         ctx.register(&table_name, lf);
+    }
+
+    // Register previous query results as tables
+    if let Some(results) = query_results {
+        register_query_results(&mut ctx, results);
     }
 
     // Build main query lazyframe
@@ -322,15 +361,19 @@ fn execute_sql(
     let df_page = df.slice(offset as i64, limit);
     let rows = dataframe_to_rows(&df_page)?;
 
-    // Keep file metadata so footer still shows file info
-    let mut metadata = extract_metadata(&active_file_path)?;
-    metadata.total_nulls = calculate_total_nulls(&df);
+    let metadata = if fs::metadata(&active_file_path).is_ok() {
+        let mut m = extract_metadata(&active_file_path)?;
+        m.total_nulls = calculate_total_nulls(&df);
+        Some(m)
+    } else {
+        None
+    };
 
     Ok(DataFrameInfo {
         shape,
         columns,
         rows,
-        metadata: Some(metadata),
+        metadata,
     })
 }
 
@@ -341,6 +384,7 @@ fn get_more_sql_rows(
     all_files: Vec<String>,
     table_names: Option<HashMap<String, String>>,
     query: String,
+    query_results: Option<Vec<QueryResult>>,
     offset: usize,
     limit: usize,
 ) -> Result<Vec<Vec<String>>, String> {
@@ -360,7 +404,11 @@ fn get_more_sql_rows(
 
     // Register all open files as tables
     for path in &all_files {
-        let lf = open_parquet(path)?;
+        let lf = if path.to_lowercase().ends_with(".csv") {
+            open_csv(path)?
+        } else {
+            open_parquet(path)?
+        };
         let table_name = if let Some(ref names) = table_names {
             names
                 .get(path)
@@ -370,6 +418,11 @@ fn get_more_sql_rows(
             table_name_from_path(path)
         };
         ctx.register(&table_name, lf);
+    }
+
+    // Register previous query results as tables
+    if let Some(results) = query_results {
+        register_query_results(&mut ctx, results);
     }
 
     let qlf = execute_sql_query(&mut ctx, &query)?;
