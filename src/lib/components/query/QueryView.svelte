@@ -3,10 +3,14 @@
     import {tooltipStore} from '$lib/stores/tooltipStore.svelte'
     import SqlEditor from '$lib/components/SqlEditor.svelte'
     import {onMount} from 'svelte'
+    import {type} from '@tauri-apps/plugin-os'
 
     let {visible = false} = $props<{ visible?: boolean }>()
+    let isMacOS = $state(false)
 
-    onMount(() => {
+    onMount(async () => {
+        const osType = await type()
+        isMacOS = osType === 'macos'
         return dataStore.onQueryRequest(runSql)
     })
 
@@ -220,7 +224,7 @@
             <button
                     class="run-button"
                     onclick={runSql}
-                    onmouseenter={(e) => tooltipStore.show(e.currentTarget, "Run SQL (F5)", e.clientX, e.clientY)}
+                    onmouseenter={(e) => tooltipStore.show(e.currentTarget, `Run SQL (F5, ${isMacOS ? 'Cmd' : 'Ctrl'}+Enter)`, e.clientX, e.clientY)}
                     onmousemove={() => {
                         if (tooltipStore.visible) {
                             tooltipStore.hide()

@@ -181,9 +181,9 @@
             if (dataStore.data) {
                 handleSaveAs()
             }
-        } else if (event.key === 'F5') {
+        } else if (event.key === 'F5' || (isModifier && event.key === 'Enter')) {
             event.preventDefault()
-            // F5 is handled by SqlEditor if focused.
+            // F5 or Ctrl/Cmd+Enter is handled by SqlEditor if focused.
             // If we're here, it means focus is elsewhere.
             // We prevent default to avoid page reload which clears state.
             if (dataStore.isSqlTabActive) {
