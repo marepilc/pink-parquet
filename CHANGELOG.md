@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
     - Double-clicking a CSV file when the application is closed now correctly loads the file on startup.
 - **Multiple Queries**:
     - Added possibility to open more than one query in separate tabs.
+    - Added support for reordering tabs by drag and drop.
+    - Improved drag and drop reliability on Windows by resolving window-drag region conflicts.
 
 ### Changed
 
@@ -26,6 +28,9 @@ All notable changes to this project will be documented in this file.
 - **Stability**:
     - Fixed a Rust compilation error related to string case conversion in the backend.
     - Cleaned up redundant parentheses in Rust code to satisfy compiler warnings.
+- **Tab Reordering**:
+    - Fixed drag-and-drop tab ordering so dragging from the first tab to later positions works correctly.
+    - Added a visual left/right insertion indicator while dragging tabs to show the exact drop position.
 
 ## [2.0.5] - 2026-01-10
 

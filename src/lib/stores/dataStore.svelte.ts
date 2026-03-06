@@ -626,6 +626,22 @@ export const dataStore = {
         }
     },
 
+    reorderSession(draggedId: string, targetId: string, position: 'before' | 'after' = 'before') {
+        if (!draggedId || draggedId === targetId) return
+
+        const draggedIndex = sessions.findIndex((s) => s.id === draggedId)
+        const targetIndex = sessions.findIndex((s) => s.id === targetId)
+
+        if (draggedIndex !== -1 && targetIndex !== -1) {
+            const [draggedSession] = sessions.splice(draggedIndex, 1)
+            const adjustedTargetIndex =
+                draggedIndex < targetIndex ? targetIndex - 1 : targetIndex
+            const insertIndex =
+                position === 'after' ? adjustedTargetIndex + 1 : adjustedTargetIndex
+            sessions.splice(insertIndex, 0, draggedSession)
+        }
+    },
+
     async loadParquetFile(
         filePath: string,
         forceReload: boolean = false,

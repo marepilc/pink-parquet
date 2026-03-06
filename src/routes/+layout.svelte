@@ -330,8 +330,6 @@
         align-items: center;
         justify-content: space-between;
         z-index: 100;
-        -webkit-app-region: drag;
-        app-region: drag;
         user-select: none;
     }
 

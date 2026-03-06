@@ -80,6 +80,7 @@
             class="tabs-container"
             bind:this={containerElement}
             onscroll={checkScroll}
+            style="-webkit-app-region: no-drag; app-region: no-drag; pointer-events: auto;"
     >
         <div class="tabs-list">
             {#each dataStore.sessions as session (session.id)}

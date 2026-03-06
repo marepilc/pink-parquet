@@ -114,6 +114,11 @@
 
 <!--suppress CssUnknownProperty -->
 <style>
+    :global([data-tauri-drag-region]) {
+        -webkit-app-region: drag;
+        app-region: drag;
+    }
+
     #title-bar-container {
         z-index: 100;
         width: 100%;

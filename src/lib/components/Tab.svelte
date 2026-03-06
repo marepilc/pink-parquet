@@ -1,3 +1,17 @@
+<script module lang="ts">
+    let draggedSessionId: string | null = null
+    let lastTargetId: string | null = null
+    let lastPosition: 'before' | 'after' | null = null
+    let indicatorElement: HTMLElement | null = null
+
+    function clearDropIndicator() {
+        if (indicatorElement) {
+            indicatorElement.classList.remove('drop-before', 'drop-after')
+            indicatorElement = null
+        }
+    }
+</script>
+
 <script lang="ts">
     import CloseIcon from '$lib/components/icons/CloseIcon.svelte'
     import SqlIcon from '$lib/components/icons/SqlIcon.svelte'
@@ -15,6 +29,86 @@
     let {session, isActive, onClick, onClose}: Props = $props()
     let isEditing = $state(false)
     let editedName = $state('')
+    let suppressClick = $state(false)
+    let pointerDragging = $state(false)
+    let startX = 0
+    let startY = 0
+
+    function cleanupPointerDrag(target: HTMLElement) {
+        target.style.opacity = '1'
+        draggedSessionId = null
+        pointerDragging = false
+    }
+
+    function handlePointerDown(e: PointerEvent) {
+        if (isEditing || e.button !== 0) return
+
+        const target = e.target as HTMLElement
+        if (target.closest('.tab-close') || target.closest('.rename-input')) return
+
+        const currentTarget = e.currentTarget as HTMLElement
+        draggedSessionId = session.id
+        startX = e.clientX
+        startY = e.clientY
+        suppressClick = false
+
+        const onPointerMove = (event: PointerEvent) => {
+            if (!draggedSessionId) return
+
+            const dx = Math.abs(event.clientX - startX)
+            const dy = Math.abs(event.clientY - startY)
+            if (!pointerDragging && dx + dy < 4) return
+
+            pointerDragging = true
+            suppressClick = true
+            currentTarget.style.opacity = '0.5'
+            event.preventDefault()
+
+            const hovered = document
+                .elementFromPoint(event.clientX, event.clientY)
+                ?.closest('.tab[data-session-id]') as HTMLElement | null
+
+            const targetId = hovered?.dataset.sessionId
+            if (!hovered || !targetId || targetId === draggedSessionId) {
+                clearDropIndicator()
+                lastTargetId = null
+                lastPosition = null
+                return
+            }
+
+            const rect = hovered.getBoundingClientRect()
+            const position: 'before' | 'after' =
+                event.clientX < rect.left + rect.width / 2 ? 'before' : 'after'
+
+            if (indicatorElement !== hovered) {
+                clearDropIndicator()
+                indicatorElement = hovered
+            }
+
+            indicatorElement.classList.toggle('drop-before', position === 'before')
+            indicatorElement.classList.toggle('drop-after', position === 'after')
+
+            if (targetId !== lastTargetId || position !== lastPosition) {
+                dataStore.reorderSession(draggedSessionId, targetId, position)
+                lastTargetId = targetId
+                lastPosition = position
+            }
+        }
+
+        const onPointerUp = () => {
+            document.removeEventListener('pointermove', onPointerMove)
+            document.removeEventListener('pointerup', onPointerUp)
+            document.removeEventListener('pointercancel', onPointerUp)
+            clearDropIndicator()
+            lastTargetId = null
+            lastPosition = null
+            cleanupPointerDrag(currentTarget)
+        }
+
+        document.addEventListener('pointermove', onPointerMove)
+        document.addEventListener('pointerup', onPointerUp)
+        document.addEventListener('pointercancel', onPointerUp)
+    }
 
     function handleDblClick() {
         editedName = session.name
@@ -62,6 +156,16 @@
         e.stopPropagation()
         onClose()
     }
+
+    function handleTabClick(e: MouseEvent) {
+        if (suppressClick) {
+            e.preventDefault()
+            e.stopPropagation()
+            suppressClick = false
+            return
+        }
+        onClick()
+    }
 </script>
 
 <div
@@ -69,8 +173,12 @@
         tabindex="-1"
         class="tab"
         class:tab-active={isActive}
-        onclick={onClick}
+        onclick={handleTabClick}
         onkeydown={handleKeydown}
+        data-session-id={session.id}
+        draggable="false"
+        onpointerdown={handlePointerDown}
+        style="-webkit-app-region: no-drag; app-region: no-drag; pointer-events: auto; user-select: none;"
 >
     <!--  <ParquetIcon size={24} className="text-ink-50" />-->
     {#snippet editMode()}
@@ -131,7 +239,7 @@
         padding: 0 0.75rem;
         border-radius: 0.5rem;
         border: 1px solid var(--surface-6);
-        cursor: pointer;
+        cursor: grab;
         color: var(--ink-5);
         transition: all 200ms ease;
         user-select: none;
@@ -148,6 +256,18 @@
                 transition: opacity 300ms ease 200ms;
             }
         }
+    }
+
+    .tab:active {
+        cursor: grabbing;
+    }
+
+    :global(.drop-before) {
+        box-shadow: inset 3px 0 0 var(--accent);
+    }
+
+    :global(.drop-after) {
+        box-shadow: inset -3px 0 0 var(--accent);
     }
 
     .tab-active {
