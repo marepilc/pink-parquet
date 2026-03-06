@@ -963,7 +963,11 @@ pub fn run() {
                 let _ = window.set_focus();
             }
             if args.len() > 1 {
-                let _ = app.emit("open-file", args[1].clone());
+                let file_path = args[1].clone();
+                let lower_path = file_path.to_lowercase();
+                if lower_path.ends_with(".parquet") || lower_path.ends_with(".csv") {
+                    let _ = app.emit("open-file", file_path);
+                }
             }
         }))
         .setup(|app: &mut tauri::App| {
@@ -982,7 +986,8 @@ pub fn run() {
             let args: Vec<String> = std::env::args().collect();
             if args.len() > 1 {
                 let file_path = args[1].clone();
-                if file_path.ends_with(".parquet") {
+                let lower_path = file_path.to_lowercase();
+                if lower_path.ends_with(".parquet") || lower_path.ends_with(".csv") {
                     let app_handle = app.handle().clone();
                     // Give the frontend some time to load before emitting the event
                     std::thread::spawn(move || {
@@ -1026,8 +1031,9 @@ pub fn run() {
             if let tauri::RunEvent::Opened { urls } = _event {
                 for url in urls {
                     if let Ok(path) = url.to_file_path() {
-                        if path.to_string_lossy().ends_with(".parquet") {
-                            let path_str = path.to_string_lossy().to_string();
+                        let path_str = path.to_string_lossy().to_string();
+                        let lower_path = path_str.to_lowercase();
+                        if lower_path.ends_with(".parquet") || lower_path.ends_with(".csv") {
                             let app_clone = _app.clone();
                             std::thread::spawn(move || {
                                 std::thread::sleep(std::time::Duration::from_millis(1000));
