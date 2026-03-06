@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - 2026-03-06
+
+### Added
+
+- **CSV Support**:
+    - Added support for opening CSV files via command line and file association on Windows and macOS.
+    - Double-clicking a CSV file when the application is closed now correctly loads the file on startup.
+- **Multiple Queries**:
+    - Added possibility to open more than one query in separate tabs.
+
+### Changed
+
+- **UI Refinement**:
+    - Generalized "Parquet" mentions in the UI to "File" to reflect broader format support (CSV, SQL).
+    - Updated the "About" modal to describe the app as a "Parquet and CSV file viewer".
+    - Improved status bar and loading messages for a cleaner look when opening different file types.
+
+### Fixed
+
+- **Security**:
+    - Updated JS dependencies (`svelte`, `@sveltejs/kit`, `rollup`, etc.) to address known vulnerabilities.
+- **Stability**:
+    - Fixed a Rust compilation error related to string case conversion in the backend.
+    - Cleaned up redundant parentheses in Rust code to satisfy compiler warnings.
+
 ## [2.0.5] - 2026-01-10
 
 ### Added
