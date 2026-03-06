@@ -105,7 +105,7 @@
                 </div>
 
                 <div class="info-section">
-                    <p class="description">A user-friendly Parquet file viewer.</p>
+                    <p class="description">A user-friendly Parquet and CSV file viewer.</p>
                     <button
                             class="link-text"
                             onclick={() => openLink('https://pinkparquet.com')}

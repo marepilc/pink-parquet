@@ -29,7 +29,7 @@
             <h3 class="section-title">Available Tables</h3>
             {#if availableTables.length === 0}
                 <p class="section-text">
-                    No tables loaded. Open a Parquet file to get started.
+                    No tables loaded. Open a file to get started.
                 </p>
             {:else}
                 {#each availableTables as table}
