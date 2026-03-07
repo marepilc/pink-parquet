@@ -1,4 +1,5 @@
 <script lang="ts">
+    import {invoke} from '@tauri-apps/api/core'
     import ToolbarBtn from '$lib/components/ToolbarBtn.svelte'
     import ToggleSwitch from '$lib/components/ToggleSwitch.svelte'
     import {dataStore} from '$lib/stores/dataStore.svelte'
@@ -135,7 +136,6 @@
             })
 
             if (filePath) {
-                const {invoke} = await import('@tauri-apps/api/core')
                 const command = filePath.toLowerCase().endsWith('.csv') ? 'save_csv' : 'save_parquet'
                 await invoke(command, {filePath})
 
@@ -322,3 +322,4 @@
         }
     }
 </style>
+

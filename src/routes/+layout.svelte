@@ -1,4 +1,5 @@
 <script lang="ts">
+    import {invoke} from '@tauri-apps/api/core'
     import '../app.css'
     import TitleBar from '$lib/components/TitleBar.svelte'
     import Toolbar from '$lib/components/Toolbar.svelte'
@@ -45,7 +46,6 @@
 
     async function loadSqlFile(filePath: string) {
         try {
-            const {invoke} = await import('@tauri-apps/api/core')
             const content = await invoke<string>('read_text_file', {path: filePath})
             if (content) {
                 // Ensure there is an active session to load SQL into
@@ -153,7 +153,6 @@
             })
 
             if (filePath) {
-                const {invoke} = await import('@tauri-apps/api/core')
                 const command = filePath.toLowerCase().endsWith('.csv') ? 'save_csv' : 'save_parquet'
                 await invoke(command, {filePath})
 
@@ -359,3 +358,4 @@
         border-top: 1px solid var(--surface-4);
     }
 </style>
+

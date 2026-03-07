@@ -1,3 +1,5 @@
+import {invoke} from '@tauri-apps/api/core'
+
 export interface ColumnInfo {
     name: string
     dtype: string
@@ -470,7 +472,6 @@ export const dataStore = {
             const otherSessionUsingFile = sessions.some((s) => s.path === path)
             if (path && !otherSessionUsingFile && path.toLowerCase().endsWith('.parquet')) {
                 try {
-                    const {invoke} = await import('@tauri-apps/api/core')
                     await invoke('stop_watching', {filePath: path})
                 } catch (e) {
                     console.error('Failed to stop watching file:', e)
@@ -660,7 +661,6 @@ export const dataStore = {
         this.setLoading(true, sessionId, false)
 
         try {
-            const {invoke} = await import('@tauri-apps/api/core')
             const data = await invoke('get_data', {
                 filePath,
                 sorting: null,
@@ -684,3 +684,4 @@ export const dataStore = {
         activeSessionId = null
     },
 }
+

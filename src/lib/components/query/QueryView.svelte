@@ -1,4 +1,5 @@
 <script lang="ts">
+    import {invoke} from '@tauri-apps/api/core'
     import {dataStore} from '$lib/stores/dataStore.svelte'
     import {tooltipStore} from '$lib/stores/tooltipStore.svelte'
     import SqlEditor from '$lib/components/SqlEditor.svelte'
@@ -159,8 +160,6 @@
         dataStore.setLoading(true, session.id, true)
 
         try {
-            const {invoke} = await import('@tauri-apps/api/core')
-
             const tableNames = dataStore.getTableNames()
             const queryResults = dataStore.getQueryResults()
 
@@ -311,3 +310,4 @@
         border-color: var(--surface-6);
     }
 </style>
+

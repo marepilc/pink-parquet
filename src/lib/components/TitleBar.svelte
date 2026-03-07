@@ -1,4 +1,5 @@
 <script lang="ts">
+    import {invoke} from '@tauri-apps/api/core'
     import {type} from '@tauri-apps/plugin-os'
     import {onMount} from 'svelte'
     import AppLogo from '$lib/components/AppLogo.svelte'
@@ -13,7 +14,6 @@
 
     onMount(async () => {
         const {getCurrentWindow} = await import('@tauri-apps/api/window')
-        const {invoke} = await import('@tauri-apps/api/core')
         const appWindow = getCurrentWindow()
 
         const osType = await type()
@@ -30,12 +30,10 @@
     })
 
     async function minimize() {
-        const {invoke} = await import('@tauri-apps/api/core')
         await invoke('minimize_window')
     }
 
     async function toggleMaximize() {
-        const {invoke} = await import('@tauri-apps/api/core')
         if (isMaximized) {
             await invoke('unmaximize_window')
         } else {
@@ -44,7 +42,6 @@
     }
 
     async function close() {
-        const {invoke} = await import('@tauri-apps/api/core')
         await invoke('close_window')
     }
 
@@ -174,3 +171,4 @@
         app-region: no-drag;
     }
 </style>
+

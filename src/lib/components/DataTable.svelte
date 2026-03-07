@@ -1,4 +1,5 @@
 <script lang="ts">
+    import {invoke} from '@tauri-apps/api/core'
   import { dataStore } from '$lib/stores/dataStore.svelte'
   import { tooltipStore } from '$lib/stores/tooltipStore.svelte'
   import { onMount, untrack } from 'svelte'
@@ -242,7 +243,6 @@
     dataStore.setLoading(true, undefined, isQuery)
 
     try {
-      const { invoke } = await import('@tauri-apps/api/core')
       const sorting = !isQuery && sortStates.length > 0 ? sortStates : null
 
       let newData: any
@@ -281,7 +281,6 @@
     dataStore.setLoadingMore(true, undefined, isQuery)
 
     try {
-      const { invoke } = await import('@tauri-apps/api/core')
       const sorting = !isQuery && sortStates.length > 0 ? sortStates : null
 
       let newRows: string[][]
@@ -419,7 +418,6 @@
 
   async function copyTable() {
     try {
-      const { invoke } = await import('@tauri-apps/api/core')
       const tableData = await invoke<string>('copy_full_table')
       await navigator.clipboard.writeText(tableData)
     } catch (error) {
@@ -505,8 +503,6 @@
     // Fetch statistics for this column
     try {
       if (!dataStore.activeSession?.path) return
-
-      const { invoke } = await import('@tauri-apps/api/core')
       const columnName = columns[colIndex]?.name
       if (!columnName) return
 
@@ -1735,3 +1731,4 @@
     }
   }
 </style>
+

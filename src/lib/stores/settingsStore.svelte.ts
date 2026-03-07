@@ -1,3 +1,5 @@
+import {invoke} from '@tauri-apps/api/core'
+
 export type FontFamily = 'Iosevka' | 'Argon' | 'Krypton' | 'Neon' | 'Radon' | 'Xenon'
 
 export interface Settings {
@@ -27,7 +29,6 @@ export const settingsStore = {
 
     async load() {
         try {
-            const {invoke} = await import('@tauri-apps/api/core')
             const loadedSettings = await invoke<Settings>('load_settings')
             settings = {...DEFAULT_SETTINGS, ...loadedSettings}
             loaded = true
@@ -59,7 +60,6 @@ export const settingsStore = {
 
     async save() {
         try {
-            const {invoke} = await import('@tauri-apps/api/core')
             await invoke('save_settings', {settings})
         } catch (error) {
             console.error('Failed to save settings:', error)
@@ -96,3 +96,4 @@ export const settingsStore = {
         }
     },
 }
+
