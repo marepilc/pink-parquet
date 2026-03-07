@@ -7,6 +7,19 @@
     let textElement = $state<HTMLElement | null>(null)
     let isOverflowing = $state(false)
 
+    const footerText = $derived.by(() => {
+        const session = dataStore.activeSession
+        if (!dataStore.hasData || !session) {
+            return 'No file loaded.'
+        }
+
+        if (session.path) {
+            return session.path
+        }
+
+        return session.isQueryResult ? 'Query result' : session.name
+    })
+
     $effect(() => {
         if (containerElement && textElement) {
             const checkOverflow = () => {
@@ -31,7 +44,7 @@
 
     // Re-check overflow when the path changes
     $effect(() => {
-        if (dataStore.activeSession?.path) {
+        if (footerText) {
             // Wait for next tick so DOM is updated with new path
             untrack(() => {
                 setTimeout(() => {
@@ -54,7 +67,7 @@
             role="status"
             onmouseenter={(e) => {
       if (dataStore.hasData && dataStore.activeSession) {
-        tooltipStore.show(e.currentTarget, dataStore.activeSession.path, e.clientX, e.clientY)
+        tooltipStore.show(e.currentTarget, footerText, e.clientX, e.clientY)
       }
     }}
             onmousemove={(e) => {
@@ -62,17 +75,13 @@
         if (tooltipStore.visible) {
           tooltipStore.hide()
         } else {
-          tooltipStore.show(e.currentTarget, dataStore.activeSession.path, e.clientX, e.clientY)
+          tooltipStore.show(e.currentTarget, footerText, e.clientX, e.clientY)
         }
       }
     }}
             onmouseleave={() => tooltipStore.hide()}
     >
-        {#if dataStore.hasData && dataStore.activeSession}
-            <span bind:this={textElement} class="path-text">{dataStore.activeSession.path}</span>
-        {:else}
-            No file loaded.
-        {/if}
+        <span bind:this={textElement} class="path-text">{footerText}</span>
     </div>
 </footer>
 
