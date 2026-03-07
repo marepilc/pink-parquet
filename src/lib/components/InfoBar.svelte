@@ -39,7 +39,7 @@
     }
 </script>
 
-{#if dataStore.metadata}
+{#if dataStore.data}
     <div id="info-bar-container">
         <div class="info-bar-content">
             <div class="info-metrics">
@@ -51,20 +51,22 @@
                     <span class="metric-label">Columns:</span>
                     <span class="metric-value">{columns.length}</span>
                 </div>
-                {#if !dataStore.isSqlTabActive}
+                {#if dataStore.metadata && !dataStore.isSqlTabActive}
                     <div class="info-metric">
                         <span class="metric-label">Size:</span>
                         <span class="metric-value">{formatFileSize(dataStore.metadata.size)}</span>
                     </div>
                 {/if}
-                <div class="info-metric">
-                    <span class="metric-label">Data health:</span>
-                    <span class="metric-value">{formatDataHealth()}</span>
-                </div>
-                <div class="info-metric">
-                    <span class="metric-label">Compression:</span>
-                    <span class="metric-value">{dataStore.metadata.compression}</span>
-                </div>
+                {#if dataStore.metadata}
+                    <div class="info-metric">
+                        <span class="metric-label">Data health:</span>
+                        <span class="metric-value">{formatDataHealth()}</span>
+                    </div>
+                    <div class="info-metric">
+                        <span class="metric-label">Compression:</span>
+                        <span class="metric-value">{dataStore.metadata.compression}</span>
+                    </div>
+                {/if}
             </div>
             <div class="loaded-rows">
                 Loaded {loadedRows.toLocaleString()} of {totalRows.toLocaleString()} rows
