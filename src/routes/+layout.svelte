@@ -1,4 +1,5 @@
 <script lang="ts">
+    import {invoke} from '@tauri-apps/api/core'
     import '../app.css'
     import TitleBar from '$lib/components/TitleBar.svelte'
     import Toolbar from '$lib/components/Toolbar.svelte'
@@ -45,7 +46,6 @@
 
     async function loadSqlFile(filePath: string) {
         try {
-            const {invoke} = await import('@tauri-apps/api/core')
             const content = await invoke<string>('read_text_file', {path: filePath})
             if (content) {
                 // Ensure there is an active session to load SQL into
@@ -153,7 +153,6 @@
             })
 
             if (filePath) {
-                const {invoke} = await import('@tauri-apps/api/core')
                 const command = filePath.toLowerCase().endsWith('.csv') ? 'save_csv' : 'save_parquet'
                 await invoke(command, {filePath})
 
@@ -181,13 +180,18 @@
             if (dataStore.data) {
                 handleSaveAs()
             }
-        } else if (event.key === 'F5') {
-            event.preventDefault()
-            // F5 is handled by SqlEditor if focused.
+        } else if (event.key === 'F5' || (event.shiftKey && event.key === 'Enter')) {
+            // F5 or Shift + Enter is handled by SqlEditor if focused.
             // If we're here, it means focus is elsewhere.
             // We prevent default to avoid page reload which clears state.
             if (dataStore.isSqlTabActive) {
-                dataStore.triggerQuery()
+                event.preventDefault()
+                // Only trigger if focus is NOT in an input/textarea (which SqlEditor uses)
+                // Actually CodeMirror handles its own events, but let's be safe.
+                const target = event.target as HTMLElement
+                if (target.tagName !== 'TEXTAREA' && target.tagName !== 'INPUT') {
+                    dataStore.triggerQuery()
+                }
             }
         }
     }
@@ -325,8 +329,6 @@
         align-items: center;
         justify-content: space-between;
         z-index: 100;
-        -webkit-app-region: drag;
-        app-region: drag;
         user-select: none;
     }
 
@@ -356,3 +358,4 @@
         border-top: 1px solid var(--surface-4);
     }
 </style>
+

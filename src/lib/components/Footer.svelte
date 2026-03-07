@@ -71,7 +71,7 @@
         {#if dataStore.hasData && dataStore.activeSession}
             <span bind:this={textElement} class="path-text">{dataStore.activeSession.path}</span>
         {:else}
-            No parquet file loaded.
+            No file loaded.
         {/if}
     </div>
 </footer>

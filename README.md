@@ -15,7 +15,7 @@ interface for analyzing Parquet data using powerful SQL queries and seamless fil
 - **In-Depth Metadata**: View detailed file statistics including row counts, schema details, compression types, and row
   group information.
 - **Modern Desktop Experience**: Built with Tauri for a native feel, small footprint, and high performance on Windows
-  and macOS.
+  , macOS, and Linux.
 - **Drag & Drop**: Quickly open files by dropping them anywhere in the application.
 
 ### Tech Stack
@@ -48,8 +48,16 @@ the [Releases](https://github.com/marepilc/pink-parquet/releases) page.
 
 ### Linux
 
-Currently, Linux users are encouraged to [build from source](#building-from-source). Pre-built packages for Linux are
-coming soon.
+1. Download the Linux binary file named `pinkparquet` from
+   the [Releases](https://github.com/marepilc/pink-parquet/releases) page.
+2. Make it executable:
+   ```bash
+   chmod +x pinkparquet
+   ```
+3. Run it:
+   ```bash
+   ./pinkparquet
+   ```
 
 ## Building from Source
 
