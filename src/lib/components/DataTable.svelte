@@ -229,6 +229,16 @@
     return sort ? sort.ascending : null
   }
 
+  function shouldUseSqlQuery(session = dataStore.activeSession): boolean {
+    if (!session) return false
+
+    if (session.isQueryResult) {
+      return !!session.sqlQuery?.trim()
+    }
+
+    return dataStore.isSqlTabActive && dataStore.isQueryMode
+  }
+
 
   async function reloadData() {
     const session = dataStore.activeSession
@@ -239,7 +249,7 @@
       tableContainer.scrollTop = 0
     }
 
-    const isQuery = dataStore.isSqlTabActive && dataStore.isQueryMode
+    const isQuery = shouldUseSqlQuery(session)
     dataStore.setLoading(true, undefined, isQuery)
 
     try {
@@ -277,7 +287,7 @@
     const session = dataStore.activeSession
     if (isLoadingMore || !hasMoreRows || !session) return
 
-    const isQuery = dataStore.isSqlTabActive && dataStore.isQueryMode
+    const isQuery = shouldUseSqlQuery(session)
     dataStore.setLoadingMore(true, undefined, isQuery)
 
     try {

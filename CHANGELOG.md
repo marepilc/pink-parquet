@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.2] - 2026-05-08
+
+### Fixed
+
+- **Query Results**:
+    - Fixed infinite scrolling in query results so additional rows load correctly when scrolling to the bottom.
+    - Corrected query result state handling so SQL-backed result tabs append newly loaded rows to the visible dataset.
+
 ## [2.1.0] - 2026-03-06
 
 ### Added

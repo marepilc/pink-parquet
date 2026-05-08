@@ -65,6 +65,11 @@ let sqlEditorHeight = $state<number>(0)
 const queryListeners = new Set<() => void>()
 
 export const dataStore = {
+    usesSqlStorage(session?: FileSession | null, isSqlOverride?: boolean) {
+        if (!session) return false
+        if (session.isQueryResult) return false
+        return isSqlOverride !== undefined ? isSqlOverride : isSqlTabActive
+    },
     get sessions() {
         return sessions
     },
@@ -116,7 +121,7 @@ export const dataStore = {
     get loading() {
         const session = this.activeSession
         if (!session) return false
-        return isSqlTabActive ? session.loadingQuery : session.loadingRaw
+        return this.usesSqlStorage(session) ? session.loadingQuery : session.loadingRaw
     },
     get error() {
         return this.activeSession?.error || null
@@ -124,7 +129,9 @@ export const dataStore = {
     get loadingMore() {
         const session = this.activeSession
         if (!session) return false
-        return isSqlTabActive ? session.loadingMoreQuery : session.loadingMoreRaw
+        return this.usesSqlStorage(session)
+            ? session.loadingMoreQuery
+            : session.loadingMoreRaw
     },
     get hasData() {
         return sessions.length > 0
@@ -178,7 +185,11 @@ export const dataStore = {
     get metadata() {
         const session = this.activeSession
         if (!session) return null
-        return (this.isSqlTabActive ? session.queryData?.metadata : session.rawData?.metadata) || null
+        return (
+            this.usesSqlStorage(session)
+                ? session.queryData?.metadata
+                : session.rawData?.metadata
+        ) || null
     },
     get totalRows() {
         const d = this.data
@@ -485,8 +496,7 @@ export const dataStore = {
             ? sessions.find((s) => s.id === sessionId)
             : this.activeSession
 
-        const effectiveIsSql =
-            isSqlResult !== undefined ? isSqlResult : isSqlTabActive
+        const effectiveIsSql = this.usesSqlStorage(session, isSqlResult)
 
         if (session) {
             if (effectiveIsSql) {
@@ -538,7 +548,7 @@ export const dataStore = {
             ? sessions.find((s) => s.id === sessionId)
             : this.activeSession
 
-        const effectiveIsSql = isSql !== undefined ? isSql : this.isSqlTabActive
+        const effectiveIsSql = this.usesSqlStorage(session, isSql)
 
         if (session) {
             if (effectiveIsSql && session.queryData) {
@@ -565,7 +575,7 @@ export const dataStore = {
             ? sessions.find((s) => s.id === sessionId)
             : this.activeSession
         if (session) {
-            const effectiveIsSql = isSql !== undefined ? isSql : this.isSqlTabActive
+            const effectiveIsSql = this.usesSqlStorage(session, isSql)
             if (effectiveIsSql) {
                 session.loadingQuery = isLoading
             } else {
@@ -580,7 +590,7 @@ export const dataStore = {
             ? sessions.find((s) => s.id === sessionId)
             : this.activeSession
         if (session) {
-            const effectiveIsSql = isSql !== undefined ? isSql : this.isSqlTabActive
+            const effectiveIsSql = this.usesSqlStorage(session, isSql)
             if (effectiveIsSql) {
                 session.loadingMoreQuery = isLoading
             } else {
