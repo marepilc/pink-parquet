@@ -38,26 +38,27 @@ the [Releases](https://github.com/marepilc/pink-parquet/releases) page.
 
 ### Windows
 
-1. Download the `.msi` installer.
+1. Download the `.msi` (or `-setup.exe`) installer — `x64` for most PCs, `arm64` for Windows on ARM.
 2. Run the installer and follow the instructions.
 
 ### macOS
 
-1. Download the `.dmg` file.
+1. Download the `.dmg` file — `aarch64` for Apple Silicon (M1 and newer), `x64` for Intel Macs.
 2. Open the `.dmg` file and drag **Pink Parquet** to your **Applications** folder.
+3. The app is not notarized by Apple. If macOS says the app "is damaged" or "can't be opened", run:
+   ```bash
+   xattr -cr "/Applications/Pink Parquet.app"
+   ```
 
 ### Linux
 
-1. Download the Linux binary file named `pinkparquet` from
-   the [Releases](https://github.com/marepilc/pink-parquet/releases) page.
-2. Make it executable:
-   ```bash
-   chmod +x pinkparquet
-   ```
-3. Run it:
-   ```bash
-   ./pinkparquet
-   ```
+- **AppImage** (any distribution):
+  ```bash
+  chmod +x Pink.Parquet_*.AppImage
+  ./Pink.Parquet_*.AppImage
+  ```
+- **Debian / Ubuntu**: `sudo apt install ./Pink.Parquet_*_amd64.deb`
+- **Fedora / openSUSE**: `sudo dnf install ./Pink.Parquet-*.x86_64.rpm`
 
 ## Building from Source
 
@@ -65,7 +66,7 @@ the [Releases](https://github.com/marepilc/pink-parquet/releases) page.
 
 - **Rust**: [Install via rustup](https://rustup.rs/)
 - **Node.js**: [LTS version recommended](https://nodejs.org/)
-- **Tauri Dependencies**: Follow the [Tauri setup guide](https://tauri.app/v1/guides/getting-started/prerequisites) for
+- **Tauri Dependencies**: Follow the [Tauri setup guide](https://v2.tauri.app/start/prerequisites/) for
   your OS.
 
 ### Build Steps
@@ -90,6 +91,19 @@ the [Releases](https://github.com/marepilc/pink-parquet/releases) page.
    ```bash
    npm run tauri build
    ```
+
+### Releases
+
+Release builds are produced by GitHub Actions (`.github/workflows/release.yml`). After bumping the version in
+`package.json`, `src-tauri/tauri.conf.json` and `src-tauri/Cargo.toml`, push a matching tag:
+
+```bash
+git tag v2.1.3
+git push origin v2.1.3
+```
+
+The workflow builds macOS (Apple Silicon + Intel), Windows (x64 + ARM64) and Linux (AppImage, deb, rpm) packages and
+attaches them to a draft release, which can be reviewed and published on GitHub.
 
 ## Contributing
 
