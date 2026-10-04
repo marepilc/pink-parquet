@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.3] - 2026-10-04
+
+### Added
+
+- **Release Builds**:
+    - Native macOS Apple Silicon (`aarch64`) build alongside the Intel build.
+    - Linux packages: AppImage, `.deb` and `.rpm`.
+    - Automated release workflow on GitHub Actions for macOS, Windows and Linux.
+
+### Fixed
+
+- **Security**:
+    - Updated JS dependencies (`svelte`, `@sveltejs/kit`, `vite`, `postcss`, `devalue`, `nanoid`, `picomatch`) to address known vulnerabilities.
+    - Updated Rust dependencies (`tauri`, `rustls-webpki`, `quinn-proto`, `serde_with`, `rand`) to address known vulnerabilities.
+    - Upgraded `parquet` crate to 60.0, removing the vulnerable `thrift` dependency.
+
 ## [2.1.2] - 2026-05-08
 
 ### Fixed
