@@ -13,6 +13,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- **Linux**:
+    - Fixed UI rendering glitches on Wayland by disabling the WebKitGTK DMABUF renderer (can be overridden with `WEBKIT_DISABLE_DMABUF_RENDERER`).
 - **Security**:
     - Updated JS dependencies (`svelte`, `@sveltejs/kit`, `vite`, `postcss`, `devalue`, `nanoid`, `picomatch`) to address known vulnerabilities.
     - Updated Rust dependencies (`tauri`, `rustls-webpki`, `quinn-proto`, `serde_with`, `rand`) to address known vulnerabilities.
