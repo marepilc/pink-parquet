@@ -144,32 +144,24 @@
     .tabs-outer-container {
         position: relative;
         display: flex;
-        align-items: center;
-        gap: 0.5rem;
+        align-items: stretch;
         width: 100%;
         overflow: hidden;
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
     }
 
     .tabs-container {
         position: relative;
         display: flex;
-        align-items: center;
-        height: 2.5rem;
+        align-items: stretch;
+        height: 2.375rem;
         flex-grow: 1;
         flex-shrink: 1;
         min-width: 0;
         justify-content: flex-start;
-        gap: 0.25rem;
         overflow-x: auto;
-        padding: 0.25rem 0.5rem;
-        background-image: linear-gradient(
-                to right,
-                var(--surface-4),
-                var(--surface-3)
-        );
-        border-radius: 0.25rem;
-        border: 1px groove var(--surface-9);
-        border: 1px groove oklch(from var(--surface-9) l c h / 0.5);
+        padding: 0 0.5rem;
     }
 
     /* Hide scrollbar */
@@ -184,33 +176,29 @@
 
     .tabs-list {
         display: flex;
-        gap: 0.25rem;
+        align-items: stretch;
+        gap: 0.125rem;
     }
 
     .scroll-button {
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 2.5rem;
         width: 2rem;
         flex-shrink: 0;
-        border-radius: 0.25rem;
-        color: var(--ink-1);
-        color: oklch(from var(--ink-1) l c h / 0.7);
-        background: var(--surface-3);
-        border: 1px solid var(--surface-6);
+        color: var(--text-muted);
+        background: none;
+        border: 0;
         cursor: pointer;
-        transition: all 200ms ease;
     }
 
     .scroll-button:hover:not(:disabled) {
-        background-color: var(--surface-2);
-        color: var(--accent);
-        border-color: var(--accent);
+        background-color: var(--hover);
+        color: var(--text);
     }
 
     .scroll-button:disabled {
-        opacity: 0.4;
+        opacity: 0.35;
         cursor: default;
     }
 </style>

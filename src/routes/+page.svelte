@@ -1,5 +1,5 @@
 <script lang="ts">
-  import FileUpload from '$lib/components/FileUpload.svelte'
+  import StartScreen from '$lib/components/StartScreen.svelte'
 </script>
 
-<FileUpload />
+<StartScreen />

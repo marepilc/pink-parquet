@@ -2,8 +2,8 @@
     import {invoke} from '@tauri-apps/api/core'
     import '../app.css'
     import TitleBar from '$lib/components/TitleBar.svelte'
-    import Toolbar from '$lib/components/Toolbar.svelte'
-    import Footer from '$lib/components/Footer.svelte'
+    import Sidebar from '$lib/components/Sidebar.svelte'
+    import StatusBar from '$lib/components/StatusBar.svelte'
     import DragOverlay from '$lib/components/DragOverlay.svelte'
     import Tooltip from '$lib/components/Tooltip.svelte'
     import type {Snippet} from 'svelte'
@@ -12,8 +12,7 @@
     import {settingsStore} from '$lib/stores/settingsStore.svelte'
     import {goto} from '$app/navigation'
     import type {UnlistenFn} from '@tauri-apps/api/event'
-    import InfoBar from '$lib/components/InfoBar.svelte'
-    import {open, save} from '@tauri-apps/plugin-dialog'
+    import {loadDataFile, openDataFiles, saveActiveAs} from '$lib/fileActions'
     import {type} from '@tauri-apps/plugin-os'
 
     interface Props {
@@ -68,103 +67,7 @@
     }
 
     async function loadParquetFile(filePath: string, forceReload: boolean = false) {
-        await dataStore.loadParquetFile(filePath, forceReload, goto)
-    }
-
-    // Keyboard shortcuts
-    async function handleOpenFile() {
-        try {
-            const files = await open({
-                multiple: true,
-                filters: [
-                    {
-                        name: 'Data Files',
-                        extensions: ['parquet', 'csv'],
-                    },
-                ],
-            })
-
-            if (files && Array.isArray(files)) {
-                for (const file of files) {
-                    await loadParquetFile(file)
-                }
-            } else if (files) {
-                await loadParquetFile(files as string)
-            }
-        } catch (error) {
-            console.error('Error opening file:', error)
-        }
-    }
-
-    async function handleSaveAs() {
-        if (!dataStore.hasData) return
-
-        try {
-            let defaultPath: string | undefined
-
-            if (dataStore.isSqlTabActive) {
-                defaultPath = 'untitled.parquet'
-            } else {
-                const activeSession = dataStore.sessions.find(
-                    (s) => s.id === dataStore.activeSessionId
-                )
-                if (activeSession) {
-                    const originalPath = activeSession.path
-                    const pathSeparator = originalPath.includes('/') ? '/' : '\\'
-                    const lastSeparatorIndex = originalPath.lastIndexOf(pathSeparator)
-
-                    if (lastSeparatorIndex >= 0) {
-                        const directory = originalPath.substring(0, lastSeparatorIndex + 1)
-                        // Ensure the name has .parquet extension (even if it was .csv)
-                        let name = activeSession.name
-                        if (name.toLowerCase().endsWith('.csv')) {
-                            name = name.substring(0, name.length - 4)
-                        }
-                        if (!name.toLowerCase().endsWith('.parquet')) {
-                            name = `${name}.parquet`
-                        }
-                        defaultPath = directory + name
-                    } else {
-                        // Fallback if no separator found
-                        let name = activeSession.name
-                        if (name.toLowerCase().endsWith('.csv')) {
-                            name = name.substring(0, name.length - 4)
-                        }
-                        if (!name.toLowerCase().endsWith('.parquet')) {
-                            name = `${name}.parquet`
-                        }
-                        defaultPath = name
-                    }
-                }
-            }
-
-            const filePath = await save({
-                defaultPath,
-                filters: [
-                    {
-                        name: 'Parquet',
-                        extensions: ['parquet'],
-                    },
-                    {
-                        name: 'CSV',
-                        extensions: ['csv'],
-                    },
-                ],
-            })
-
-            if (filePath) {
-                const command = filePath.toLowerCase().endsWith('.csv') ? 'save_csv' : 'save_parquet'
-                await invoke(command, {filePath})
-
-                // If the saved file is already open in any session, reload that session
-                const existingSession = dataStore.sessions.find((s) => s.path === filePath)
-                if (existingSession) {
-                    await loadParquetFile(filePath, true)
-                }
-            }
-        } catch (error) {
-            console.error('Error saving file:', error)
-        }
+        await loadDataFile(filePath, forceReload)
     }
 
     function handleKeyDown(event: KeyboardEvent) {
@@ -173,13 +76,10 @@
 
         if (isModifier && event.key === 'o') {
             event.preventDefault()
-            handleOpenFile()
+            openDataFiles()
         } else if (isModifier && event.key === 's') {
             event.preventDefault()
-            // Only save if there's data available
-            if (dataStore.data) {
-                handleSaveAs()
-            }
+            saveActiveAs()
         } else if (event.key === 'F5' || (event.shiftKey && event.key === 'Enter')) {
             // F5 or Shift + Enter is handled by SqlEditor if focused.
             // If we're here, it means focus is elsewhere.
@@ -275,13 +175,12 @@
             <TitleBar/>
         </header>
     {/if}
-    <div id="toolbar">
-        <Toolbar/>
+    <div id="sidebar">
+        <Sidebar/>
     </div>
     <div id="main-area">{@render children()}</div>
-    <div id="footer" class="card">
-        <InfoBar/>
-        <Footer/>
+    <div id="status-bar">
+        <StatusBar/>
     </div>
 
     <DragOverlay
@@ -297,30 +196,24 @@
         width: 100vw;
         height: 100vh;
         display: grid;
-        grid-template-rows: 2.5rem 1fr 3.75rem;
-        grid-template-columns: 5rem 1fr;
+        grid-template-rows: 2.5rem 1fr 1.75rem;
+        grid-template-columns: 15rem 1fr;
         grid-template-areas:
       'title-bar title-bar'
-      'toolbar main-area'
-      'footer footer';
+      'sidebar main-area'
+      'status-bar status-bar';
         overflow: hidden;
-        background-image: radial-gradient(
-                circle at 50% 0,
-                var(--surface-3) 0%,
-                var(--surface-4) 50%,
-                var(--surface-2) 100%
-        );
+        background: var(--bg);
+        color: var(--text);
     }
 
     main.macos,
     main.linux {
-        grid-template-rows: 1fr 3.75rem;
+        grid-template-rows: 1fr 1.75rem;
         grid-template-areas:
-      'toolbar main-area'
-      'footer footer';
-        padding-top: 0.25rem;
+      'sidebar main-area'
+      'status-bar status-bar';
     }
-
 
     #title-bar-panel {
         width: 100%;
@@ -330,32 +223,25 @@
         justify-content: space-between;
         z-index: 100;
         user-select: none;
+        background: var(--panel);
+        border-bottom: 1px solid var(--border);
     }
 
-    #toolbar {
-        grid-area: toolbar;
-        padding: 0 0.5rem;
+    #sidebar {
+        grid-area: sidebar;
+        min-height: 0;
     }
 
     #main-area {
         grid-area: main-area;
         overflow: hidden;
-        padding: 0 0.5rem 0 0;
+        min-width: 0;
         display: flex;
         flex-direction: column;
     }
 
-    #footer {
-        grid-area: footer;
-        display: flex;
-        flex-direction: column;
-        margin-top: 0.25rem;
-        background-image: linear-gradient(
-                to bottom,
-                var(--surface-2),
-                var(--surface-3)
-        );
-        border-top: 1px solid var(--surface-4);
+    #status-bar {
+        grid-area: status-bar;
+        min-width: 0;
     }
 </style>
-

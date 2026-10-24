@@ -222,30 +222,25 @@
     <button class="tab-close" onclick={handleCloseClick} aria-label="Close tab">
         <CloseIcon size={12}/>
     </button>
-
-    {#if isActive}
-        <div class="tab-indicator"></div>
-    {/if}
 </div>
 
 <style>
     .tab {
+        position: relative;
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        height: 2rem;
         min-width: 7.5rem;
-        max-width: 12.5rem;
+        max-width: 14rem;
         padding: 0 0.75rem;
-        border-radius: 0.5rem;
-        border: 1px solid var(--surface-6);
+        border-bottom: 2px solid transparent;
         cursor: grab;
-        color: var(--ink-5);
-        transition: all 200ms ease;
+        color: var(--text-muted);
+        transition: color 150ms ease, background-color 150ms ease;
         user-select: none;
 
         &:hover {
-            border-color: var(--surface-7);
+            color: var(--text);
 
             .tab-title {
                 transform: translateX(-0.75rem);
@@ -271,13 +266,9 @@
     }
 
     .tab-active {
-        background-image: linear-gradient(
-                145deg,
-                var(--surface-3),
-                var(--surface-2)
-        );
-        color: var(--accent);
-        border-color: var(--surface-9);
+        background: var(--bg);
+        color: var(--text);
+        border-bottom-color: var(--accent);
     }
 
     .tab-title {
@@ -296,9 +287,9 @@
         width: 100%;
     }
 
-    .query-icon {
+    :global(.query-icon) {
         flex-shrink: 0;
-        color: var(--accent);
+        color: var(--accent-text);
         opacity: 0.8;
     }
 
@@ -313,9 +304,9 @@
 
     .rename-input {
         width: 100%;
-        background: var(--surface-1);
+        background: var(--panel-2);
         border: 1px solid var(--accent);
-        color: var(--ink-5);
+        color: var(--text);
         font-size: 0.75rem;
         font-family: inherit;
         font-weight: 500;
@@ -326,10 +317,10 @@
     }
 
     .tab-close {
-        color: var(--ink-1);
+        color: var(--text-muted);
         opacity: 0;
         transition: opacity 200ms ease;
-        background-color: var(--surface-3);
+        background-color: var(--chip);
         border: none;
         padding: 0.2rem;
         border-radius: 50%;
@@ -340,15 +331,6 @@
     }
 
     .tab-close:hover {
-        color: var(--ink-7);
-    }
-
-    .tab-indicator {
-        position: absolute;
-        top: -0.25rem;
-        left: 0;
-        width: 100%;
-        height: 0.25rem;
-        box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+        color: var(--text);
     }
 </style>

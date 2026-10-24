@@ -17,11 +17,11 @@
 {#if dataStore.hasData}
     {@const showEditor = dataStore.activeSession?.isQueryEditor}
     <div class="app-container">
+        <Tabs/>
         <div class={showEditor ? 'query-visible' : 'query-hidden'}>
             <QueryView visible={showEditor}/>
         </div>
         <DataTable/>
-        <Tabs/>
     </div>
 {/if}
 

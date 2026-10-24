@@ -25,6 +25,11 @@ figure, figcaption {
     scroll-behavior: smooth;
 }
 
+/* Dark is the default theme until settings are loaded */
+:root {
+    color-scheme: dark;
+}
+
 /* Theme-based color-scheme for proper tooltip rendering */
 html.light,
 :root.light {
@@ -37,48 +42,86 @@ html.dark,
 }
 
 :root {
-    /* Fallback colors for browsers without oklch/light-dark support */
-    --accent: #d946a6;
-    --surface-1: #f5f5f5;
-    --surface-2: #ececec;
-    --surface-3: #e3e3e3;
-    --surface-4: #dadada;
-    --surface-5: #d1d1d1;
-    --surface-6: #c8c8c8;
-    --surface-7: #bfbfbf;
-    --surface-8: #b6b6b6;
-    --surface-9: #adadad;
-    --ink-1: #3a3a3a;
-    --ink-2: #474747;
-    --ink-3: #545454;
-    --ink-4: #616161;
-    --ink-5: #6e6e6e;
-    --sql-comments: #6e6e6e;
-    --color-error: #dc2626;
-    --color-warning: #dc9326;
-    --color-error-bg: #fee2e2;
-    --color-error-hover: #b91c1c;
+    /* Fallback colors (dark theme) for browsers without oklch/light-dark support */
+    --accent: #c2185b;
+    --surface-1: #3e3e48;
+    --surface-2: #33333c;
+    --surface-3: #2a2a32;
+    --surface-4: #24242b;
+    --surface-5: #1f1f25;
+    --surface-6: #1b1b21;
+    --surface-7: #18181d;
+    --surface-8: #151519;
+    --surface-9: #121216;
+    --ink-1: #a6a6b2;
+    --ink-2: #b5b5c0;
+    --ink-3: #c6c6cf;
+    --ink-4: #d8d8df;
+    --ink-5: #ececf1;
+    --sql-comments: #8a8a98;
+    --color-error: #ff8a8a;
+    --color-warning: #f5c77a;
+    --color-error-bg: #3a1a1e;
+    --color-error-hover: #2e1418;
     --default-inset: inset 0.2rem 0.2rem 0.5rem rgba(0, 0, 0, 0.1);
+
+    /* Semantic tokens for the v3 shell */
+    --bg: #0d0d10;
+    --panel: #111115;
+    --panel-2: #1a1a20;
+    --chip: #1d1d24;
+    --hover: #22222b;
+    --border: #24242c;
+    --border-strong: #2e2e38;
+    --text: #ececf1;
+    --text-2: #c9c9d4;
+    --text-muted: #9b9ba8;
+    --text-dim: #8a8a98;
+    --accent-fg: #ffffff;
+    --accent-text: #f28aac;
+    --accent-soft: #2b1019;
+    --accent-soft-border: #6b1f3a;
+    --accent-soft-fg: #f6b9cd;
+    --success: #5fd38d;
 }
 
 /* Modern browsers with oklch and light-dark support */
 @supports (color: oklch(0% 0 0)) and (color: light-dark(white, black)) {
     :root {
-        --accent: light-dark(oklch(60.217% 0.23514 359.26), oklch(60.217% 0.23514 359.26));
-        --surface-1: light-dark(oklch(0.980 0.000 0), oklch(0.400 0.02 251.57));
-        --surface-2: light-dark(oklch(0.948 0.01 89.806), oklch(0.368 0.02 251.57));
-        --surface-3: light-dark(oklch(0.916 0.01 89.806), oklch(0.336 0.02 251.57));
-        --surface-4: light-dark(oklch(0.884 0.01 89.806), oklch(0.304 0.02 251.57));
-        --surface-5: light-dark(oklch(0.852 0.01 89.806), oklch(0.272 0.02 251.57));
-        --surface-6: light-dark(oklch(0.820 0.01 89.806), oklch(0.240 0.02 251.57));
-        --surface-7: light-dark(oklch(0.788 0.01 89.806), oklch(0.208 0.02 251.57));
-        --surface-8: light-dark(oklch(0.756 0.01 89.806), oklch(0.176 0.02 251.57));
-        --surface-9: light-dark(oklch(0.724 0.01 89.806), oklch(0.144 0.02 251.57));
-        --ink-1: light-dark(oklch(0.230 0.007 326), oklch(0.677 0.006 239.831));
-        --ink-2: light-dark(oklch(0.280 0.007 326), oklch(0.727 0.006 239.831));
-        --ink-3: light-dark(oklch(0.330 0.007 326), oklch(0.777 0.006 239.831));
-        --ink-4: light-dark(oklch(0.380 0.007 326), oklch(0.827 0.006 239.831));
-        --ink-5: light-dark(oklch(0.430 0.007 326), oklch(0.877 0.006 239.831));
+        /* Raspberry accent: slightly lifted in dark mode to keep borders and fills visible */
+        --accent: light-dark(#c2185b, #d6336c);
+        --surface-1: light-dark(oklch(0.995 0.002 285), oklch(0.340 0.012 285));
+        --surface-2: light-dark(oklch(0.975 0.003 285), oklch(0.300 0.011 285));
+        --surface-3: light-dark(oklch(0.955 0.004 285), oklch(0.265 0.010 285));
+        --surface-4: light-dark(oklch(0.935 0.004 285), oklch(0.238 0.009 285));
+        --surface-5: light-dark(oklch(0.910 0.005 285), oklch(0.216 0.009 285));
+        --surface-6: light-dark(oklch(0.880 0.006 285), oklch(0.200 0.008 285));
+        --surface-7: light-dark(oklch(0.850 0.006 285), oklch(0.186 0.008 285));
+        --surface-8: light-dark(oklch(0.820 0.007 285), oklch(0.172 0.007 285));
+        --surface-9: light-dark(oklch(0.790 0.007 285), oklch(0.160 0.007 285));
+        --ink-1: light-dark(oklch(0.220 0.008 285), oklch(0.720 0.010 285));
+        --ink-2: light-dark(oklch(0.280 0.008 285), oklch(0.775 0.009 285));
+        --ink-3: light-dark(oklch(0.340 0.008 285), oklch(0.830 0.008 285));
+        --ink-4: light-dark(oklch(0.400 0.008 285), oklch(0.885 0.007 285));
+        --ink-5: light-dark(oklch(0.450 0.008 285), oklch(0.940 0.006 285));
+
+        --bg: light-dark(#ffffff, #0d0d10);
+        --panel: light-dark(#f6f6f8, #111115);
+        --panel-2: light-dark(#f0f0f4, #1a1a20);
+        --chip: light-dark(#ececf1, #1d1d24);
+        --hover: light-dark(#e6e6ed, #22222b);
+        --border: light-dark(#e3e3e9, #24242c);
+        --border-strong: light-dark(#d6d6de, #2e2e38);
+        --text: light-dark(#18181d, #ececf1);
+        --text-2: light-dark(#3c3c46, #c9c9d4);
+        --text-muted: light-dark(#5f5f6c, #9b9ba8);
+        --text-dim: light-dark(#6b6b78, #8a8a98);
+        --accent-fg: #ffffff;
+        --accent-text: light-dark(#ad1457, #f28aac);
+        --accent-soft: light-dark(#fbe9f0, #2b1019);
+        --accent-soft-border: light-dark(#e8a6c0, #6b1f3a);
+        --accent-soft-fg: light-dark(#8e1240, #f6b9cd);
+        --success: light-dark(#2e9e5b, #5fd38d);
         --sql-comments: light-dark(oklch(0.617 0.006 325.645), oklch(0.550 0.006 239.831));
         --color-error: light-dark(oklch(0.628 0.218 19.364), oklch(0.79 0.109 13.43));
         --color-warning: light-dark(oklch(0.565 0.1 76.278), oklch(0.795 0.098 84.021));
@@ -142,7 +185,7 @@ html.dark,
 /* IosevkaMP mono font for the data table */
 @font-face {
     font-family: 'IosevkaMP';
-    src: url('/src/assets/fonts/IosevkaMP/IosevkaMP-Regular.ttf') format('truetype');
+    src: url('/src/assets/fonts/IosevkaMP/IosevkaMp-Regular.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -150,7 +193,7 @@ html.dark,
 
 @font-face {
     font-family: 'IosevkaMP';
-    src: url('/src/assets/fonts/IosevkaMP/IosevkaMP-Italic.ttf') format('truetype');
+    src: url('/src/assets/fonts/IosevkaMP/IosevkaMp-Italic.ttf') format('truetype');
     font-weight: 400;
     font-style: italic;
     font-display: swap;
@@ -158,7 +201,7 @@ html.dark,
 
 @font-face {
     font-family: 'IosevkaMP';
-    src: url('/src/assets/fonts/IosevkaMP/IosevkaMP-Bold.ttf') format('truetype');
+    src: url('/src/assets/fonts/IosevkaMP/IosevkaMp-Bold.ttf') format('truetype');
     font-weight: 700;
     font-style: normal;
     font-display: swap;
@@ -166,7 +209,7 @@ html.dark,
 
 @font-face {
     font-family: 'IosevkaMP';
-    src: url('/src/assets/fonts/IosevkaMP/IosevkaMP-BoldItalic.ttf') format('truetype');
+    src: url('/src/assets/fonts/IosevkaMP/IosevkaMp-BoldItalic.ttf') format('truetype');
     font-weight: 700;
     font-style: italic;
     font-display: swap;
@@ -236,12 +279,12 @@ pre,
 /* Custom selection color using accent color */
 ::selection {
     background-color: var(--accent) !important;
-    color: black !important;
+    color: var(--accent-fg) !important;
 }
 
 ::-moz-selection {
     background-color: var(--accent) !important;
-    color: black !important;
+    color: var(--accent-fg) !important;
 }
 
 /* Global scrollbar styling (Webkit browsers) */
