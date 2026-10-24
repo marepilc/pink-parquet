@@ -34,3 +34,4 @@ parquet = "60.0.0"
 chrono = "0.4"
 hex = "0.4"
 notify = "8"
+duckdb = { version = "1.20000.0", features = ["bundled", "parquet", "json", "chrono"] }

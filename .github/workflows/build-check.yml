@@ -1,0 +1,83 @@
+name: Build check
+
+# Compiles the backend (including the bundled DuckDB C++ sources) for every
+# release target, without packaging or publishing anything.
+on:
+  push:
+    branches:
+      - v3
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: build-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS (Apple Silicon)
+            platform: macos-latest
+            target: aarch64-apple-darwin
+            test: true
+          - name: macOS (Intel)
+            platform: macos-latest
+            target: x86_64-apple-darwin
+            test: false
+          - name: Windows (x64)
+            platform: windows-latest
+            target: x86_64-pc-windows-msvc
+            test: true
+          - name: Windows (ARM64)
+            platform: windows-latest
+            target: aarch64-pc-windows-msvc
+            test: false
+          - name: Linux (x64)
+            platform: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            test: true
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Install Linux dependencies
+        if: startsWith(matrix.platform, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+          key: check-${{ matrix.target }}
+
+      # tauri::generate_context! embeds the frontend, so it has to exist before cargo runs
+      - name: Build frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build backend
+        working-directory: src-tauri
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Run backend tests
+        if: matrix.test
+        working-directory: src-tauri
+        run: cargo test --release --target ${{ matrix.target }}

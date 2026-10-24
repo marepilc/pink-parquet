@@ -10,6 +10,7 @@ use std::sync::Mutex;
 use tauri::{AppHandle, Emitter, Manager, Window};
 
 mod data_loader;
+mod engine;
 use data_loader::{
     apply_sorts, calculate_statistics, dataframe_to_rows, open_csv, open_parquet, Sorting,
 };
@@ -947,6 +948,11 @@ fn stop_watching(state: tauri::State<AppState>, file_path: String) -> Result<(),
 }
 
 #[tauri::command]
+fn engine_version() -> Result<String, String> {
+    engine::duckdb_version()
+}
+
+#[tauri::command]
 fn read_text_file(path: String) -> Result<String, String> {
     fs::read_to_string(path).map_err(|e| e.to_string())
 }
@@ -1021,7 +1027,8 @@ pub fn run() {
             is_maximized,
             read_text_file,
             start_watching,
-            stop_watching
+            stop_watching,
+            engine_version
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
